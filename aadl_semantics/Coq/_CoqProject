@@ -1,2 +1,4 @@
-aadl.v
-utils.v
+-R src ""
+src/utils.v
+src/aadl.v
+
