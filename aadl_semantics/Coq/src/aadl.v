@@ -4,6 +4,13 @@
 
 Require Import utils.
 Require Import Bool.
+Require Import Coq.Init.Datatypes.
+Require Import List.
+Import ListNotations.
+
+(* Set Implicit Arguments.
+Set Asymmetric Patterns.
+*)
 
 (** ** Component definition *)
 
@@ -15,106 +22,68 @@ Inductive Component_Category : Type :=
 | abstract
 | process
 | thread
-| threadgroup
+| threadGroup
 | subprogram
-| subprogramgroup
+| subprogramGroup
 | processor
-| virtualprocessor
+| virtualProcessor
 | memory
 | device
 | bus
-| virtualbus
+| virtualBus
 | system.
 
-(** *** AADL Component Type
+(** *** AADL Component Type and implementation
 
 An AADL component type is made of
 - an identifier
 - a category
 - ...
 
-*)
+An AADL component implementation is made of
+- an identifier
+- a component type it implements
+- a list of subcomponents
+- ...
 
-Inductive component_type :=
-| Component_Type : identifier ->         (* its unique identifier *)
-                   Component_Category -> (* its category*)
-                   component_type.
-
-(** The following projections extract information from a component_type *)
-
-Definition projectionComponentTypeId (c : component_type) : identifier :=
-  match c with
-  | Component_Type id category => id
-  end.
-
-Definition projectionComponentTypeCategory (c:component_type)
-  : Component_Category :=
-  match c with
-  | Component_Type id category => category
-  end.
-
-(** *** AADL Component Implementation
-
-    An AADL component implementation is made of
-    - an identifier
-    - a component type it implements
-    - a list of subcomponents
-    - ...
+Note: The following defines actually 3 types: component, subcomponent and feature.
+We take advantage of Coq syntax for mutually dependent type definitions.
 
  *)
 
-Inductive component_implementation :=
-| Component_Implementation : identifier ->
-                             component_type ->
-                             list component_implementation ->
-                             component_implementation.
+Inductive component :=
+| componentInstance : identifier ->         (* its unique identifier *)
+                   Component_Category -> (* its category *)
+                   list feature ->       (* its features *)
+                   list subcomponent ->  (* subcomponents *)
+                   component
+with subcomponent :=
+  | Subcomponent : identifier ->
+                   component ->
+                   subcomponent
+with feature :=
+  | Feature : identifier ->
+              component ->
+              feature
+.
 
-(** The following projections extract information from a
-    component_implementation *)
+Definition nil_component := componentInstance empty_identifier (abstract) nil nil.
 
-Definition projectionComponentImplId (c : component_implementation) : identifier :=
-  match c with
-  | Component_Implementation id ctype subComponents => id
-  end.
-
-Definition projectionComponentImplParent (c:component_implementation) : component_type :=
-  match c with
-  | Component_Implementation id ctype subComponents => ctype
-  end.
-
-Definition projectionComponentImplSubComponents (c:component_implementation) : list component_implementation :=
-  match c with
-  | Component_Implementation id ctype subComponents => subComponents
-  end.
-
-Definition projectionComponentImplCategory (c:component_implementation) : Component_Category :=
-  let ctype := projectionComponentImplParent c in
-  projectionComponentTypeCategory ctype.
-
-(** *** Component Root type
-
-  We introduce component as a root type for component types and implementations.
-  This will facilitate some operations when processing models.
-
- *)
-
-Inductive component : Set :=
-| IsComponentType (c : component_type)
-| IsComponentImplementation (c : component_implementation).
-
-Coercion IsComponentType : component_type >-> component.
-Coercion IsComponentImplementation : component_implementation >-> component.
+(** The following projections extract information from a component *)
 
 Definition projectionComponentId (c : component) : identifier :=
   match c with
-  | IsComponentType c => projectionComponentTypeId  c
-  | IsComponentImplementation c => projectionComponentImplId  c
+  | componentInstance id _ _ _ => id
   end.
 
-Definition projectionComponentCategory (c : component) : Component_Category :=
+Fixpoint projectionComponentCategory (c:component) : Component_Category :=
   match c with
-  | IsComponentType c => projectionComponentTypeCategory  c
-  | IsComponentImplementation c => projectionComponentImplCategory c
+  | componentInstance _ category _ _ => category
+  end.
+
+Definition projectionComponentSubComponents (c:component) : list subcomponent :=
+  match c with
+  | componentInstance _ _ _ subComponents => subComponents
   end.
 
 (** *** Notations
@@ -125,37 +94,37 @@ Definition projectionComponentCategory (c : component) : Component_Category :=
 
 Notation "c '->id' " := (projectionComponentId c) (at level 80, right associativity).
 Notation "c '->category' " := (projectionComponentCategory c) (at level 80, right associativity).
-Notation "c '->parent' " := (projectionComponentImplParent c) (at level 80, right associativity).
-Notation "c '->subcomps' " := (projectionComponentImplSubComponents c) (at level 80, right associativity).
+Notation "c '->subcomps' " := (projectionComponentSubComponents c) (at level 80, right associativity).
 
 (** ** Tests *)
-Definition A_Component : component_type :=
-  Component_Type (Ident "id") (abstract).
+Definition A_Component : component :=
+  componentInstance (Ident "id") (abstract) nil nil.
 
-Definition A_Component_2 : component_type :=
-  Component_Type (Ident "") (abstract).
+Definition A_Component_2 : component :=
+  componentInstance (Ident "") (abstract) nil nil.
 
 Check A_Component.
 
 Definition A_Component_Impl :=
-  Component_Implementation (Ident "id.impl") (A_Component) nil.
+  componentInstance (Ident "id.impl") (abstract) nil (cons (Subcomponent (Ident "foo") A_Component) nil).
 
 Definition A_Component_Impl_2 :=
-  Component_Implementation (Ident "id2.impl") (A_Component) nil.
+  componentInstance (Ident "id.impl") (abstract) nil [ (Subcomponent (Ident "foo") A_Component) ].
 
 Check A_Component_Impl.
+Check A_Component_Impl = A_Component_Impl_2.
 
 Eval compute in A_Component->id.
 Eval compute in A_Component->category.
 
 Eval compute in A_Component_Impl->id.
 Eval compute in A_Component_Impl->category.
-Eval compute in A_Component_Impl->parent.
 Eval compute in A_Component_Impl->subcomps.
 
+Definition A_Feature := Feature (Ident "coinc") nil_component.
+Check A_Feature.
+
 (** ** Well-formedness rules
-
-
 
  *)
 
@@ -166,45 +135,18 @@ Definition Well_Formed_Component_Id (c : component) : bool :=
 Eval compute in Well_Formed_Component_Id A_Component.
 
 (** A component type is well-formed iff. the conponent identifier is well-formed *)
-Definition Well_Formed_ComponentType (c : component_type) : bool :=
+Definition Well_Formed_ComponentInstance (c : component) : bool :=
   Well_Formed_Component_Id c.
 
-Eval compute in Well_Formed_ComponentType A_Component.
-Eval compute in Well_Formed_ComponentType A_Component_2.
+Eval compute in Well_Formed_ComponentInstance A_Component.
+Eval compute in Well_Formed_ComponentInstance A_Component_2.
 
-(** A component implementation identifier is well-formed  iff XXXX *)
-
-Definition Well_Formed_CompomentImplementation_Id (c : component_implementation) : bool :=
-  ((Well_Formed_Component_Id c) &&
-   (let ctype:= projectionComponentImplParent c in
-    let ctypeid := ctype->id in
-    let cid := c->id in
-    cid == ctypeid)).
-
-(** A component implementation is well-formed iff.
-    - its identifier is well formed and
-    - its parent component type is well-formed
- *)
-
-Definition Well_Formed_ComponentImplementation (c : component_implementation) : bool :=
-  (
-    (Well_Formed_CompomentImplementation_Id c) &&
-    (Well_Formed_ComponentType (c->parent))
-  ).
-
-Eval compute in Well_Formed_ComponentImplementation A_Component_Impl.
-
-(** A component is well-formed iff it is either a well-formed component type
-    or a well-formed component implementaiton
+(* 4.5 (N1)	The defining identifier of a subcomponent declaration placed in a component
+   implementation must be unique within the local namespace of the component implementation
+   that contains the subcomponent.
 *)
 
-Definition Well_Formed_Component (c : component) : bool :=
-  match c with
-  | IsComponentType c => Well_Formed_ComponentType c
-  | IsComponentImplementation c => Well_Formed_ComponentImplementation c
-  end.
-
-Eval compute in Well_Formed_Component A_Component_Impl.
-Eval compute in Well_Formed_Component A_Component.
-
-Eval compute in Well_Formed_Component A_Component_Impl_2.
+(* 4.5 (C1)	The classifier of a subcomponent cannot recursively contain subcomponents with the
+  same component classifier.  In other words, there cannot be a cyclic containment
+  dependency between components.
+  *)
