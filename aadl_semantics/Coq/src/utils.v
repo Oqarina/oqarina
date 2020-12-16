@@ -4,6 +4,8 @@
 
 Require Export String.
 From Coq Require Import Bool.Bool.
+From Coq Require Import Logic.Decidable.
+From Coq Require Import Logic.Classical_Prop.
 
 (** ** Identifier type
 
@@ -90,6 +92,34 @@ Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
 Definition Ill_Formed_Identifier_prop (i : identifier) : Prop :=
   (i = empty_identifier).
 
+Lemma wf_is_not_if: forall id: identifier,
+  Well_Formed_Identifier_prop id <-> ~ Ill_Formed_Identifier_prop id.
+Proof.
+  (* We simply unfold definitions. Note that Coq interpreter will
+     automatically adjust the equalities to suppress the ~ (not) operator.
+  *)
+  unfold Ill_Formed_Identifier_prop.
+  unfold Well_Formed_Identifier_prop.
+  reflexivity.
+Qed.
+
+Lemma if_is_not_wf: forall id: identifier,
+  Ill_Formed_Identifier_prop id <-> ~ Well_Formed_Identifier_prop id.
+Proof.
+  intros.
+
+  (* Use previously demonstrated result *)
+  rewrite -> wf_is_not_if.
+  split.
+
+  (* prove Ill_Formed_Identifier_prop id -> ~ ~ Ill_Formed_Identifier_prop id *)
+  intros.
+  auto.
+
+  (* prove ~~ Ill_Formed_Identifier_prop id -> Ill_Formed_Identifier_prop id *)
+  apply NNPP.  (* uses Coq.Logic.Classical_Prop *)
+Qed.
+
 (** An identifier is either well-formed or ill-formed *)
 
 Lemma wf_dec : forall id: identifier,
@@ -106,6 +136,23 @@ Proof.
   - subst. left. apply beq_id_false_iff. auto.
 Qed.
 
+(** Well_Formed_Identifier_prop is decidable *)
+
+Theorem Well_Formed_Identifier_prop_dec: forall id: identifier,
+  decidable (Well_Formed_Identifier_prop id).
+Proof.
+  intros.
+
+  (* apply definitions *)
+  unfold decidable.
+  unfold Well_Formed_Identifier_prop.
+
+  (* do a case by case analysis *)
+  destruct (ident_dec id empty_identifier).
+  - subst. auto.
+  - subst. auto.
+Qed.
+
 (** A boolean version of Well_Formed_Identifier *)
 
 Definition Well_Formed_Identifier (i : identifier) : bool :=
@@ -114,7 +161,7 @@ Definition Well_Formed_Identifier (i : identifier) : bool :=
 (** Well_Formed_Identifier_Prop and Well_Formed_Identifier coincides *)
 
 Lemma wf_coincide: forall id: identifier,
-Well_Formed_Identifier_prop id <-> Well_Formed_Identifier id = true.
+  Well_Formed_Identifier_prop id <-> Well_Formed_Identifier id = true.
 Proof.
   intros.
   unfold Well_Formed_Identifier_prop.
@@ -127,13 +174,17 @@ Proof.
 Qed.
 
 (** ** Examples *)
+
 Example A_WFI : identifier :=
   Ident "o<".
 
-Lemma A_WFI_is_well_formed:
+Lemma A_WFI_is_well_formed_boring:
   Well_Formed_Identifier_prop A_WFI.
 Proof.
-  (* First, we rewrite the proposition to its simple form *)
+  (* In this "boring" version, we do a manual proof using the
+  previous definitions.
+
+  First, we rewrite the proposition to its simple form *)
   unfold Well_Formed_Identifier_prop.
   unfold A_WFI.
   unfold empty_identifier.
@@ -144,6 +195,15 @@ Proof.
   (* Then we finish the proof *)
   simpl.
   reflexivity.
+Qed.
+
+Lemma A_WFI_is_well_formed:
+  Well_Formed_Identifier_prop A_WFI.
+Proof.
+  (* In this variant, we take advantagd of the equivalence to the
+  boolean predicate to proof this *)
+  rewrite -> wf_coincide.
+  auto.
 Qed.
 
 Lemma Empty_Identifier_is_ill_formed:
