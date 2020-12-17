@@ -72,7 +72,7 @@ Definition projectionComponentId (c : component) : identifier :=
   | componentInstance id _ _ _ => id
   end.
 
-Fixpoint projectionComponentCategory (c:component) : Component_Category :=
+Definition projectionComponentCategory (c:component) : Component_Category :=
   match c with
   | componentInstance _ category _ _ => category
   end.
