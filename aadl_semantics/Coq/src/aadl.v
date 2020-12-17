@@ -33,16 +33,12 @@ Inductive Component_Category : Type :=
 | virtualBus
 | system.
 
-(** *** AADL Component Type and implementation
+(** *** AADL Component Instance
 
-An AADL component type is made of
+An AADL component instance is made of
 - an identifier
 - a category
-- ...
-
-An AADL component implementation is made of
-- an identifier
-- a component type it implements
+- a list of features
 - a list of subcomponents
 - ...
 
