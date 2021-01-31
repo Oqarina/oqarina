@@ -139,8 +139,10 @@ Section AADL_Definitions.
                 Feature_Category -> (* *)
                 component ->  (* corresponding component instance *)
                 list property_value -> (* properties *)
-                feature
-  .
+                feature.
+
+  (* Definition of an empty component *)
+  Definition nil_component := Component empty_identifier (abstract) nil nil nil.
 
 (* begin hide *)
 End AADL_Definitions.
@@ -518,6 +520,3 @@ Section WellFormedness_Rules.
 (* begin hide *)
 End WellFormedness_Rules.
 (* end hide *)
-
-End Sandbox.
-
