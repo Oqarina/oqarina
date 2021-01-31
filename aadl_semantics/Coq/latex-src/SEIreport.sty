@@ -1,0 +1,520 @@
+% Created in 2014 to migrate document creation from Microsoft Word to LaTeX
+% Initially created and commented by Braden Licastro.
+%
+% Use the Comment space below to track changes and be sure to comment changes
+% with date and person/department who made changes. Ex: % 5/20/2014 - (BDL) Change Description
+%
+%
+% CHANGELOG
+% 5/26/2014 - (BDL) Initial Release
+% 5/27/2014 - (BDL) Change fonts to better reflect word template
+% 5/20/2016 - (NMO) Added SEI, CMU, and Distribution Statement to page footer.
+% 8/15/2018 - (NMO) Added Special Report document type. Updated SEI/CMU branding. Re-did distribution statement. Made LaTeX template more consistent with Word template.
+
+
+% ************************************************************************************* %
+
+% Report class loaded in main document to act as a base so we don't need to create EVERYTHING from scratch.
+% Details for this package.
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{SEIreport}[2018/08/15 Software Engineering Institute Technical Reports]
+\typeout{SEI Technical Report Style, $Revision: 1.0 $, by Braden D. Licastro (blicastro@live.com) $Revision: 2.0 $, by Nancy Ott (nmott@sei.cmu.edu)}
+
+% Packages that are needed, but can only be loaded once per document
+\RequirePackage{ifthen} % allows for logic
+\RequirePackage{helvet} % allows use of Helvetica font (almost identical to arial, the usual one)
+\RequirePackage{setspace} % allows us to adjust line spacing (ex. Front matter minipage)
+\RequirePackage{fancyhdr} % set custom header/footer configurations per page
+\RequirePackage{tocloft} % table of contents, list of figures, list of tables customization
+\RequirePackage{titlesec} % change section, subsection, and subsubsection properties
+\RequirePackage{parskip} % format spacing between paragraphs
+
+% Force LaTeX to use the new Helvetica font
+\renewcommand{\familydefault}{\sfdefault}
+
+% ********************************************************************
+% ***                      Package Options                         ***
+% ********************************************************************
+\DeclareOption{nodraft}{\sei@nodraft}
+\DeclareOption{draft}{\sei@draft}
+\DeclareOption{tr}{\sei@tr}
+\DeclareOption{trdraft}{\sei@trdraft}
+\DeclareOption{tn}{\sei@tn}
+\DeclareOption{sr}{\sei@sr} %special report (limited distribution)
+\newif\if@draftmode
+
+
+% ********************************************************************
+% ***           Page Setup and Line spacing settings               ***
+% ********************************************************************
+% Declare page and margin details
+\def\sei@pageheight {11in}
+\def\sei@pagewidth {8.5in}
+\def\sei@topmargin {.9in}
+\def\sei@bottommargin{1in}
+\def\sei@leftmargin {1.5in}
+\def\sei@rightmargin {1.25in}
+
+% We don't like paragraph indentaiton
+\setlength{\parindent}{0pt}
+
+% FUNCTION FOR SETTING CUSTOM MARGINS
+\def\sei@setmargins{
+	% Don't change these
+	\headheight 2ex
+	\headsep .5in
+	\footskip .5in
+	\advance\footskip 1ex
+
+	\textheight\sei@pageheight
+	\advance\textheight -\sei@topmargin
+	\advance\textheight -\sei@bottommargin
+	\advance\textheight -\headheight
+	\advance\textheight -1ex %extra footskip
+
+	\topmargin\sei@topmargin
+	\advance\topmargin -1in
+	\advance\topmargin -\voffset
+	\advance\topmargin -\headsep
+
+	\textwidth\sei@pagewidth
+	\advance\textwidth -\sei@leftmargin
+	\advance\textwidth -\sei@rightmargin
+
+	\oddsidemargin\sei@leftmargin
+	\advance\oddsidemargin -1in
+	\advance\oddsidemargin -\hoffset
+	\if@twoside
+	\evensidemargin\sei@rightmargin
+	\advance\evensidemargin -1in
+	\advance\evensidemargin -\hoffset
+	\else
+	\evensidemargin\oddsidemargin
+	\fi
+
+	\marginparwidth\oddsidemargin
+	\advance\marginparwidth -\marginparsep
+}
+
+
+% ********************************************************************
+% ***                          Variables                           ***
+% ********************************************************************
+% Set up a command for the draft message
+\newcommand{\sei@draftnote}{DRAFT PENDING RRO APPROVAL}
+
+% Create the title variable
+\def\reporttitle#1{\gdef\sei@title{#1}}
+
+% Allow up to 10 authors to be listed
+\def\reportauthora#1{\gdef\sei@authora{#1}}
+\def\reportauthorb#1{\gdef\sei@authorb{#1}}
+\def\reportauthorc#1{\gdef\sei@authorc{#1}}
+\def\reportauthord#1{\gdef\sei@authord{#1}}
+\def\reportauthore#1{\gdef\sei@authore{#1}}
+\def\reportauthorf#1{\gdef\sei@authorf{#1}}
+\def\reportauthorg#1{\gdef\sei@authorg{#1}}
+\def\reportauthorh#1{\gdef\sei@authorh{#1}}
+\def\reportauthori#1{\gdef\sei@authori{#1}}
+\def\reportauthorj#1{\gdef\sei@authorj{#1}}
+
+% Create the Month and Date variable
+\def\monthandyear#1{\gdef\sei@monthandyear{#1}}
+
+% Create the report number variable
+\def\reportnumber#1{\gdef\sei@reportnumber{#1}}
+
+% Create the program name variable
+\def\programname#1{\gdef\sei@programname{#1}}
+
+\def\reporttitlefont#1{\gdef\sei@titlefont{#1}}
+\gdef\sei@titlefont{\Large\bfseries}
+\def\reportauthorfont#1{\gdef\sei@authorfont{#1}}
+\gdef\sei@authorfont{\large\bfseries}
+
+
+% (NMO) Create distribution statement variable
+\def\distributionstatement#1{\gdef\sei@dstatement{#1}}
+
+% (NMO) Add SEI and CMU names to page footers
+\newcommand{\seicmu}{SOFTWARE ENGINEERING INSTITUTE\space$ | $\space CARNEGIE MELLON UNIVERSITY}
+
+
+
+% ********************************************************************
+% ***              Page Creation and Layout Macros                 ***
+% ********************************************************************
+% Make the title page
+\def\reportmaketitle{
+	\pagenumbering{Roman}\setcounter{page}{1}\thispagestyle{fancyplain}
+	\renewcommand{\headrulewidth}{0pt}
+	{\vspace*{-.3in}
+		\includegraphics[width=2.5in]{assets/Software_Engineering_Institute_Unitmark_Red_and_Black}}
+
+	\vspace*{1.0in}
+
+	\begin{minipage}{5.5in}
+		\linespread{1.3}
+		\huge
+		{\fontfamily{cmr}\selectfont\sei@title}
+	\end{minipage}
+
+	\vspace{.5in}
+	\ifdefined\sei@authora
+		\sei@authora\\
+	\fi
+	\ifdefined\sei@authorb
+		\sei@authorb\\
+	\fi
+	\ifdefined\sei@authorc
+		\sei@authorc\\
+	\fi
+	\ifdefined\sei@authord
+		\sei@authord\\
+	\fi
+	\ifdefined\sei@authore
+		\sei@authore\\
+	\fi
+	\ifdefined\sei@authorf
+		\sei@authorf\\
+	\fi
+	\ifdefined\sei@authorg
+		\sei@authorg\\
+	\fi
+
+	\vspace{.5in}
+
+	\textbf{\sei@monthandyear}
+
+	\vspace{.2in}
+
+	\textbf{\sei@reporttype}\\
+	\sei@reportnumber
+
+	\vspace{.2in}
+
+	\textbf{\sei@programname}\\
+	\sei@othernote
+
+	\vspace{.1in}
+
+	% (NMO) Added distribution statement to title page.
+    \sei@dstatement \\
+	\vspace{.1in}
+
+	\href{http://www.sei.cmu.edu}{http://www.sei.cmu.edu}
+
+	\fancyfoot{}
+	\cfoot{
+		\begin{minipage}{9.29in}
+			\vspace{-3.5in}
+			\hspace{-1.6in}
+			\includegraphics[width=9.29in]{assets/SEIFooter}
+		\end{minipage}
+	}
+	\newpage
+}
+
+% Make the document markup page!
+\def\reportmakedocumark{
+	\thispagestyle{fancyplain}
+	\fancyhf{}
+	\if@draftmode
+		\lhead{{\fontfamily{cmr}\selectfont\sei@draftnote}}
+	\fi
+	{\small\include{content/docmarking}}
+	\pagenumbering{roman}\setcounter{page}{1}
+	\newpage
+}
+
+% Make the DTIC page!
+\def\reportmakedtic{
+	\thispagestyle{fancyplain}
+	\fancyhf{}
+	\if@draftmode
+		\lhead{\sei@draftnote}
+	\fi
+	{\small\include{content/dtic}}
+}
+
+
+% ********************************************************************
+% ***                   Option Style Definitions                   ***
+% ********************************************************************
+% Draft Styles
+\def\sei@draft{
+	\renewcommand{\ps@plain}{
+		\renewcommand{\@oddhead}{\sei@draftnote\hfil}
+		\renewcommand{\@evenhead}{\sei@draftnote\hfil}
+		% Added CMU | SEI branding and replaced the old oddfoot with a table to align distribution statement. Yes, it's a hack.
+		\renewcommand{\@oddfoot}{\begin{tabular}{lr}
+			\footnotesize\sei@reportnumber\space$ | $\space\footnotesize\seicmu&\footnotesize\thepage\\
+			\footnotesize\sei@dstatement&\end{tabular}}
+		\renewcommand{\@evenfoot}{\begin{tabular}{lr}
+				\footnotesize\sei@reportnumber\space$ | $\space\seicmu&\footnotesize\thepage\\
+				\footnotesize\sei@dstatement&\end{tabular}}
+
+		\let\@mkboth\@gobbletwo
+	}
+	\@draftmodetrue
+}
+
+% Final Copy Styles
+\def\sei@nodraft{
+	\renewcommand{\ps@plain}{
+		\renewcommand{\@oddhead}{}
+		\renewcommand{\@evenhead}{}
+		% Added CMU | SEI branding and replaced the old oddfoot with a table to align distribution statement.
+		\renewcommand{\@oddfoot}{\begin{tabular}{lr}
+				\footnotesize\sei@reportnumber\space$ | $\space\footnotesize\seicmu&\footnotesize\thepage\\
+				\footnotesize\sei@dstatement&\end{tabular}}
+		\renewcommand{\@evenfoot}{\begin{tabular}{lr}
+				\footnotesize\sei@reportnumber\space$ | $\space\seicmu&\footnotesize\thepage\\
+				\footnotesize\sei@dstatement&\end{tabular}}
+		\let\@mkboth\@gobbletwo
+	}
+}
+
+% TR Contents
+\def\sei@tr{
+	% Create the report type variable
+	\gdef\sei@reporttype{TECHNICAL REPORT}
+	% Additional notes (below program name)
+	\gdef\sei@othernote{}
+}
+
+% TR Draft Contents
+\def\sei@trdraft{
+	% Create the report type variable
+	\gdef\sei@reporttype{TECHNICAL REPORT}
+	% Additional notes (below program name)
+	\gdef\sei@othernote{RESTRICTED USE: This draft document is made available for the sole purpose of review and comment. Any other use, including but not limited to, reproduction or the creation of derivative works, is strictly prohibited without the prior written approval from \href{mailto:permission@sei.cmu.edu}{permission@sei.cmu.edu}.}
+}
+
+% TN Contents
+\def\sei@tn{
+	% Create the report type variable
+	\gdef\sei@reporttype{TECHNICAL NOTE}
+	% Additional notes (below program name)
+	\gdef\sei@othernote{}
+}
+
+
+% SR Contents
+\def\sei@sr{
+	% Create the report type variable
+	\gdef\sei@reporttype{SPECIAL REPORT}
+	% Additional notes (below program name)
+	\gdef\sei@othernote{}
+
+
+}
+
+
+% ********************************************************************
+% ***             Command and Environment Definitions              ***
+% ********************************************************************
+% Set up the table of contents
+\setlength{\cftbeforetoctitleskip}{-.25in}
+\renewcommand{\cfttoctitlefont}{\Large\bfseries}
+\renewcommand*\contentsname{\hrule\vspace*{.05in}Table of Contents}
+\renewcommand{\cftsecleader}{\cftdotfill{\cftnodots}}
+\renewcommand{\cftsubsecleader}{\cftdotfill{\cftnodots}}
+
+% Set up the list of figures
+\setlength{\cftbeforeloftitleskip}{-.25in}
+\renewcommand{\cftloftitlefont}{\Large\bfseries}
+\renewcommand*\listfigurename{\hrule\vspace*{.05in}List of Figures}
+\renewcommand{\cftfigpresnum}{Figure\ }
+\newlength{\figlenf}
+\settowidth{\figlenf}{\cftfigpresnum}
+\setlength{\cftfignumwidth}{\dimexpr\figlenf+3em}
+\renewcommand{\cftfigleader}{\cftdotfill{\cftnodots}}
+\setlength{\cftfigindent}{0pt} % remove indentation from LOF figures
+
+% Set up the list of tables
+\setlength{\cftbeforelottitleskip}{-.25in}
+\renewcommand{\cftlottitlefont}{\Large\bfseries}
+\renewcommand*\listtablename{\hrule\vspace*{.05in}List of Tables}
+\renewcommand{\cfttabpresnum}{Table\ }
+\newlength{\tbllenf}
+\settowidth{\tbllenf}{\cfttabpresnum}
+\setlength{\cfttabnumwidth}{\dimexpr\tbllenf+3em}
+\renewcommand{\cfttableader}{\cftdotfill{\cftnodots}}
+\setlength{\cfttabindent}{0pt} % remove indentation from LOT tables
+
+% Set up the about TN/TR page
+\newcommand{\abouttntrname}{About the TN/TR Series}
+\newenvironment{abouttntr}
+	{\chapter*{\abouttntrname}
+	\addcontentsline{toc}{chapter}{\abouttntrname}}
+	{}
+
+% Set up the foreword
+\newcommand{\forewordname}{Foreword}
+\newenvironment{foreword}
+	{\chapter*{\forewordname}
+	\addcontentsline{toc}{chapter}{\forewordname}}
+	{}
+
+
+% Set up the preface
+\newcommand{\prefacename}{Preface}
+\newenvironment{preface}
+	{\chapter*{\prefacename}
+	\addcontentsline{toc}{chapter}{\prefacename}}
+	{}
+
+% Set up the acknowledgments
+\newcommand{\acknowledgmentsname}{Acknowledgments}
+\newenvironment{acknowledgments}
+	{\chapter*{\acknowledgmentsname}
+	\addcontentsline{toc}{chapter}{\acknowledgmentsname}}
+	{}
+
+
+% Set up the abstract
+\renewcommand{\abstractname}{Abstract}
+\renewenvironment{abstract}
+	{\chapter*{\abstractname}
+	\addcontentsline{toc}{chapter}{\abstractname}}
+	{}
+
+% Set up the formatting for \chapter
+\def\@makechapterhead#1{
+	{\vspace*{-.275in}\hrule\vspace*{.05in}{\bf\Large\thechapter\hspace*{1em}#1}\par\vspace{.5in}}
+}
+
+% Set up the formatting for \chapter*
+\def\@makeschapterhead#1{
+	{\vspace*{-.275in}\hrule\vspace*{.05in}{\bf\Large#1}\par\vspace{.5in}}
+}
+
+
+\titleformat*{\section}{\bf\large\color{black}}
+\titleformat*{\subsection}{\bf\normalsize\color{black}}
+\titleformat*{\subsubsection}{\bf\normalsize\color{black}}
+
+% Footnote bar width not right
+\renewcommand{\footnoterule}{%
+  \kern -3pt
+  \color{black}\hrule width \textwidth
+  \kern 2.6pt
+}
+
+% Set up the feedback request page
+\newcommand{\feedbackrqstname}{Request for Feedback}
+\newenvironment{feedbackrqst}
+	{\chapter*{\feedbackrqstname}
+	\addcontentsline{toc}{chapter}{\feedbackrqstname}}
+	{}
+
+% Finally, change the name of the Bib
+\renewcommand{\bibname}{References/Bibliography}
+\renewenvironment{thebibliography}[1]
+     {\chapter*{\bibname}
+      \addcontentsline{toc}{chapter}{\bibname}
+      \@mkboth{\MakeUppercase\bibname}{\MakeUppercase\bibname}
+      \list{\@biblabel{\@arabic\c@enumiv}}%
+           {\settowidth\labelwidth{\@biblabel{#1}}%
+            \leftmargin\labelwidth
+            \advance\leftmargin\labelsep
+            \@openbib@code
+            \usecounter{enumiv}%
+            \let\p@enumiv\@empty
+            \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+      \sloppy
+      \clubpenalty4000
+      \@clubpenalty \clubpenalty
+      \widowpenalty4000%
+      \sfcode`\.\@m}
+     {}
+
+% No layout options specified, assume final copy
+\ExecuteOptions{tr,nodraft}
+% Set the page margins
+\sei@setmargins
+% Begin processing and assume no page style by default
+\ProcessOptions
+\AtBeginDocument{\pagestyle{plain}}
+
+% ****************************************************************
+%
+% Miscellaneous command definitions (moved from main report file)
+%
+% ****************************************************************
+
+
+\newcommand{\m}[1]{\mathit{#1}}
+\newcommand{\such}{\centerdot}
+\newcommand{\set}[1]{\{{#1}\}}
+\newcommand{\seq}[1]{\langle{#1}\rangle}
+\newcommand{\sem}[1]{[\![{#1}]\!]}
+\newcommand{\dmpl}{\textsc{dmpl}\xspace}
+\newcommand{\dasl}{\textsc{dasl}\xspace}
+\newcommand{\dmplc}{\textsc{dmplc}\xspace}
+\newcommand{\dart}{\textsc{dart}\xspace}
+\newcommand{\scnote}[1]{\textbf{SC: #1}}
+\newcommand{\zsrm}{\textsc{zsrm}\xspace}
+\newcommand{\madara}{\textsc{madara}\xspace}
+\newcommand{\tbsync}{\textsc{2bsync}\xspace}
+\newcommand{\vrep}{\textsc{v-rep}\xspace}
+
+\newcommand{\spec}{\varphi}
+\newcommand{\cbmc}{\textsc{cbmc}\xspace}
+\newcommand{\true}{\textsc{true}\xspace}
+\newcommand{\false}{\textsc{false}\xspace}
+
+\newcommand{\gvar}{\m{GV}}
+\newcommand{\lvar}{\m{LV}}
+\newcommand{\tvar}{\m{TV}}
+\newcommand{\ivar}{\m{IV}}
+\newcommand{\round}{\rho}
+\newcommand{\init}{\m{Init}}
+\newcommand{\chk}{\m{Safety}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\newcommand{\ite}{\textsc{ite}\xspace}
+\newcommand{\while}{\textsc{while}\xspace}
+\newcommand{\iterop}{\textsc{all}\xspace}
+\newcommand{\iter}[2]{\iterop({#1},{#2})}
+\newcommand{\uop}{\sim}
+\newcommand{\bop}{\diamond}
+\newcommand{\nop}{\m{skip}}
+\newcommand{\lval}{\m{lval}}
+\newcommand{\expr}{\m{exp}}
+\newcommand{\stmt}{\m{stmt}}
+\newcommand{\vid}{\m{id}}
+\newcommand{\nuvar}[2]{\nu({#1},{#2})}
+
+\newcommand{\aop}{@}
+\newcommand{\gvi}[1]{\widetilde{#1}}
+\newcommand{\vval}{\mathcal{V}}
+\newcommand{\st}{S}
+\newcommand{\ival}{\mathcal{I}}
+\newcommand{\eval}[2]{{#1} \triangleright {#2}}
+\newcommand{\var}{\m{Var}}
+\newcommand{\htr}[3]{\set{#1}{#2}\set{#3}}
+\newcommand{\dom}{\m{Dom}}
+\newcommand{\sext}{\oplus}
+\newcommand{\srem}{\ominus}
+\newcommand{\cpp}{\textsc{c++}\xspace}
+\newcommand{\vals}{D}
+\newcommand{\voidv}{\odot}
+\newcommand{\vars}{\mathbb{V}}
+\newcommand{\arr}{\uparrow}
+\newcommand{\dep}{\downarrow}
+\newcommand{\abr}{\dagger}
+\newcommand{\intf}{\m{IntFn}}
+\newcommand{\extf}{\m{ExtFn}}
+\newcommand{\funcs}{\m{Func}}
+\newcommand{\types}{\mathbb{T}}
+\newcommand{\type}{\mathsf{typ}}
+\newcommand{\pst}[1]{2^{#1}}
+\newcommand{\jid}{\iota}
+\newcommand{\pwr}{\m{PrWr}}
+\newcommand{\zsi}{\m{ZSI}}
+\newcommand{\str}{\m{Round}^+}
+\newcommand{\enr}{\m{Round}^-}
+\newcommand{\exec}{\eta}
+\newcommand{\dist}{\url{https://db.tt/qfrDZOSF}}
