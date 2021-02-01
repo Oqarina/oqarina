@@ -95,7 +95,6 @@ Section AADL_Definitions.
       We replicated this separation so that we can typecheck that
       a property value matches its definition.
 
-      XXX defines corresponding typechecking rule
   *)
 
   Inductive Property_Base_Type : Type :=
@@ -107,17 +106,16 @@ Section AADL_Definitions.
     | aadlstring : identifier -> property_base_value
     | aadlreal : float -> property_base_value
     | aadllist : list property_base_value -> property_base_value
-    | aadlrecord : list property_base_value -> property_base_value
-    .
+    | aadlrecord : list property_base_value -> property_base_value.
 
   Inductive property_type : Type :=
-  | Property_Type : list Component_Category ->
-                    Property_Base_Type ->
+  | Property_Type : list Component_Category -> (* applies to categories *)
+                    Property_Base_Type -> (* the type of the property *)
                     property_type.
 
   Inductive property_value : Type :=
-  | Property_Value : property_type ->
-                    property_base_value  ->
+  | Property_Value : property_type -> (* property type *)
+                    property_base_value  -> (* actual value *)
                     property_value.
 
   (** ** Component Instance
@@ -128,7 +126,8 @@ Section AADL_Definitions.
 
   Per definition of the AADL component model, features and subcomponents also list component instance as their parts.
   From a Coq perspective, we must define all three types as mutually dependent types at once.
-  The following defines actually those 3 types: component, subcomponent and feature.
+  The following defines actually those 4 types: component, subcomponent, feature and
+  connection.
 
 <<
   <component_category> <classifier>
@@ -137,9 +136,9 @@ Section AADL_Definitions.
   subcomponents
     <list subcomponent>
   properties
-    <list properties>
+    <list property>
   connection
-    <list connections>
+    <list connection>
   end
 >>
 
