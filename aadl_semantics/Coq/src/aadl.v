@@ -669,7 +669,7 @@ This corresponds to the following Coq formalization:
     apply List_Property_Correctly_Applies_To_dec.
   Qed.
 
-  Hint Resolve Well_Formed_Properties_dec : Core.
+  Hint Resolve Well_Formed_Properties_dec : core.
 
   (** ** Naming rule 4.5 (N1) *)
   (** 4.5 (N1) The defining identifier of a subcomponent declaration placed in a
@@ -725,6 +725,7 @@ This corresponds to the following Coq formalization:
   (* TBD *)
 
   (** ** Master theorem %\# 1%: well-formedness of a component instance *)
+
   (** A component type is well-formed iff.
     - the component identifier is well-formed and
     - its properties are correctly applied and
@@ -745,10 +746,8 @@ This corresponds to the following Coq formalization:
     unfold Well_Formed_Component.
 
     (* Apply decidability results *)
-    repeat apply dec_and; auto. apply Well_Formed_Properties_dec.
-
-    (* XXX auto should be enough, TBI*)
-  Qed.
+    repeat apply dec_and; auto.
+  Defined.
 
 (* begin hide *)
 End WellFormedness_Rules.
