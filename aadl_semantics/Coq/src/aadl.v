@@ -18,13 +18,14 @@ Require Import Coq.Lists.ListDec.
 
 Require Import identifiers.
 Require Import utils.
+
 (* end hide *)
 
 (**
 
-In this chapter, we define some core elements of the AADL component instance model.
+In this chapter, we define some core elements of the AADL component instance model in Coq.
 Our objective is to define the core concepts of AADL, helper functions to build models
-and to iterate over a hierarchy of AADL models.
+and to iterate over a hierarchy of AADL conponents.
 
 This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DBLP:books/daglib/0030032}%
 and of the Coq specification language. We used the book by A. Chlipala %\cite{DBLP:books/daglib/0035083}%
@@ -48,7 +49,13 @@ Section AADL_Definitions.
   (** ** Component Categories
 
     The %\coqdocvar{Component\_Category}% type denotes AADL component categories
-    as a finite set of enumerators. *)
+    as a finite set of enumerators.
+
+    _Note: we need to diverge from the AADL standard and add an explicit null component
+    category for the rare situations where we need to define the absence of a component
+    attach to a model element such as an event port_.
+
+    *)
 
   Inductive Component_Category : Type :=
   (* Hybrid categories *)
@@ -56,7 +63,9 @@ Section AADL_Definitions.
   (* Software categories *)
   | process | thread | threadGroup | subprogram | subprogramGroup | data
   (* Hardware categories *)
-  | processor| virtualProcessor | memory | device | bus| virtualBus
+  | processor| virtualProcessor | memory | device | bus | virtualBus
+  (* Mechanization addition -- not part of AADL standard *)
+  | null (* denote an explicitely null or invalid component *)
   .
 
   (** ** Feature Categories
@@ -95,14 +104,14 @@ Section AADL_Definitions.
     | aadlboolean : bool -> property_base_value
     | aadlinteger : nat -> property_base_value
     | aadlstring : identifier -> property_base_value
-    | aadlreadl : nat (* XXX *) -> property_base_value
+    | aadlreal : nat (* XXX should be float *) -> property_base_value
     | aadllist : list property_base_value -> property_base_value
     | aadlrecord : list property_base_value -> property_base_value
     .
 
   Inductive property_type : Type :=
   | Property_Type : list Component_Category ->
-                    list Property_Base_Type ->
+                    Property_Base_Type ->
                     property_type.
 
   Inductive property_value : Type :=
@@ -119,30 +128,52 @@ Section AADL_Definitions.
   Per definition of the AADL component model, features and subcomponents also list component instance as their parts.
   From a Coq perspective, we must define all three types as mutually dependent types at once.
   The following defines actually those 3 types: component, subcomponent and feature.
+
+<<
+  <component_category> <classifier>
+  features
+    <list feature>
+  subcomponents
+    <list subcomponent>
+  properties
+    <list properties>
+  connection
+    <list connections>
+  end
+>>
+
+
   *)
 
   Inductive component :=
-  | Component : identifier ->         (* its unique identifier *)
+  | Component : identifier ->         (* its classifier *)
                 Component_Category -> (* its category *)
                 list feature ->       (* its features *)
-                list subcomponent ->  (* subcomponents *)
+                list subcomponent ->  (* subcomponents XXX replace with list component *)
                 list property_value -> (* properties *)
+                list connection ->
                 component
-  with subcomponent :=
+    with feature :=
+      | Feature : identifier -> (* its unique identifier *)
+                  Feature_Direction ->
+                  Feature_Category -> (* *)
+                  component ->  (* corresponding component instance *)
+                  list property_value -> (* properties *)
+                  feature
+    with subcomponent :=
     | Subcomponent : identifier -> (* its unique identifier *)
                     component ->   (* corresponding component instance *)
-                    (* XXX do subcomponents have properties? *)
+                    (* XXX do subcomponents have properties? no in ocarina *)
                     subcomponent
-  with feature :=
-    | Feature : identifier -> (* its unique identifier *)
-                Feature_Direction ->
-                Feature_Category -> (* *)
-                component ->  (* corresponding component instance *)
-                list property_value -> (* properties *)
-                feature.
+    with connection :=
+    | Connection : identifier ->
+                   list identifier -> (* path to the source feature *)
+                   list identifier -> (* path to the destination feature *)
+                   connection
+    .
 
   (* Definition of an empty component *)
-  Definition nil_component := Component empty_identifier (abstract) nil nil nil.
+  Definition nil_component := Component empty_identifier (null) nil nil nil nil.
 
 (* begin hide *)
 End AADL_Definitions.
@@ -163,22 +194,27 @@ Section AADL_Accessors.
 
   Definition projectionComponentId (c : component) : identifier :=
     match c with
-    | Component id _ _ _ _ => id
+    | Component id _ _ _ _ _ => id
   end.
 
   Definition projectionComponentCategory (c:component) : Component_Category :=
     match c with
-    | Component _ category _ _ _ => category
+    | Component _ category _ _ _ _ => category
   end.
 
   Definition projectionComponentFeatures (c:component) : list feature :=
     match c with
-    | Component _ _ features _ _ => features
+    | Component _ _ features _ _ _ => features
   end.
 
   Definition projectionComponentSubComponents (c:component) : list subcomponent :=
     match c with
-    | Component _ _ _ subComponents _ => subComponents
+    | Component _ _ _ subComponents _ _ => subComponents
+  end.
+
+  Definition projectionComponentProperties (c:component) : list property_value :=
+    match c with
+    | Component _ _ _ _ properties _ => properties
   end.
 
   (** - Subcomponent *)
@@ -200,6 +236,30 @@ Section AADL_Accessors.
     | Feature _ _ _ comp _ => comp
   end.
 
+  (** - Property type *)
+
+  Definition Base_Type (p : property_type) :=
+    match p with
+    | Property_Type  _ pbt => pbt
+    end.
+
+  Definition Applicable_Component_Category (p : property_type) :=
+    match p with
+    | Property_Type lcat _ => lcat
+    end.
+
+  (** - Property value *)
+
+  Definition Get_Property_Type (p : property_value) :=
+    match p with
+    | Property_Value pType _ => pType
+    end.
+
+  Definition Get_Base_Value (p : property_value) :=
+    match p with
+    | Property_Value _ pv => pv
+    end.
+
   (** *** Helper functions *)
 
   (** These helper functions extract informations from component subclauses. *)
@@ -219,7 +279,9 @@ Section AADL_Accessors.
   Definition Subcomponents_Components (l : list subcomponent) : list component :=
       map (fun x => projectionSubcomponentComponent x) l.
 
+(* begin hide *)
 End AADL_Accessors.
+(* end hide *)
 
 (** ** Notations
 
@@ -236,6 +298,8 @@ Notation "c '->subcomps' " := (projectionComponentSubComponents c)
 Notation "c '->comp' " := (projectionSubcomponentComponent c)
   (at level 80, right associativity).
 Notation "c '->features' " := (projectionComponentFeatures c)
+  (at level 80, right associativity).
+Notation "c '->properties' " := (projectionComponentProperties c)
   (at level 80, right associativity).
 
 (** * Iteration over AADL models
@@ -366,15 +430,15 @@ Section AADL_Iterators.
 
     Hypothesis component_case :
       forall (id : identifier) (cat : Component_Category) (lf : list feature)
-              (ls : list subcomponent) (lp : list property_value),
-      All Pf lf /\ All Ps ls -> P (Component id cat lf ls lp).
+              (ls : list subcomponent) (lp : list property_value) (lc : list connection),
+      All Pf lf /\ All Ps ls -> P (Component id cat lf ls lp lc).
 
     (** We can now define our induction principle. *)
 
     Fixpoint component_ind' (c : component) : P c :=
       match c return P c with
-      | Component id cat lf ls lp =>
-        component_case id cat lf ls lp
+      | Component id cat lf ls lp lc =>
+        component_case id cat lf ls lp lc
         (conj
          (* Iterate on all features of c *)
           ((fix feature_ind (lf : list feature) : All (Pf) (lf) :=
@@ -412,18 +476,15 @@ End AADL_Iterators.
 (** Definition of the Priority property *)
 
 Definition Priority : property_type :=
-  Property_Type (thread::nil) (aadlinteger_t::nil).
+  Property_Type [ thread ] aadlinteger_t.
 
 Definition A_Priority_Value :=
-Property_Value Priority (aadlinteger 42).
+Property_Value Priority  (aadlinteger 42).
 
-(* Definition of a component *)
+(** Definition of a component *)
 
 Definition A_Component : component :=
-  Component (Ident "id") (abstract) nil nil nil.
-
-Definition A_Component_2 : component :=
-  Component (Ident "") (abstract) nil nil nil.
+  Component (Ident "id") (abstract) nil nil nil nil.
 
 Check A_Component.
 Print A_Component.
@@ -431,16 +492,22 @@ Print A_Component.
 Eval compute in Subcomponents_Identifiers [ (Subcomponent (Ident "foo") A_Component) ].
 
 Definition A_Component_Impl :=
-  Component (Ident "id.impl") (abstract) nil (cons (Subcomponent (Ident "foo") A_Component) nil).
+  Component (Ident "id.impl") (abstract) nil
+  [ (Subcomponent (Ident "foo") A_Component) ].
 
 Definition A_Component_Impl_2 :=
-  Component (Ident "id.impl") (abstract) nil [ (Subcomponent (Ident "foo") A_Component) ; (Subcomponent (Ident "foo") A_Component)  ].
+  Component (Ident "id.impl") (abstract) nil
+  [ (Subcomponent (Ident "foo") A_Component) ;
+    (Subcomponent (Ident "foo") A_Component)  ].
 
 Definition A_Feature := Feature (Ident "coinc") inF eventPort nil_component.
 
 (** * Well-formedness rules
 
 In this section, we define several well-formedness rules for model elements.
+
+For each rule, we define a basic predicate that operate on a component only,
+without recursion. We demonstrate that this predicate is decidable.
 
 *)
 (* begin hide *)
@@ -471,12 +538,147 @@ Section WellFormedness_Rules.
     apply Well_Formed_Identifier_prop_dec.
   Qed.
 
+  (** _Note: we add this result to the core hint database. Hence, we can
+    use the "auto" tactics instead of "apply foo_dec"_.
+    *)
+  Hint Resolve Well_Formed_Component_Id_dec : core.
+
+  (** ** Properties type checking rules *)
+
+  (** In the previous sectionm we have defined property types and property values.
+      The following illustrate how to use them.
+
+      First, we define the %\textsc{Source\_Language}% property, then a value and finallly a subprogram that uses it.
+
+      %\begin{lstlisting}
+      subprogram hello_world
+      properties
+        Source_Language => C;
+      end hello_world;
+      \end{lstlisting}%
+
+This corresponds to the following Coq formalization:
+
+      *)
+
+  Definition Source_Language : property_type :=
+    Property_Type [ subprogram ] aadlstring_t.
+
+  Definition A_Source_Language :=
+    Property_Value Source_Language (aadlstring (Ident "C")).
+
+  Definition A_Subprogram :=
+    Component (Ident "Hello_World") (subprogram) nil nil [A_Source_Language] nil.
+
+  (** From this example, we can deduce the two rules to check:
+  - a property value is well-formed
+  - a property value is correctly applied. *)
+
+  (** A property value is well-formed iff the base type of its corresonding property type
+  matches the type of the value of the property. *)
+
+  Definition Well_Formed_Property_Value (p : property_value) : Prop :=
+  match Get_Base_Value p with
+  | aadlstring _ => Base_Type (Get_Property_Type p) = aadlstring_t
+  | aadlboolean _  => Base_Type (Get_Property_Type p) = aadlboolean_t
+  | aadlinteger _  => Base_Type (Get_Property_Type p) = aadlinteger_t
+  | aadlreal _  => Base_Type (Get_Property_Type p) = aadlreal_t
+  | aadllist _ => False (* TBD *)
+  | aadlrecord _ => False (* TBD *)
+  end.
+
+  (** We prove an intermediate lemma before demonstrating this property is decidable. *)
+
+  Lemma Property_Base_Type_eq_dec :
+    forall pbt1 pbt2 : Property_Base_Type , decidable(pbt1 = pbt2).
+  Proof.
+    unfold decidable.
+    repeat decide equality.
+  Qed.
+
+  Lemma Well_Formed_Property_Value_dec : forall p : property_value,
+    decidable (Well_Formed_Property_Value p).
+  Proof.
+    intros.
+    unfold Well_Formed_Property_Value.
+    destruct (Get_Property_Type p).
+
+    (* produce trivial goals for each possible value that are either an
+    egality or False, previous decidability results terminate those proofs.
+    *)
+    destruct (Get_Base_Value p);
+      unfold Base_Type; apply Property_Base_Type_eq_dec ||  apply dec_False.
+  Qed.
+
+  Definition Property_Correctly_Applies_To (c : component) (p : property_value) :=
+    In (c->category) (Applicable_Component_Category (Get_Property_Type p)).
+
+  (* begin hide *)
+
+  (* The following lemma asserts egality on Component_Category is
+    decidable.
+
+    _Note: the definition differs from Property_Base_Type_eq_dec as
+    In_decidable that we use below depends on decidable_eq in its hypotheses. *)
+
+  Lemma Component_Categoy_eq_dec  : decidable_eq Component_Category.
+  Proof.
+    unfold decidable_eq.
+    unfold decidable.
+    repeat decide equality.
+  Qed.
+  (* end hide *)
+
+  Lemma Property_Correctly_Applies_To_dec :
+    forall (p : property_value) (c : component),
+        decidable (Property_Correctly_Applies_To c p ).
+  Proof.
+    intros p c.
+    unfold Property_Correctly_Applies_To.
+    apply In_decidable.
+    apply Component_Categoy_eq_dec.
+  Qed.
+
+  (** In pure functional language fashion, we introduce intermediate functions that operates
+    first on lists of %\coqdocvar{property\_value}%, then on the component itself.
+    Such modularity eases the construction of proofs.
+    *)
+
+  Definition List_Property_Correctly_Applies_To (lp : list property_value) (c : component) :=
+    All (Property_Correctly_Applies_To c) lp.
+
+  Lemma List_Property_Correctly_Applies_To_dec :
+  forall (lp : list property_value) (c : component),
+  decidable (List_Property_Correctly_Applies_To lp c).
+  Proof.
+    unfold List_Property_Correctly_Applies_To.
+    intros.
+    apply All_dec.
+    intros.
+    apply Property_Correctly_Applies_To_dec.
+  Qed.
+
+  Definition Well_Formed_Properties (c : component) : Prop :=
+    List_Property_Correctly_Applies_To (c->properties) c .
+
+  Lemma Well_Formed_Properties_dec :
+    forall (c:component), decidable (Well_Formed_Properties c).
+  Proof.
+    unfold Well_Formed_Properties.
+    intros.
+    apply List_Property_Correctly_Applies_To_dec.
+  Qed.
+
+  Hint Resolve Well_Formed_Properties_dec : Core.
+
   (** ** Naming rule 4.5 (N1) *)
   (** 4.5 (N1) The defining identifier of a subcomponent declaration placed in a
   component implementation must be unique within the local namespace of the
   component implementation that contains the subcomponent.
 
   _Hint: In other words, the list of identifiers built from the list of subcomponents has no duplicates_.
+
+  First, we define a predicate on list of subcomponents, and demonstrate it is decidable.
 
   *)
 
@@ -500,6 +702,20 @@ Section WellFormedness_Rules.
     apply ident_dec. (* from utils *)
   Qed.
 
+  (** We can now "implement" the predicate for rule 4.5 (N1) *)
+
+  Definition Rule_4_5_N1 (c : component) : Prop :=
+    Subcomponents_Identifiers_Are_Well_Formed (c->subcomps).
+
+  Lemma Rule_4_5_N1_dec :
+    forall c : component, decidable (Rule_4_5_N1 c).
+  Proof.
+    unfold Rule_4_5_N1. intros.
+    apply Subcomponents_Identifiers_Are_Well_Formed_dec.
+  Qed.
+
+  Hint Resolve Rule_4_5_N1_dec : core.
+
   (** ** Consistency rule 4.5 (C1)*)
   (** 4.5 (C1)	The classifier of a subcomponent cannot recursively contain
     subcomponents with the same component classifier.
@@ -508,14 +724,31 @@ Section WellFormedness_Rules.
 
   (* TBD *)
 
-  (** ** Well-formedness of a component instance *)
+  (** ** Master theorem %\# 1%: well-formedness of a component instance *)
   (** A component type is well-formed iff.
     - the component identifier is well-formed and
-    - subcomponents identifiers are well-formed and
-    - subcomponents are well-formed
+    - its properties are correctly applied and
+    - subcomponents identifiers are well-formed  (Rule 4.5 N1) and
+    - TBD
     *)
 
-  (* TBD *)
+  Definition Well_Formed_Component (c : component) : Prop :=
+   Well_Formed_Component_Id (c) /\
+   Well_Formed_Properties (c) /\
+   Rule_4_5_N1 (c).
+
+  Lemma Well_Formed_Component_dec :
+    forall c : component, decidable (Well_Formed_Component c).
+  Proof.
+    (* Unfold all definitions *)
+    intros.
+    unfold Well_Formed_Component.
+
+    (* Apply decidability results *)
+    repeat apply dec_and; auto. apply Well_Formed_Properties_dec.
+
+    (* XXX auto should be enough, TBI*)
+  Qed.
 
 (* begin hide *)
 End WellFormedness_Rules.
