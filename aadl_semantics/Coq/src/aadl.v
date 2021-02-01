@@ -8,6 +8,7 @@ Set Warnings "-parsing".
 (** Coq Library *)
 
 Require Import Bool.
+Require Import Coq.Floats.PrimFloat.
 Require Import Coq.Init.Datatypes.
 Require Import Coq.Logic.Decidable.
 Require Import List.
@@ -104,7 +105,7 @@ Section AADL_Definitions.
     | aadlboolean : bool -> property_base_value
     | aadlinteger : nat -> property_base_value
     | aadlstring : identifier -> property_base_value
-    | aadlreal : nat (* XXX should be float *) -> property_base_value
+    | aadlreal : float -> property_base_value
     | aadllist : list property_base_value -> property_base_value
     | aadlrecord : list property_base_value -> property_base_value
     .
@@ -149,7 +150,7 @@ Section AADL_Definitions.
   | Component : identifier ->         (* its classifier *)
                 Component_Category -> (* its category *)
                 list feature ->       (* its features *)
-                list subcomponent ->  (* subcomponents XXX replace with list component *)
+                list subcomponent ->  (* subcomponents *)
                 list property_value -> (* properties *)
                 list connection ->
                 component
