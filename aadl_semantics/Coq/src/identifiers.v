@@ -1,6 +1,6 @@
-(** ** identifiers.v *)
+(** %\chapter{identifiers.v -- Identifier type} %*)
 
-(** This file defines the identifier types *)
+(** This file defines the identifier type, a basic type that stores strings. *)
 
 Require Export String.
 From Coq Require Import Bool.Bool.
@@ -8,15 +8,7 @@ From Coq Require Import Logic.Decidable.
 From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
 
-(** ** Identifier type
-
-The following is adapted from the chapter "Total and Partial Maps"
-from Software Foundations, Vol. 1,
-
-We use version 5.1 (july 2017),
-from https://6826.csail.mit.edu/2017/lf/Maps.html#lab233
-
- *)
+(** * Identifier type *)
 
 (** An identifier is a string element .. *)
 
@@ -26,6 +18,7 @@ Inductive identifier : Type :=
 Definition empty_identifier := Ident "".
 
 (** Equality on identifier is a decidable proposition *)
+
 Lemma ident_dec : forall id1 id2 : identifier, decidable(id1=id2).
 Proof.
   unfold decidable.
@@ -173,7 +166,7 @@ Proof.
   - destruct (beq_ident id empty_identifier) . auto. auto.
 Qed.
 
-(** ** Examples *)
+(** * Examples *)
 
 Example A_WFI : identifier :=
   Ident "o<".

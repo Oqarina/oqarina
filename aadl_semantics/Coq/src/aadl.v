@@ -1,4 +1,4 @@
-(** %\chapter{Mechanizing the AADL Instance model}% *)
+(** %\chapter{Mechanizing the AADL Instance model}\label{chap::aadl_mecha}% *)
 
 Set Warnings "-parsing".
 (** printing -> %\ensuremath{\rightarrow}% *)
@@ -604,7 +604,7 @@ This corresponds to the following Coq formalization:
     destruct (Get_Property_Type p).
 
     (* produce trivial goals for each possible value that are either an
-    egality or False, previous decidability results terminate those proofs.
+    equality or False, previous decidability results terminate those proofs.
     *)
     destruct (Get_Base_Value p);
       unfold Base_Type; apply Property_Base_Type_eq_dec ||  apply dec_False.
@@ -615,7 +615,7 @@ This corresponds to the following Coq formalization:
 
   (* begin hide *)
 
-  (* The following lemma asserts egality on Component_Category is
+  (* The following lemma asserts equality on Component_Category is
     decidable.
 
     _Note: the definition differs from Property_Base_Type_eq_dec as
@@ -644,12 +644,13 @@ This corresponds to the following Coq formalization:
     Such modularity eases the construction of proofs.
     *)
 
-  Definition List_Property_Correctly_Applies_To (lp : list property_value) (c : component) :=
-    All (Property_Correctly_Applies_To c) lp.
+  Definition List_Property_Correctly_Applies_To
+    (lp : list property_value) (c : component) :=
+      All (Property_Correctly_Applies_To c) lp.
 
   Lemma List_Property_Correctly_Applies_To_dec :
-  forall (lp : list property_value) (c : component),
-  decidable (List_Property_Correctly_Applies_To lp c).
+    forall (lp : list property_value) (c : component),
+      decidable (List_Property_Correctly_Applies_To lp c).
   Proof.
     unfold List_Property_Correctly_Applies_To.
     intros.
@@ -748,6 +749,10 @@ This corresponds to the following Coq formalization:
     (* Apply decidability results *)
     repeat apply dec_and; auto.
   Defined.
+
+  (** ** Master theorem %\# 2%: well-formedness of a component hierarchy *)
+
+(* TBD *)
 
 (* begin hide *)
 End WellFormedness_Rules.
