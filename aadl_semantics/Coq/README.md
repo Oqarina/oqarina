@@ -5,6 +5,7 @@ This folder is a very preliminary attempt at formalizing some aspects of AADL us
 ## Directory structure
 
 * `extra` : additional material for producing HTML from coq
+* `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources
 
 ## Required software
