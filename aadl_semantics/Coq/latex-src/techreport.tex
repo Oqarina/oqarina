@@ -79,7 +79,13 @@
 \usepackage[color]{coqdoc}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-
+%\usepackage{tikz}
+%\usetikzlibrary{arrows,chains,matrix,positioning,scopes}
+%\makeatletter
+%\tikzset{join/.code=\tikzset{after node path={%
+%\ifx\tikzchainprevious\pgfutil@empty\else(\tikzchainprevious)%
+%edge[every join]#1(\tikzchaincurrent)\fi}}}
+%\makeatother
 
 \sloppy
 
@@ -233,6 +239,7 @@
  \appendix % INSTRUCTS LATEX TO CHANGE FROM NUMBERED "CHAPTER" HEADINGS TO LETTERED "APPENDIX" HEADINGS
  {\fontfamily{cmr}\selectfont
 	% \include{content/appa}
+	\include{generated-content/identifiers}
 	\include{generated-content/utils}
 
 %% }

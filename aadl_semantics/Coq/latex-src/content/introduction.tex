@@ -1,3 +1,31 @@
 \chapter{Introduction}
 \label{ch:intro}
-This should be the first chapter of the technical document if it is chosen to be included. Be sure to uncomment the include statement in the main file in order to publish the contents within this file.
+
+\section{Outline}
+
+AADL motivations
+
+Need for mechanizing AADL
+
+- unambiguous definition of AADL core rulesas dedicable propositions.
+
+- definition of AADL semantics through the definition of AADL building blocks
+
+\section{Motivations}
+
+We restrict our scope to AADL instance models. XXX. The mechanization follows the following steps:
+
+In chapter \ref{chap::aadl_mecha}, we define the structure of an AADL instance model. From the definition of a component instance and its constituent, we build a collection of Coq helper functions that help manipulating instance models. Then, we define several legality rules and demonstrate they are all decidable.
+
+\textit{To be done:
+\begin{itemize}
+    \item implement more legality rules, ideally until we cover them all. Many are easy to translate thanks to Coq functional programming.
+    \item prove master theorem $\# 2$ on component hierarchy
+\end{itemize}
+}
+
+In chapter XXX, we extend the previous definitions and add models of the execution semantics for each component category. Then, we define the semanics of a composition of models.
+
+In chapter XXX,
+
+
