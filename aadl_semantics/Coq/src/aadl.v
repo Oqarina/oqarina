@@ -34,12 +34,18 @@ as a reference to model AADL concepts using inductive dependent types.
 
 *)
 
-(** * AADL concepts definition
+(** * AADL Instance Model -- Concepts Definition
 
   In this section, we provide the core definition of AADL model elements. The names and hierarchy
-  reflects an interpretation of the notional AADL instance model.
+  follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See
+  \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}%
+  provides a concise definition of the concepts that form an AADL Instance model.
 
-  %\textbf{\textit{XXX The names of the various entities could be revisited to be closer to AADL metamodel. Check with Lutz.}}%
+  In the following, we provide a formalization of the AADL Instance model
+  gramamr as a collection of Coq inductive types.
+
+  _Note: Coq is imposing in order type definitions, the order differs from the
+  original Xtext file_.
 
  *)
 
@@ -49,16 +55,26 @@ Section AADL_Definitions.
 
   (** ** Component Categories
 
-    The %\coqdocvar{Component\_Category}% type denotes AADL component categories
-    as a finite set of enumerators.
+    The %\coqdocvar{Component\_Category}% type denotes AADL component categories.
 
     _Note: we need to diverge from the AADL standard and add an explicit null component
     category for the rare situations where we need to define the absence of a component
     attach to a model element such as an event port_.
 
-    *)
+  *)
 
-  Inductive Component_Category : Type :=
+  (* begin hide *)
+  (* From OSATE
+
+  ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'|'data'
+    | 'device' | 'memory' | 'process' | 'processor' | 'subprogram'
+    | 'subprogram' 'group' | 'system' | 'thread' 'group'
+    | 'thread' | 'virtual' 'bus' | 'virtual' 'processor';
+
+  *)
+  (* end hide *)
+
+  Inductive ComponentCategory : Type :=
   (* Hybrid categories *)
   | system | abstract
   (* Software categories *)
@@ -71,23 +87,46 @@ Section AADL_Definitions.
 
   (** ** Feature Categories
 
-    The %\coqdocvar{Feature\_Category}% type denotes AADL feature categories.
+    The %\coqdocvar{FeatureCategory}% type denotes AADL feature categories.
 
   *)
 
-  Inductive Feature_Category : Type :=
-    eventPort | dataPort | eventDataPort | busAccess.
+  (* begin hide *)
+  (* From OSATE:
+
+  FeatureCategory returns instance::FeatureCategory:
+    'dataPort' | 'eventPort' | 'eventDataPort' | 'parameter' |
+    'busAccess' | 'dataAccess'| 'subprogramAccess' | 'subprogramGroupAccess' |
+    'featureGroup' | 'abstractFeature'
+  ;
+  *)
+  (* end hide *)
+
+  Inductive FeatureCategory : Type :=
+    dataPort | eventPort | eventDataPort | parameter |
+	  busAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
+	  featureGroup | abstractFeature.
 
   (** ** Feature Directions
 
     The %\coqdocvar{Feature\_Direction}% type denotes AADL feature direction.
 
-    _Note: we had to use the 'F' suffix to avoid conflict with Coq keyword %\coqdocvar{in}%_.
+    _Note: we had to use the 'F' suffix to avoid conflict with Coq concept %\coqdocvar{in}%_.
 
   *)
 
-  Inductive Feature_Direction : Type :=
-    inF | outF | inoutF | requiresF | providesF.
+  (* begin hide *)
+  (* From OSATE
+
+  DirectionType returns aadl2::DirectionType:
+    'in' | 'out' | 'in' 'out'
+  ;
+
+  *)
+  (* end hide *)
+
+  Inductive DirectionType : Type :=
+    inF | outF | inoutF .
 
   (** ** Property Types and values *)
 
@@ -109,7 +148,7 @@ Section AADL_Definitions.
     | aadlrecord : list property_base_value -> property_base_value.
 
   Inductive property_type : Type :=
-  | Property_Type : list Component_Category -> (* applies to categories *)
+  | Property_Type : list ComponentCategory -> (* applies to categories *)
                     Property_Base_Type -> (* the type of the property *)
                     property_type.
 
@@ -147,7 +186,7 @@ Section AADL_Definitions.
 
   Inductive component :=
   | Component : identifier ->         (* its classifier *)
-                Component_Category -> (* its category *)
+                ComponentCategory ->  (* its category *)
                 list feature ->       (* its features *)
                 list subcomponent ->  (* subcomponents *)
                 list property_value -> (* properties *)
@@ -155,8 +194,8 @@ Section AADL_Definitions.
                 component
     with feature :=
       | Feature : identifier -> (* its unique identifier *)
-                  Feature_Direction ->
-                  Feature_Category -> (* *)
+                  DirectionType ->
+                  FeatureCategory -> (* *)
                   component ->  (* corresponding component instance *)
                   list property_value -> (* properties *)
                   feature
@@ -197,7 +236,7 @@ Section AADL_Accessors.
     | Component id _ _ _ _ _ => id
   end.
 
-  Definition projectionComponentCategory (c:component) : Component_Category :=
+  Definition projectionComponentCategory (c:component) : ComponentCategory :=
     match c with
     | Component _ category _ _ _ _ => category
   end.
@@ -243,7 +282,7 @@ Section AADL_Accessors.
     | Property_Type  _ pbt => pbt
     end.
 
-  Definition Applicable_Component_Category (p : property_type) :=
+  Definition Applicable_ComponentCategory (p : property_type) :=
     match p with
     | Property_Type lcat _ => lcat
     end.
@@ -429,7 +468,7 @@ Section AADL_Iterators.
       *)
 
     Hypothesis component_case :
-      forall (id : identifier) (cat : Component_Category) (lf : list feature)
+      forall (id : identifier) (cat : ComponentCategory) (lf : list feature)
               (ls : list subcomponent) (lp : list property_value) (lc : list connection),
       All Pf lf /\ All Ps ls -> P (Component id cat lf ls lp lc).
 
@@ -611,17 +650,17 @@ This corresponds to the following Coq formalization:
   Qed.
 
   Definition Property_Correctly_Applies_To (c : component) (p : property_value) :=
-    In (c->category) (Applicable_Component_Category (Get_Property_Type p)).
+    In (c->category) (Applicable_ComponentCategory (Get_Property_Type p)).
 
   (* begin hide *)
 
-  (* The following lemma asserts equality on Component_Category is
+  (* The following lemma asserts equality on ComponentCategory is
     decidable.
 
     _Note: the definition differs from Property_Base_Type_eq_dec as
     In_decidable that we use below depends on decidable_eq in its hypotheses. *)
 
-  Lemma Component_Categoy_eq_dec  : decidable_eq Component_Category.
+  Lemma Component_Categoy_eq_dec  : decidable_eq ComponentCategory.
   Proof.
     unfold decidable_eq.
     unfold decidable.
