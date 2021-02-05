@@ -220,7 +220,7 @@ Section AADL_Definitions.
                 ComponentCategory ->   (* category *)
                 identifier ->          (* classifier *)
                 list feature ->        (* features *)
-                list subcomponent ->   (* subcomponents *)
+                list component ->      (* subcomponents *)
                 list property_value -> (* properties *)
                 list connection ->
                 component
@@ -231,11 +231,6 @@ Section AADL_Definitions.
                   component ->  (* corresponding component instance *)
                   list property_value -> (* properties *)
                   feature
-    with subcomponent :=
-    | Subcomponent : identifier -> (* its unique identifier *)
-                    component ->   (* corresponding component instance *)
-                    (* XXX do subcomponents have properties? no in ocarina *)
-                    subcomponent
     with connection :=
     | Connection : identifier ->
                    list identifier -> (* path to the source feature *)
@@ -278,7 +273,7 @@ Section AADL_Accessors.
     | Component _ _ _ features _ _ _ => features
   end.
 
-  Definition projectionComponentSubComponents (c:component) : list subcomponent :=
+  Definition projectionComponentSubComponents (c:component) : list component :=
     match c with
     | Component _ _ _ _ subComponents _ _ => subComponents
   end.
@@ -286,18 +281,6 @@ Section AADL_Accessors.
   Definition projectionComponentProperties (c:component) : list property_value :=
     match c with
     | Component _ _ _ _ _ properties _ => properties
-  end.
-
-  (** - Subcomponent *)
-
-  Definition projectionSubomponentId (c : subcomponent) : identifier :=
-    match c with
-    | Subcomponent id _ => id
-  end.
-
-  Definition projectionSubcomponentComponent (c : subcomponent) : component :=
-    match c with
-    | Subcomponent _ comp => comp
   end.
 
   (** - Feature *)
@@ -340,15 +323,10 @@ Section AADL_Accessors.
   Definition Features_Components (l : list feature) : list component :=
       map (fun x => projectionFeatureComponent x) l.
 
-  (** Subcomponent_Identifiers return the list of identifiers in l. *)
+  (** Components_Identifiers return the list of identifiers in l. *)
 
-  Definition Subcomponents_Identifiers (l : list subcomponent) : list identifier :=
-    map (fun x => projectionSubomponentId x) l.
-
-  (** Subcomponents_Components return the list of components in l.*)
-
-  Definition Subcomponents_Components (l : list subcomponent) : list component :=
-      map (fun x => projectionSubcomponentComponent x) l.
+  Definition Components_Identifiers (l : list component) : list identifier :=
+    map (fun x => projectionComponentId x) l.
 
 (* begin hide *)
 End AADL_Accessors.
@@ -365,8 +343,6 @@ Notation "c '->id' " := (projectionComponentId c)
 Notation "c '->category' " := (projectionComponentCategory c)
   (at level 80, right associativity).
 Notation "c '->subcomps' " := (projectionComponentSubComponents c)
-  (at level 80, right associativity).
-Notation "c '->comp' " := (projectionSubcomponentComponent c)
   (at level 80, right associativity).
 Notation "c '->features' " := (projectionComponentFeatures c)
   (at level 80, right associativity).
@@ -419,7 +395,7 @@ Section AADL_Iterators.
   Definition Component_prop (c : component) : Prop :=
     P c /\
     Component_Iterate_List_prop (Features_Components (c->features)) /\
-    Component_Iterate_List_prop (Subcomponents_Components (c->subcomps)).
+    Component_Iterate_List_prop (c->subcomps).
 
   Lemma Component_prop_dec :
     forall c : component, decidable(Component_prop c).
@@ -462,7 +438,7 @@ Section AADL_Iterators.
   expansion of the pattern from A. Chlipala book, adapted to the two nested types in a component.
 
   *)
-
+(*
   Section component_ind'.
 
   (** We define a predicate on component, and the application of the same predicate on
@@ -532,7 +508,7 @@ Section AADL_Iterators.
     end.
 *)
   End component_ind'.
-
+*)
 (* begin hide *)
 End AADL_Iterators.
 (* end hide *)
@@ -553,22 +529,21 @@ Property_Value Priority  (aadlinteger 42).
 
 (** Definition of a component *)
 
+(* %\textbf{XXX update those definitions, these are not well formed models}*)
+
 Definition A_Component : component :=
   Component (Ident "id") (abstract) (Ident "something") nil nil nil nil.
 
 Check A_Component.
 Print A_Component.
 
-Eval compute in Subcomponents_Identifiers [ (Subcomponent (Ident "foo") A_Component) ].
-
 Definition A_Component_Impl :=
   Component (Ident "id_impl") (abstract) (Ident "somthing.impl") nil
-  [ (Subcomponent (Ident "foo") A_Component) ].
+  [ A_Component ].
 
 Definition A_Component_Impl_2 :=
   Component (Ident "id_mpl") (abstract) (Ident "somthing.impl") nil
-  [ (Subcomponent (Ident "foo") A_Component) ;
-    (Subcomponent (Ident "foo2") A_Component)  ].
+  [ A_Component ; A_Component  ].
 
 Definition A_Feature := Feature (Ident "coinc") inF eventPort nil_component.
 
@@ -753,11 +728,11 @@ This corresponds to the following Coq formalization:
 
   *)
 
-  Definition Subcomponents_Identifiers_Are_Well_Formed (l : list subcomponent) : Prop :=
-    (NoDup (Subcomponents_Identifiers l)).
+  Definition Subcomponents_Identifiers_Are_Well_Formed (l : list component) : Prop :=
+    (NoDup (Components_Identifiers l)).
 
   Lemma Subcomponents_Identifiers_Are_Well_Formed_dec :
-    forall l : list subcomponent,
+    forall l : list component,
       decidable (Subcomponents_Identifiers_Are_Well_Formed l).
   Proof.
     intros.
