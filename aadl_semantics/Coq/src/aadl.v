@@ -134,6 +134,8 @@ Section AADL_Definitions.
       We replicated this separation so that we can typecheck that
       a property value matches its definition.
 
+      %\textbf{XXX change to match AADL Instance Textual notation}%
+
   *)
 
   Inductive Property_Base_Type : Type :=
@@ -184,11 +186,41 @@ Section AADL_Definitions.
 
   *)
 
+  (* begin hide *)
+  (* From OSATE
+
+    FeatureInstance returns instance::FeatureInstance:
+      direction=DirectionType category=FeatureCategory name=ID ('[' index=Long ']')? ':' feature=[aadl2::Feature|DeclarativeRef] ('{' (
+        featureInstance+=FeatureInstance |
+        ownedPropertyAssociation+=PropertyAssociationInstance
+      )* '}')?
+    ;
+
+    ComponentInstance returns instance::ComponentInstance:
+      category=ComponentCategory classifier=[aadl2::ComponentClassifier|ClassifierRef]? name=ID ('[' index+=Long ']')*
+      ('in' 'modes' '(' inMode+=[instance::ModeInstance] (',' inMode+=[instance::ModeInstance])*')')?
+      ':' subcomponent=[aadl2::Subcomponent|DeclarativeRef] ('{' (
+        featureInstance+=FeatureInstance |
+        componentInstance+=ComponentInstance |
+        connectionInstance+=ConnectionInstance |
+        flowSpecification+=FlowSpecificationInstance |
+        endToEndFlow+=EndToEndFlowInstance |
+        modeInstance+=ModeInstance |
+        modeTransitionInstance+=ModeTransitionInstance |
+        ownedPropertyAssociation+=PropertyAssociationInstance
+      )* '}')?
+    ;
+
+  *)
+  (* end hide *)
+
+
   Inductive component :=
-  | Component : identifier ->         (* its classifier *)
-                ComponentCategory ->  (* its category *)
-                list feature ->       (* its features *)
-                list subcomponent ->  (* subcomponents *)
+  | Component : identifier ->          (* classifier *)
+                ComponentCategory ->   (* category *)
+                identifier ->          (* classifier *)
+                list feature ->        (* features *)
+                list subcomponent ->   (* subcomponents *)
                 list property_value -> (* properties *)
                 list connection ->
                 component
@@ -212,7 +244,7 @@ Section AADL_Definitions.
     .
 
   (* Definition of an empty component *)
-  Definition nil_component := Component empty_identifier (null) nil nil nil nil.
+  Definition nil_component := Component empty_identifier (null) empty_identifier nil nil nil nil.
 
 (* begin hide *)
 End AADL_Definitions.
@@ -233,27 +265,27 @@ Section AADL_Accessors.
 
   Definition projectionComponentId (c : component) : identifier :=
     match c with
-    | Component id _ _ _ _ _ => id
+    | Component id _ _ _ _ _ _ => id
   end.
 
   Definition projectionComponentCategory (c:component) : ComponentCategory :=
     match c with
-    | Component _ category _ _ _ _ => category
+    | Component _ category _ _ _ _ _ => category
   end.
 
   Definition projectionComponentFeatures (c:component) : list feature :=
     match c with
-    | Component _ _ features _ _ _ => features
+    | Component _ _ _ features _ _ _ => features
   end.
 
   Definition projectionComponentSubComponents (c:component) : list subcomponent :=
     match c with
-    | Component _ _ _ subComponents _ _ => subComponents
+    | Component _ _ _ _ subComponents _ _ => subComponents
   end.
 
   Definition projectionComponentProperties (c:component) : list property_value :=
     match c with
-    | Component _ _ _ _ properties _ => properties
+    | Component _ _ _ _ _ properties _ => properties
   end.
 
   (** - Subcomponent *)
@@ -467,19 +499,19 @@ Section AADL_Iterators.
       that is built from their combination."}%
       *)
 
+      (*
     Hypothesis component_case :
       forall (id : identifier) (cat : ComponentCategory) (lf : list feature)
               (ls : list subcomponent) (lp : list property_value) (lc : list connection),
-      All Pf lf /\ All Ps ls -> P (Component id cat lf ls lp lc).
-
+      All Pf lf /\ All Ps ls -> P (Component id cat cla lf ls lp lc).
+*)
     (** We can now define our induction principle. *)
-
+(*
     Fixpoint component_ind' (c : component) : P c :=
       match c return P c with
       | Component id cat lf ls lp lc =>
         component_case id cat lf ls lp lc
         (conj
-         (* Iterate on all features of c *)
           ((fix feature_ind (lf : list feature) : All (Pf) (lf) :=
             match lf return All _ lf  with
             | nil => I
@@ -489,7 +521,6 @@ Section AADL_Iterators.
           end)
           lf)
 
-        (* Iterate on all subcomponents of c*)
           ((fix subComponent_ind (ls : list subcomponent) : All (Ps) (ls) :=
             match ls return All _ ls  with
             | nil => I
@@ -499,7 +530,7 @@ Section AADL_Iterators.
             end)
           ls))
     end.
-
+*)
   End component_ind'.
 
 (* begin hide *)
@@ -523,7 +554,7 @@ Property_Value Priority  (aadlinteger 42).
 (** Definition of a component *)
 
 Definition A_Component : component :=
-  Component (Ident "id") (abstract) nil nil nil nil.
+  Component (Ident "id") (abstract) (Ident "something") nil nil nil nil.
 
 Check A_Component.
 Print A_Component.
@@ -531,13 +562,13 @@ Print A_Component.
 Eval compute in Subcomponents_Identifiers [ (Subcomponent (Ident "foo") A_Component) ].
 
 Definition A_Component_Impl :=
-  Component (Ident "id.impl") (abstract) nil
+  Component (Ident "id_impl") (abstract) (Ident "somthing.impl") nil
   [ (Subcomponent (Ident "foo") A_Component) ].
 
 Definition A_Component_Impl_2 :=
-  Component (Ident "id.impl") (abstract) nil
+  Component (Ident "id_mpl") (abstract) (Ident "somthing.impl") nil
   [ (Subcomponent (Ident "foo") A_Component) ;
-    (Subcomponent (Ident "foo") A_Component)  ].
+    (Subcomponent (Ident "foo2") A_Component)  ].
 
 Definition A_Feature := Feature (Ident "coinc") inF eventPort nil_component.
 
@@ -607,7 +638,7 @@ This corresponds to the following Coq formalization:
     Property_Value Source_Language (aadlstring (Ident "C")).
 
   Definition A_Subprogram :=
-    Component (Ident "Hello_World") (subprogram) nil nil [A_Source_Language] nil.
+    Component (Ident "Hello_World") (subprogram) (Ident "spg") nil nil [A_Source_Language] nil.
 
   (** From this example, we can deduce the two rules to check:
   - a property value is well-formed
