@@ -28,7 +28,7 @@ Section All.
         | h :: t => P h /\ All t
       end.
 
-    (** We show that if %\coqdocvar{HP}% holdsm then %\coqdocvar{All}%
+    (** We show that if %\coqdocvar{HP}% holds, then %\coqdocvar{All}%
         is decidable as well.*)
 
     Hypothesis HP : forall t : T, decidable (P t).
