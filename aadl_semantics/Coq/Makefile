@@ -57,7 +57,7 @@ clean:              ## Clean generated files
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
 	( cd latex-src ; latexmk -pdf -C techreport.tex )
-	( cd latex-src ; rm techreport.bbl)
+	-( cd latex-src ; rm techreport.bbl)
 
 distclean:
 	-rm -rf html
