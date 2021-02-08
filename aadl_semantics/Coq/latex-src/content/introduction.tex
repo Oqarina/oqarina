@@ -11,9 +11,63 @@ Need for mechanizing AADL
 
 - definition of AADL semantics through the definition of AADL building blocks
 
+%=============================================================================
 \section{Motivations}
 
-We restrict our scope to AADL instance models. XXX. The mechanization follows the following steps:
+AADL is a semi-formal language: it is defined by a formal BNF that defines its gramamr and some static constraints. However, the well-formedness of an AADL model is defined by a set of legality and consistency rules that are informally defined in plain English. Furthermore, the semantics of an AADL model is also defined in an informal way using plain text.
+
+Multiple contributions have defined in formal semantics of AADL. Usually, the provide an interpretation of AADL for a specific model of computation and a subset of the AADL constructs.
+
+Coq, bodeveix, AADL+BA, direct interpretation of synchronous semantics of AADL
+LNT, hugues, AADL, Ravenscar profile only
+BIP, xxx, ditto
+....
+
+\textbf{paper on AADL formalized using Isabelle}
+
+In this technical report, we aim to complement these approaches and provide
+
+\begin{enumerate}
+    \item a mechanization of AADL grammar and associated legality and consistency rules;
+    \item a mechanization of AADL behavioral semantics. This mechanization is modular to allow for further refinement for specific classes of system.
+\end{enumerate}
+
+%=============================================================================
+
+\section{About AADL}
+
+AADL is a collection of languages that are interconnected:
+
+\begin{enumerate}
+    \item AADL declarative model -- "AADL core" -- defines the basic concepts of AADL. This language has been defined to model systems both "in the small" with precise definitions of component interfaces, their configuration, and their composition; and "in the large" with concepts such as arrays of components, prototypes (aking to template-based modeling) or refinements.
+    \item AADL Behavioral annex -- AADL-BA -- provides a language for describing the behavior of components using automata. This automata can be applied to threads or subprograms to capture their high-level behavior.
+    \item AADL Error Modeling Annex v2 -- AADL-EMV2 -- extends AADL with error modeling concepts. EMV2 defines concepts XXXX
+\end{enumerate}
+
+Other annex languages exist, such as BLESS, Agreem etc. We restricted our effort to actual SAE standards.
+
+\subsection{AADL Compilation Process}
+
+XXX add a schema
+
+An AADL model is made of several AADL packages. Each package has several AADL component types and implementations. In addition, these component declarations may be enriches with annex-specific elements. The declarative model provides a blueprint of the system as a collection of components, it is enriches with advanced concepts to support reusability of model elements (notion of package), notions of refinement through extends/refined, and configurability.
+
+Each model identifies a "root system", that is the top-most AADL model element whose subcomponents form the transitive closure of the system. AADL modelers would then perform an instanciation of this root system. This process is equivalent to a compiulation phase: the model is turned into and Abstract Syntax Tree, name resolutions, model expansion and simplification occurs. The resulting model -- the instance model -- is then passed to analysis tools.
+
+Hence, the declarative and instance models are two representations of the same system. The instance model is a simpler version, expurged from complex mechanisms.
+
+\subsection{Contributions}
+
+In an effort to modularize our mechanization effort, we opted to restrict our scope to the AADL Instance models. We consider that the process that builds an instance model out of a declarative model is deemed correct through other means.
+
+We make the following contributions
+\begin{itemize}
+    \item A mechanization of AADL Instance model as a data model, along with a validation scheme defined as a collection of decidable propositions;
+    \item A mechanization of the behavior of AADL model elements, along with XXX
+\end{itemize}
+
+%=============================================================================
+\section{Outline}
 
 In chapter \ref{chap::aadl_mecha}, we define the structure of an AADL instance model. From the definition of a component instance and its constituent, we build a collection of Coq helper functions that help manipulating instance models. Then, we define several legality rules and demonstrate they are all decidable.
 

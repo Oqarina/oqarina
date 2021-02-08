@@ -2,3 +2,4 @@
 src/utils.v
 src/identifiers.v
 src/aadl.v
+src/aadl_wf.v
