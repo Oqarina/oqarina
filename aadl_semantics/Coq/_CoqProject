@@ -1,5 +1,7 @@
 -R src "CoqMBE"
 src/core/identifiers.v
+src/core/time.v
+
 src/utils.v
 src/aadl.v
 src/aadl_wf.v
