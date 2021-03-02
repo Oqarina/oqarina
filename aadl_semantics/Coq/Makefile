@@ -53,6 +53,7 @@ world:              ## All of the above
 ##
 
 clean:              ## Clean generated files
+## Xxx force clean all .vo
 	-make -f coq_makefile clean
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty

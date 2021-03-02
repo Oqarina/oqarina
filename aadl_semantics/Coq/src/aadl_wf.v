@@ -242,7 +242,7 @@ Section WellFormedness_Rules.
 
   Hint Resolve Rule_4_5_N1_dec : core.
 
-  (** ** Consistency rule 4.5 (C1)*)
+  (** ** Consistency rule 4.5 (C1) *)
   (** 4.5 (C1)	The classifier of a subcomponent cannot recursively contain
     subcomponents with the same component classifier. In other words, there cannot
     be a cyclic containment dependency between components.
@@ -298,7 +298,7 @@ Section WellFormedness_Rules.
     Unfold_Apply Well_Formed_Component c.
 
   Lemma Well_Formed_Component_Hierarchy_dec:
-  forall c : component, decidable (Well_Formed_Component_Hierarchy c).
+    forall c : component, decidable (Well_Formed_Component_Hierarchy c).
   Proof.
     intros.
     unfold Well_Formed_Component_Hierarchy.

@@ -3,7 +3,6 @@
 Set Warnings "-parsing".
 (** printing -> %\ensuremath{\rightarrow}% *)
 
-
 (* begin hide *)
 (** Coq Library *)
 
@@ -24,13 +23,9 @@ Require Import utils.
 
 (**
 
-In this chapter, we define some core elements of the AADL component instance model in Coq.
-Our objective is to define the core concepts of AADL, helper functions to build models
-and to iterate over a hierarchy of AADL conponents.
+In this chapter, we define some core elements of the AADL component instance model in Coq. Our objective is to define the core concepts of AADL, helper functions to build models and to iterate over a hierarchy of AADL conponents.
 
-This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DBLP:books/daglib/0030032}%
-and of the Coq specification language. We used the book by A. Chlipala %\cite{DBLP:books/daglib/0035083}%
-as a reference to model AADL concepts using inductive dependent types.
+This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DBLP:books/daglib/0030032}% and of the Coq specification language. We used the book by A. Chlipala %\cite{DBLP:books/daglib/0035083}% as a reference to model AADL concepts using inductive dependent types.
 
 *)
 
@@ -57,9 +52,7 @@ Section AADL_Definitions.
 
     The %\coqdocvar{Component\_Category}% type denotes AADL component categories.
 
-    _Note: we need to diverge from the AADL standard and add an explicit null component
-    category for the rare situations where we need to define the absence of a component
-    attach to a model element such as an event port_.
+    _Note: we need to diverge from the AADL standard and add an explicit null component category for the rare situations where we need to define the absence of a component attach to a model element such as an event port_.
 
   *)
 
@@ -147,7 +140,9 @@ Section AADL_Definitions.
     | aadlstring : identifier -> property_base_value
     | aadlreal : float -> property_base_value
     | aadllist : list property_base_value -> property_base_value
-    | aadlrecord : list property_base_value -> property_base_value.
+    | aadlrecord : list property_base_value -> property_base_value
+    (* | aadlreference -> component -> property_base_value ...*)
+    .
 
   Inductive property_type : Type :=
   | Property_Type : list ComponentCategory -> (* applies to categories *)
@@ -161,8 +156,7 @@ Section AADL_Definitions.
 
   (** ** Definition of AADL Components
 
-  An AADL component is made of an identifier, a category, a list of features
-  a list of subcomponents %\footnote{Properties will be added in a subsequent iteration. Flows and modes are subject to further discussions.}%.
+  An AADL component is made of an identifier, a category, a list of features a list of subcomponents %\footnote{Properties will be added in a subsequent iteration. Flows and modes are subject to further discussions.}%.
 
   Per definition of the AADL component model, features and subcomponents also list component instance as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
 
@@ -257,7 +251,7 @@ Definition Priority : property_type :=
   Property_Type [ thread ] aadlinteger_t.
 
 Definition A_Priority_Value :=
-Property_Value Priority  (aadlinteger 42).
+  Property_Value Priority (aadlinteger 42).
 
 (** Definition of a component *)
 
@@ -346,7 +340,7 @@ Section AADL_Accessors.
   (** %\coqdocdefinition{Features\_Components}% return the list of components in l.*)
 
   Definition Features_Components (l : list feature) : list component :=
-      map (fun x => projectionFeatureComponent x) l.
+    map (fun x => projectionFeatureComponent x) l.
 
   (** %\coqdocdefinition{Components\_Identifiers}% return the list of identifiers in l. *)
 
@@ -385,8 +379,7 @@ Notation "c '->properties' " := (projectionComponentProperties c)
 
 (** * Iteration over AADL models
 
-Many properties or transformation rely on a traversal of the AADL model. In this section,
-we propose some reusable mechanisms for iterating over AADL models.
+  Many properties or transformation rely on a traversal of the AADL model. In this section, we propose some reusable mechanisms for iterating over AADL models.
 
 *)
 
@@ -458,8 +451,7 @@ Section AADL_Iterators.
       end.
 >>
 
-  Such a definition is rejected: it is not strictly decreasing on the main argument
-  lc because of the recursive call  %\texttt{Features\_Components (c->features)}%.
+  Such a definition is rejected: it is not strictly decreasing on the main argument lc because of the recursive call  %\texttt{Features\_Components (c->features)}%.
 *)
 
 (** **** Iterating via unfolding:
