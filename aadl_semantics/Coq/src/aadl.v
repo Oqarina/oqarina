@@ -160,7 +160,7 @@ Section AADL_Definitions.
 
   Per definition of the AADL component model, features and subcomponents also list component instance as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
 
-  _Note: actually, this definition allows also for the definition of component type, implementation and instance._
+  _Note: actually, this definition allows also for the definition of component type, implementation and instance_.
 
 <<
   <component_category> <classifier>
