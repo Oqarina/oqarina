@@ -90,7 +90,8 @@ Section WellFormedness_Rules.
     Property_Value Source_Language (aadlstring (Ident "C")).
 
   Definition A_Subprogram :=
-    Component (Ident "Hello_World") (subprogram) (Ident "spg") nil nil [A_Source_Language] nil.
+    Component (Ident "Hello_World") (subprogram) (Ident "spg") nil nil
+    [A_Source_Language] nil.
 
   (** From this example, we can deduce the two rules to check:
   - a property value is well-formed
@@ -256,13 +257,17 @@ Section WellFormedness_Rules.
       These two master theorem combines them.
     *)
 
-  (** ** Master theorem %\# 1%: well-formedness of a component instance *)
+  (** ** Master theorem %\# 1%: well-formedness of a single component instance *)
 
-  (** A component instance is well-formed iff.
+  (** A component instance is well-formed iff. all the previous rules are validated:
     - the component identifier is well-formed and
     - its properties are correctly applied and
     - subcomponents identifiers are well-formed  (Rule 4.5 N1) and
     - TBD
+
+    _Note: this theorem does not traverse the component hierarchy, it is local to
+    the component instance passed as parameter_.
+
     *)
 
   Definition Well_Formed_Component (c : component) : Prop :=
@@ -279,9 +284,15 @@ Section WellFormedness_Rules.
 
     (* Apply decidability results *)
     repeat apply dec_and; auto.
+
+    (* Note: auto requires all theorems to be part of the core hints
+    database, see above "Hint Resolve Rule_4_5_N1_dec : core."  *)
   Defined.
 
   (** ** Master theorem %\# 2%: well-formedness of a component hierarchy *)
+
+  (** This second theorem is the main theorem to assess a component is well-formed.
+    It applies the previous rules on the whole instance hierarchy. *)
 
   Definition Well_Formed_Component_Hierarchy (c : component ) : Prop :=
     Unfold_Apply Well_Formed_Component c.

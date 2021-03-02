@@ -134,7 +134,7 @@ Section AADL_Definitions.
       We replicated this separation so that we can typecheck that
       a property value matches its definition.
 
-      %\textbf{XXX change to match AADL Instance Textual notation}%
+      %\textbf{XXX change to match AADL Instance Textual notation??}%
 
   *)
 
@@ -159,16 +159,14 @@ Section AADL_Definitions.
                     property_base_value  -> (* actual value *)
                     property_value.
 
-  (** ** Component Instance
+  (** ** Definition of AADL Components
 
-  An AADL component instance is made of an identifier, a category, a list of features
-  a list of subcomponents %\footnote{Properties will be added in a subsequent iteration.
-  Flows and modes are subject to further discussions.}%.
+  An AADL component is made of an identifier, a category, a list of features
+  a list of subcomponents %\footnote{Properties will be added in a subsequent iteration. Flows and modes are subject to further discussions.}%.
 
-  Per definition of the AADL component model, features and subcomponents also list component instance as their parts.
-  From a Coq perspective, we must define all three types as mutually dependent types at once.
-  The following defines actually those 4 types: component, subcomponent, feature and
-  connection.
+  Per definition of the AADL component model, features and subcomponents also list component instance as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
+
+  _Note: actually, this definition allows also for the definition of component type, implementation and instance._
 
 <<
   <component_category> <classifier>
@@ -244,6 +242,33 @@ Section AADL_Definitions.
 (* begin hide *)
 End AADL_Definitions.
 (* end hide *)
+
+(** * Examples
+
+  From the previous definitions, one can build a couple of examples showing how to build
+  an AADL instance model. Note that one benefit of Coq is that we can build partial
+  instance models as intermediate variables.
+
+*)
+
+(** Definition of the Priority property *)
+
+Definition Priority : property_type :=
+  Property_Type [ thread ] aadlinteger_t.
+
+Definition A_Priority_Value :=
+Property_Value Priority  (aadlinteger 42).
+
+(** Definition of a component *)
+
+Definition A_Component := Component (Ident "a_component") (abstract)
+  (Ident "foo_classifier") nil nil nil nil.
+
+Definition A_Component_Impl :=
+  Component (Ident "another_component_impl") (abstract) (Ident "bar_classifier.impl") nil
+  [ A_Component ] nil nil.
+
+Definition A_Feature := Feature (Ident "a_feature") inF eventPort nil_component.
 
 (** * Accessor functions
 
@@ -328,8 +353,7 @@ Section AADL_Accessors.
   Definition Components_Identifiers (l : list component) : list identifier :=
     map (fun x => projectionComponentId x) l.
 
-  (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c
-      (e.g. as subcomponents) %\textbf{XXX features}%
+  (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c (e.g. as subcomponents) %\textbf{XXX features ??}%
   *)
 
   Fixpoint Unfold (c : component) : list component :=
@@ -382,10 +406,7 @@ Section AADL_Iterators.
   Hypothesis HP : forall c : component, decidable (P c).
   (* end show *)
 
-  (** Component_Iterate_List_prop applies predicate P on all elements of l, a list of
-  component%\footnote{We are leveraging Coq section mechanism, therefore \coqdocvar{P}
-  and \coqdocvar{HP} are part of the definition context, we do not need to make them visible
-  in the definitions.}%. We then demonstrate that it yields a decidable proposition if P is decidable. *)
+  (** Component_Iterate_List_prop applies predicate P on all elements of l, a list of component%\footnote{We are leveraging Coq section mechanism, therefore \coqdocvar{P} and \coqdocvar{HP} are part of the definition context, we do not need to make them visible in the definitions.}%. We then demonstrate that it yields a decidable proposition if P is decidable. *)
 
   Definition Component_Iterate_List_prop (l : list component) : Prop :=
     All P l.
@@ -423,9 +444,7 @@ Section AADL_Iterators.
 
   (**
 
-  Actually, we may want a more generic iterator that would iterate on the whole hierarchy.
-  A component is nothing but a representation of a tree of AADL components. We could
-  imagine implementing a traversal algorithm based on a visitor pattern like the following.
+  Actually, we may want a more generic iterator that would iterate on the whole hierarchy. A component is nothing but a representation of a tree of AADL components. We could imagine implementing a traversal algorithm based on a visitor pattern like the following.
 
   However, Coq has a strict definition of recursive functions, and the following is rejected
 
@@ -435,18 +454,20 @@ Section AADL_Iterators.
       | [ ] => True
       | c :: l' => P c /\
       Component_prop (Features_Components (c->features)) /\
-      Component_prop (Subcomponents_Components (c->subcomps)) /\
       Component_prop (l')
       end.
 >>
 
-  Such a definition is rejected: it is not strictly decreasing on the main argument lc because
-  of the recursive call  %\texttt{Features\_Components (c->features)}% and %\texttt{Subcomponents\_Components (c->subcomps)}%
+  Such a definition is rejected: it is not strictly decreasing on the main argument
+  lc because of the recursive call  %\texttt{Features\_Components (c->features)}%.
 *)
 
-(** One possible work-around is to apply P on the list of components built
+(** **** Iterating via unfolding:
+
+  one possible work-around is to apply P on the list of components built
   recursively from component c using %\coqdocdefinition{Unfold}%.
-  The decidability of the resulting function is trivial. *)
+  The decidability of the resulting function is a direct result of the decidablity of
+  %\coqdocdefinition{All P}% for %\coqdocdefinition{P}% decidable. *)
 
 Definition Unfold_Apply (c : component) : Prop :=
   All P (Unfold c).
@@ -460,40 +481,15 @@ Definition Unfold_Apply (c : component) : Prop :=
    apply HP.
  Qed.
 
+ (* begin hide *)
+ (** **** Iterating via recursion over the component hierarchy. *)
+
+(* TBD, prototype is easy to build, the issue is on proving its decidability.
+  Crafting and using the correct induction principle seems problematic. *)
+
+ (* end hide *)
+
+
 (* begin hide *)
 End AADL_Iterators.
 (* end hide *)
-
-(** * Examples
-
-  Some naive definitions to use the concept we have defined so far.
-
-*)
-
-(** Definition of the Priority property *)
-
-Definition Priority : property_type :=
-  Property_Type [ thread ] aadlinteger_t.
-
-Definition A_Priority_Value :=
-Property_Value Priority  (aadlinteger 42).
-
-(** Definition of a component *)
-
-(* %\textbf{XXX update those definitions, these are not well formed models}*)
-
-Definition A_Component : component :=
-  Component (Ident "id") (abstract) (Ident "something") nil nil nil nil.
-
-Check A_Component.
-Print A_Component.
-
-Definition A_Component_Impl :=
-  Component (Ident "id_impl") (abstract) (Ident "somthing.impl") nil
-  [ A_Component ].
-
-Definition A_Component_Impl_2 :=
-  Component (Ident "id_mpl") (abstract) (Ident "somthing.impl") nil
-  [ A_Component ; A_Component  ].
-
-Definition A_Feature := Feature (Ident "coinc") inF eventPort nil_component.
