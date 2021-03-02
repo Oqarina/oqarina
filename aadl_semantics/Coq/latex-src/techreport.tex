@@ -79,8 +79,10 @@
 \usepackage[color]{coqdoc}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-%\usepackage{tikz}
-%\usetikzlibrary{arrows,chains,matrix,positioning,scopes}
+\usepackage{tikz}
+\usetikzlibrary{arrows,arrows.meta,automata,shapes.geometric,chains,matrix,positioning,scopes}
+
+
 %\makeatletter
 %\tikzset{join/.code=\tikzset{after node path={%
 %\ifx\tikzchainprevious\pgfutil@empty\else(\tikzchainprevious)%
@@ -222,6 +224,7 @@
 \include{content/introduction}
 \include{generated-content/aadl}
 \include{generated-content/aadl_wf}
+\include{generated-content/aadl_system}
 \include{content/conclusion}
 
 }

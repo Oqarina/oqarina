@@ -44,7 +44,7 @@ AADL is a collection of languages that are interconnected:
     \item AADL Error Modeling Annex v2 -- AADL-EMV2 -- extends AADL with error modeling concepts. EMV2 defines concepts XXXX
 \end{enumerate}
 
-Other annex languages exist, such as BLESS, Agreem etc. We restricted our effort to actual SAE standards.
+Other annex languages exist, such as BLESS, Agree, etc. We restricted our effort to actual SAE standards.
 
 \subsection{AADL Compilation Process}
 
@@ -69,17 +69,20 @@ We make the following contributions
 %=============================================================================
 \section{Outline}
 
-In chapter \ref{chap::aadl_mecha}, we define the structure of an AADL instance model. From the definition of a component instance and its constituent, we build a collection of Coq helper functions that help manipulating instance models. Then, we define several legality rules and demonstrate they are all decidable.
+In chapter \ref{chap::aadl_mecha}, we define the structure of an AADL instance model. From the definition of a component instance and its constituent, we build a collection of Coq helper functions that help manipulating instance models.
 
-\textit{To be done:
+In chapter \ref{chap::aadl_wf}, we specify several legality rules and demonstrate they are all decidable. This allod us to define the concept of \textit{well-formed} AADL instance model as a model that conforms to these legality rules.
+
+\textit{XXX TBD:
 \begin{itemize}
     \item implement more legality rules, ideally until we cover them all. Many are easy to translate thanks to Coq functional programming.
-    \item prove master theorem $\# 2$ on component hierarchy
 \end{itemize}
 }
 
 In chapter XXX, we extend the previous definitions and add models of the execution semantics for each component category. Then, we define the semanics of a composition of models.
 
-In chapter XXX,
+Combined, chapters \ref{chap::aadl_mecha}, \ref{chap::aadl_wf}, and XXX form the full mechanization of an AADL Instance model.
+
+Subsequent chapters will refine and specialize this semantics for specific model of conputations.
 
 
