@@ -78,6 +78,9 @@ An identifier is well-formed iff it is not the empty identifier.
 Rationale: an identifier being used to identify a model element, it
 must be trivially non empty.
 
+XXX Actually, we could check for more things like this is ASCII, no whitespace, etc.
+See https://github.com/clarus/coq-list-string for an API to make this easy.
+
 *)
 Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
   (i <> empty_identifier).

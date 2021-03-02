@@ -45,3 +45,5 @@ Section All.
 (* begin hide*)
 End All.
 (* end hide *)
+
+Definition eq_dec T := forall x y:T, {x=y}+{x<>y}. (** XXXX *)
