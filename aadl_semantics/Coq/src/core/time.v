@@ -11,7 +11,7 @@ Require Import Coq.Arith.PeanoNat.
 
 (** * AbstractTime
 
-AbstractTime is an axiomatization of the notion of time, with elements 0 and 1, the addition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or lg) and equality. We assume %$\le$% is a total order relation. In addition, we assume only positive values for Time.
+AbstractTime is an axiomatization of the notion of time, with elements 0 and 1, the addition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In addition, we assume only positive values for Time.
 
 *)
 Module Type AbstractTime.
