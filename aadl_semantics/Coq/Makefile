@@ -62,3 +62,4 @@ clean:              ## Clean generated files
 
 distclean:
 	-rm -rf html
+	-rm *.ml *.mli
