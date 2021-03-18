@@ -353,7 +353,7 @@ Section AADL_Component_Decidability.
 (* begin hide *)
 End AADL_Component_Decidability.
 
-Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
+Global Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
   identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_dec : core.
 (* end hide *)
 
