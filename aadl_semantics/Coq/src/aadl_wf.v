@@ -1,4 +1,4 @@
-(** %\chapter{Well-formedness rules of an AADL Instance model}\label{chap::aadl_wf}% *)
+(** %\chapter{Well-formedness rules of an AADL model}\label{chap::aadl_wf}% *)
 
 (* begin hide *)
 
@@ -144,7 +144,7 @@ Section WellFormedness_Rules.
     _Note: the definition differs from Property_Base_Type_eq_dec as
     In_decidable that we use below depends on decidable_eq in its hypotheses. *)
 
-  Lemma Component_Categoy_eq_dec  : decidable_eq ComponentCategory.
+  Lemma Component_Categoy_eq_dec : decidable_eq ComponentCategory.
   Proof.
     unfold decidable_eq.
     unfold decidable.
@@ -236,7 +236,8 @@ Section WellFormedness_Rules.
   Lemma Rule_4_5_N1_dec :
     forall c : component, decidable (Rule_4_5_N1 c).
   Proof.
-    unfold Rule_4_5_N1. intros.
+    unfold Rule_4_5_N1.
+    intros.
     apply Subcomponents_Identifiers_Are_Well_Formed_dec.
   Qed.
 
