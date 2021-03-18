@@ -82,12 +82,23 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows,arrows.meta,automata,shapes.geometric,chains,matrix,positioning,scopes}
 
+\newtheorem{definition}{Definition}[chapter]
 
 %\makeatletter
 %\tikzset{join/.code=\tikzset{after node path={%
 %\ifx\tikzchainprevious\pgfutil@empty\else(\tikzchainprevious)%
 %edge[every join]#1(\tikzchaincurrent)\fi}}}
 %\makeatother
+
+% A counter to display a paragraph number in the margin
+\newcounter{parnum}
+\newlength{\parnumwidth}
+\setlength{\parnumwidth}{3em}
+\newcommand{\N}{%
+  \noindent\refstepcounter{parnum}%
+  \makebox[0pt][r]{\makebox[\parnumwidth][l]{{(\arabic{parnum})}}}%
+  \hspace*{\parindent}\ignorespaces}
+\setlength{\parindent}{2em}
 
 \sloppy
 
@@ -224,7 +235,9 @@
 \include{content/introduction}
 \include{generated-content/aadl}
 \include{generated-content/aadl_wf}
-\include{generated-content/aadl_system}
+%\include{generated-content/aadl_decl}
+\include{content/comp_categories}
+%\include{generated-content/aadl_system}
 \include{content/conclusion}
 
 }
@@ -245,6 +258,8 @@
 	% \include{content/appa}
 	\include{generated-content/identifiers}
 	\include{generated-content/time}
+	%\include{generated-content/lts}
+	%\include{generated-content/pautomata}
 	\include{generated-content/utils}
 
 %% }
@@ -263,9 +278,9 @@
 
 
 % Print out the index!
-%% \clearpage
-%% \addcontentsline{toc}{chapter}{Index}
-%% \printindex
+%\clearpage
+%\addcontentsline{toc}{chapter}{Index}
+%\printindex
 
 % \newpage\null\newpage % make blank page
 
