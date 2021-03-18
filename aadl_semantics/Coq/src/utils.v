@@ -3,9 +3,11 @@
 (* begin hide *)
 From Coq Require Import List.
 Require Import Coq.Logic.Decidable.
+Require Import cpdttactics.
 
 Set Implicit Arguments.
 (* end hide *)
+
 
 (** Additional definition of utility functions. *)
 
@@ -44,4 +46,48 @@ Section All.
 
 (* begin hide*)
 End All.
+(* end hide *)
+
+(** * Some lemma on decidability using [sumbool]*)
+
+(* begin hide*)
+Section Decidability.
+(* end hide *)
+
+  (** The following defines a shortcut to use sumbool-based definition for decidability. See %\cite{appel2018software}%, chapter "Programming with Decision Procedures" for details. *)
+
+  Definition eq_dec T := forall x y:T, {x=y}+{x<>y}.
+
+  Variable A : Prop.
+  Hypothesis HA : { A } + {~ A}.
+
+  Variable B : Prop.
+  Hypothesis HB : { B } + {~ B}.
+
+  Lemma dec_sumbool_and:  { A /\ B  } + { ~ (A /\ B)}.
+  Proof.
+      unfold eq_dec.
+      crush. (* From CPDTTactics, powerful *)
+  Qed.
+
+  Lemma eq_dec_decidable (T: Type) (x y:T) : {x=y}+{x<>y} -> x = y \/ x <> y.
+  Proof.
+    intros.
+    destruct H.
+    - left. apply e.
+    - right. apply n.
+  Qed.
+
+(*
+  Lemma decidable_eq_dec T : forall x y:T,  x = y \/ x <> y -> {x=y}+{x<>y}.
+  Proof.
+    intros.
+    -
+    destruct H.
+    - left. apply H.
+*)
+
+
+(* begin hide *)
+End Decidability.
 (* end hide *)
