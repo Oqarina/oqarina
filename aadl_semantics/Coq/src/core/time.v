@@ -1,6 +1,5 @@
 (** %\chapter{time.v -- Time type} %*)
 
-
 (* begin hide *)
 (** Coq Library *)
 Require Import Coq.Logic.Eqdep_dec.
@@ -11,9 +10,10 @@ Require Import Coq.Arith.PeanoNat.
 
 (** * AbstractTime
 
-AbstractTime is an axiomatization of the notion of time, with elements 0 and 1, the addition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In addition, we assume only positive values for Time.
+    [AbstractTime] is an axiomatization of the notion of time, with elements [0] and [1], the addition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In addition, we assume only positive values for time.
 
 *)
+
 Module Type AbstractTime.
 
     Parameter Time : Set.
@@ -46,7 +46,7 @@ End AbstractTime.
 
 (** * NaturalTime
 
-    NaturalTime is an implementation of the AbstractTime module. The proofs of all axioms is a consequence of Peano axiomatization provided by Coq.
+    [NaturalTime] is an implementation of the [AbstractTime] module. The proofs of all axioms is a consequence of the Peano'a axiomatization of natural numbers provided by Coq.
 
 *)
 
@@ -80,7 +80,7 @@ Module NaturalTime <: AbstractTime.
 
     Lemma tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
     Proof.
-        unfold "@<=".  apply Nat.le_trans.
+        unfold "@<=". apply Nat.le_trans.
    Qed.
 
     Lemma tle_connexity: forall a b, { a @<= b } + { b @<= a }.
