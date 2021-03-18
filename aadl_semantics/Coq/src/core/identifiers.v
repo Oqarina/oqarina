@@ -1,6 +1,6 @@
 (** %\chapter{identifiers.v -- Identifier type} %*)
 
-(** This file defines the identifier type, a basic type that stores strings. *)
+(** This file defines the identifier type, a basic type that stores a string. *)
 
 Require Export String.
 From Coq Require Import Bool.Bool.
@@ -8,9 +8,10 @@ From Coq Require Import Logic.Decidable.
 From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
 
+Require Import utils.
 (** * Identifier type *)
 
-(** An identifier is a string element .. *)
+(** An identifier is a string element *)
 
 Inductive identifier : Type :=
 | Ident : string -> identifier.
@@ -18,48 +19,14 @@ Inductive identifier : Type :=
 Definition empty_identifier := Ident "".
 
 (** Equality on identifier is a decidable proposition *)
+Scheme Equality for identifier.
 
 Lemma ident_dec : forall id1 id2 : identifier, decidable(id1=id2).
 Proof.
   unfold decidable.
   repeat decide equality.
-Qed.
+  Qed.
 
-(** with an equality operation beq_ident .. *)
-
-Definition beq_ident id1 id2 :=
-  match id1,id2 with
-  | Ident id1, Ident id2 => if string_dec id1 id2 then true else false
-  end.
-
-(** beq_ident is reflexive *)
-
-Theorem beq_id_refl : forall id, true = beq_ident id id.
-Proof.
-  intros [n]. simpl. destruct (string_dec n n).
-  - reflexivity.
-  - destruct n0. reflexivity.
-Qed.
-
-(** beq_ident and equality on identifiers coincide *)
-
-Theorem beq_id_true_iff : forall x y : identifier,
-  beq_ident x y = true <-> x = y.
-Proof.
-   intros [n1] [n2].
-   unfold beq_ident.
-   destruct (string_dec n1 n2).
-   - subst. split. reflexivity. reflexivity.
-   - split.
-     + intros contra. inversion contra.
-     + intros H. inversion H. subst. destruct n. reflexivity.
-Qed.
-
-Theorem beq_id_false_iff : forall x y : identifier,
-  beq_ident x y = false <-> x <> y.
-Proof.
-  intros x y. rewrite <- beq_id_true_iff.
-  rewrite not_true_iff_false. reflexivity. Qed.
 
 (** .. an accessor method *)
 
@@ -118,18 +85,15 @@ Qed.
 
 (** An identifier is either well-formed or ill-formed *)
 
-Lemma wf_dec : forall id: identifier,
+  Lemma wf_dec : forall id: identifier,
   Well_Formed_Identifier_prop id \/ Ill_Formed_Identifier_prop id.
 Proof.
   intros.
   unfold Well_Formed_Identifier_prop.
   unfold Ill_Formed_Identifier_prop.
-
-  rewrite <- beq_id_false_iff.
-  rewrite <- beq_id_true_iff.
-  destruct (ident_dec id empty_identifier).
-  - subst. right. reflexivity.
-  - subst. left. apply beq_id_false_iff. auto.
+  destruct (identifier_eq_dec id empty_identifier).
+  - right. apply e.
+  - left. apply n.
 Qed.
 
 (** Well_Formed_Identifier_prop is decidable *)
@@ -144,18 +108,18 @@ Proof.
   unfold Well_Formed_Identifier_prop.
 
   (* do a case by case analysis *)
-  destruct (ident_dec id empty_identifier).
+  destruct (identifier_eq_dec id empty_identifier).
   - subst. auto.
   - subst. auto.
 Qed.
 
 (** A boolean version of Well_Formed_Identifier *)
-
+(*
 Definition Well_Formed_Identifier (i : identifier) : bool :=
   (negb (beq_ident i empty_identifier)).
-
+*)
 (** Well_Formed_Identifier_Prop and Well_Formed_Identifier coincides *)
-
+(*
 Lemma wf_coincide: forall id: identifier,
   Well_Formed_Identifier_prop id <-> Well_Formed_Identifier id = true.
 Proof.
@@ -168,13 +132,13 @@ Proof.
   - intuition. rewrite H. reflexivity.
   - destruct (beq_ident id empty_identifier) . auto. auto.
 Qed.
-
+*)
 (** * Examples *)
 
 Example A_WFI : identifier :=
   Ident "o<".
 
-Lemma A_WFI_is_well_formed_boring:
+Lemma A_WFI_is_well_formed:
   Well_Formed_Identifier_prop A_WFI.
 Proof.
   (* In this "boring" version, we do a manual proof using the
@@ -182,24 +146,8 @@ Proof.
 
   First, we rewrite the proposition to its simple form *)
   unfold Well_Formed_Identifier_prop.
-  unfold A_WFI.
-  unfold empty_identifier.
-  (* At this stage, we have to compare two Ident objects
-     we apply the previously demonstrated theorem beq_if_false_iff
-   *)
-  apply beq_id_false_iff.
-  (* Then we finish the proof *)
-  simpl.
-  reflexivity.
-Qed.
-
-Lemma A_WFI_is_well_formed:
-  Well_Formed_Identifier_prop A_WFI.
-Proof.
-  (* In this variant, we take advantagd of the equivalence to the
-  boolean predicate to proof this *)
-  rewrite -> wf_coincide.
-  auto.
+  destruct (identifier_eq_dec A_WFI empty_identifier).
+  inversion e. auto.
 Qed.
 
 Lemma Empty_Identifier_is_ill_formed:
