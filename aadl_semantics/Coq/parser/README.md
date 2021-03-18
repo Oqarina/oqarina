@@ -6,3 +6,11 @@ https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textua
 
 http://gallium.inria.fr/~fpottier/menhir/
 
+* Tests
+
+some tests have been added, by order of complexity
+
+test_1* is the most basic examples
+ping-local*
+ping_PING*
+arincexample*
