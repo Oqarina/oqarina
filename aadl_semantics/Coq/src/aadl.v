@@ -1,4 +1,4 @@
-(** %\chapter{Mechanizing the AADL Instance model}\label{chap::aadl_mecha}% *)
+(** %\chapter{Mechanizing the AADL component model}\label{chap::aadl_mecha}% *)
 
 Set Warnings "-parsing".
 (** printing -> %\ensuremath{\rightarrow}% *)
@@ -7,8 +7,10 @@ Set Warnings "-parsing".
 (** Coq Library *)
 
 Require Import Bool.
+Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Floats.PrimFloat.
 Require Import Coq.Init.Datatypes.
+Require Import Coq.Init.Decimal.
 Require Import Coq.Logic.Decidable.
 Require Import List.
 Import ListNotations. (* from List *)
@@ -18,26 +20,22 @@ Require Import Coq.Lists.ListDec.
 
 Require Import identifiers.
 Require Import utils.
-
 (* end hide *)
 
 (**
 
-In this chapter, we define some core elements of the AADL component instance model in Coq. Our objective is to define the core concepts of AADL, helper functions to build models and to iterate over a hierarchy of AADL conponents.
+In this chapter, we define some core elements of the AADL component model in Coq. Our objective is to define the core concepts of AADL, helper functions to build models and to iterate over a hierarchy of AADL conponents.
 
 This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DBLP:books/daglib/0030032}% and of the Coq specification language. We used the book by A. Chlipala %\cite{DBLP:books/daglib/0035083}% as a reference to model AADL concepts using inductive dependent types.
 
 *)
 
-(** * AADL Instance Model -- Concepts Definition
+(** * AADL Component Model -- Concepts Definition
 
-  In this section, we provide the core definition of AADL model elements. The names and hierarchy
-  follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See
-  \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}%
-  provides a concise definition of the concepts that form an AADL Instance model.
+  In this section, we provide the core definition of AADL model elements. The names and hierarchy follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}% provides a concise definition of the concepts that form an AADL model. In chapter%~\ref{chap::decl}%, we show how to derive the concepts of component type, implementation and instances from these definitions.
 
-  In the following, we provide a formalization of the AADL Instance model
-  gramamr as a collection of Coq inductive types.
+  In the following, we provide a formalization of the AADL component model
+  grammar as a collection of Coq inductive types.
 
   _Note: Coq is imposing in order type definitions, the order differs from the
   original Xtext file_.
@@ -138,7 +136,7 @@ Section AADL_Definitions.
     | aadlboolean : bool -> property_base_value
     | aadlinteger : nat -> property_base_value
     | aadlstring : identifier -> property_base_value
-    | aadlreal : float -> property_base_value
+    | aadlreal : decimal -> property_base_value
     | aadllist : list property_base_value -> property_base_value
     | aadlrecord : list property_base_value -> property_base_value
     (* | aadlreference -> component -> property_base_value ...*)
@@ -151,14 +149,14 @@ Section AADL_Definitions.
 
   Inductive property_value : Type :=
   | Property_Value : property_type -> (* property type *)
-                    property_base_value  -> (* actual value *)
-                    property_value.
+                     property_base_value  -> (* actual value *)
+                     property_value.
 
   (** ** Definition of AADL Components
 
   An AADL component is made of an identifier, a category, a list of features a list of subcomponents %\footnote{Properties will be added in a subsequent iteration. Flows and modes are subject to further discussions.}%.
 
-  Per definition of the AADL component model, features and subcomponents also list component instance as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
+  Per definition of the AADL component model, features and subcomponents also list components as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
 
   _Note: actually, this definition allows also for the definition of component type, implementation and instance_.
 
@@ -208,7 +206,7 @@ Section AADL_Definitions.
 
 
   Inductive component :=
-  | Component : identifier ->          (* classifier *)
+  | Component : identifier ->          (* component identifier *)
                 ComponentCategory ->   (* category *)
                 identifier ->          (* classifier *)
                 list feature ->        (* features *)
@@ -218,9 +216,9 @@ Section AADL_Definitions.
                 component
     with feature :=
       | Feature : identifier -> (* its unique identifier *)
-                  DirectionType ->
-                  FeatureCategory -> (* *)
-                  component ->  (* corresponding component instance *)
+                  DirectionType -> (* its direction *)
+                  FeatureCategory -> (* category of the feature *)
+                  component ->  (* corresponding component *)
                   list property_value -> (* properties *)
                   feature
     with connection :=
@@ -239,13 +237,12 @@ End AADL_Definitions.
 
 (** * Examples
 
-  From the previous definitions, one can build a couple of examples showing how to build
-  an AADL instance model. Note that one benefit of Coq is that we can build partial
-  instance models as intermediate variables.
+  From the previous definitions, one can build a couple of examples showing how to build a set of AADL components. Note that one benefit of Coq is that we can build partial
+  component elements as intermediate variables.
 
 *)
 
-(** Definition of the Priority property *)
+(** - Definition of the Priority property *)
 
 Definition Priority : property_type :=
   Property_Type [ thread ] aadlinteger_t.
@@ -253,7 +250,7 @@ Definition Priority : property_type :=
 Definition A_Priority_Value :=
   Property_Value Priority (aadlinteger 42).
 
-(** Definition of a component *)
+(** - Definition of a component *)
 
 Definition A_Component := Component (Ident "a_component") (abstract)
   (Ident "foo_classifier") nil nil nil nil.
@@ -264,12 +261,109 @@ Definition A_Component_Impl :=
 
 Definition A_Feature := Feature (Ident "a_feature") inF eventPort nil_component.
 
+(** * Decidability of equality
+
+Most of AADL model manipulations revolve around comparison of model subelements and iterations. In this section, we provide results on the decidability of equality.
+*)
+
+(** We use decision procedure (see https://softwarefoundations.cis.upenn.edu/vfa-current/Decide.html)
+then we could use [bool_of_sumbool] from https://coq.inria.fr/library/Coq.Bool.Sumbool.html *)
+
+Section AADL_Component_Decidability.
+
+  (** First, we define decidability results for basic types, using Coq default equality schemes.*)
+
+  Scheme Equality for Property_Base_Type.
+  Scheme Equality for ComponentCategory.
+  Scheme Equality for FeatureCategory.
+  Scheme Equality for identifier.
+  Scheme Equality for DirectionType.
+
+  (** For other types, we manually define and prove decidability for equality *)
+
+  Lemma connection_eq_dec : eq_dec connection.
+  Proof.
+      unfold eq_dec.
+      repeat decide equality.
+  Qed.
+
+  Fixpoint property_base_value_eq_dec'
+    (a b : property_base_value) : {a=b}+{a<>b}.
+  Proof.
+    decide equality.
+    apply bool_dec .
+    apply PeanoNat.Nat.eq_dec .
+    apply identifier_eq_dec .
+    apply decimal_eq_dec .
+    - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
+    * left. f_equal. auto.
+    * right. apply neH.
+    - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
+    * left. f_equal. auto.
+    * right. apply neH.
+  Defined.
+
+  Lemma  property_base_value_eq_dec : eq_dec property_base_value.
+  Proof.
+    unfold eq_dec.
+    apply property_base_value_eq_dec'.
+  Qed.
+
+  Lemma property_type_eq_dec : eq_dec property_type.
+  Proof.
+      unfold eq_dec.
+      decide equality.
+      apply Property_Base_Type_eq_dec.
+      apply list_eq_dec; unfold eq_dec.
+      apply ComponentCategory_eq_dec.
+  Qed.
+
+  Lemma property_value_eq_dec : eq_dec property_value.
+  Proof.
+      unfold eq_dec.
+      decide equality.
+      apply property_base_value_eq_dec.
+      apply property_type_eq_dec.
+  Qed.
+
+  Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
+      identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec: core.
+
+  Fixpoint component_eq_dec (a b : component) : {a=b}+{a<>b}
+      with feature_eq_dec (a b : feature) : {a=b}+{a<>b}.
+  Proof.
+      (* decide equality for component type *)
+      decide equality;
+      apply list_eq_dec; auto
+      || auto.
+
+      (* decide equality for feature type *)
+      decide equality;
+      apply list_eq_dec; auto
+      || auto.
+  Defined.
+
+  Lemma component_dec: eq_dec component.
+  Proof.
+      unfold eq_dec.
+      intros.
+      apply component_eq_dec.
+  Qed.
+
+(* begin hide *)
+End AADL_Component_Decidability.
+
+Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
+  identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_dec : core.
+(* end hide *)
+
 (** * Accessor functions
 
-The following projections extract information from a component *)
+  The following projections extract information from a component.
+*)
 (* begin hide *)
 Section AADL_Accessors.
-(*end hide *)
+(* end hide *)
 
   (** ** Projections *)
 
@@ -300,6 +394,11 @@ Section AADL_Accessors.
   Definition projectionComponentProperties (c:component) : list property_value :=
     match c with
     | Component _ _ _ _ _ properties _ => properties
+  end.
+
+  Definition projectionComponentConnections (c:component) : list connection :=
+    match c with
+    | Component _ _ _ _ _ _ connections => connections
   end.
 
   (** - Feature *)
@@ -376,6 +475,8 @@ Notation "c '->features' " := (projectionComponentFeatures c)
   (at level 80, right associativity).
 Notation "c '->properties' " := (projectionComponentProperties c)
   (at level 80, right associativity).
+Notation "c '->connections' " := (projectionComponentConnections c)
+  (at level 80, right associativity).
 
 (** * Iteration over AADL models
 
@@ -441,25 +542,21 @@ Section AADL_Iterators.
 
   However, Coq has a strict definition of recursive functions, and the following is rejected
 
-<<
-    Fixpoint Component_prop (lc : list component) : Prop :=
+[[
+  Fixpoint Component_prop (lc : list component) : Prop :=
       match lc with
       | [ ] => True
       | c :: l' => P c /\
       Component_prop (Features_Components (c->features)) /\
       Component_prop (l')
-      end.
->>
+      end. ]]
 
-  Such a definition is rejected: it is not strictly decreasing on the main argument lc because of the recursive call  %\texttt{Features\_Components (c->features)}%.
+  Such a definition is rejected as it is not strictly decreasing on the main argument [lc] because of the recursive call [Features\_Components (c->features)].
 *)
 
 (** **** Iterating via unfolding:
 
-  one possible work-around is to apply P on the list of components built
-  recursively from component c using %\coqdocdefinition{Unfold}%.
-  The decidability of the resulting function is a direct result of the decidablity of
-  %\coqdocdefinition{All P}% for %\coqdocdefinition{P}% decidable. *)
+  one possible work-around is to apply P on the list of components built recursively from component c using %\coqdocdefinition{Unfold}%. The decidability of the resulting function is a direct result of the decidablity of %\coqdocdefinition{All P}% for %\coqdocdefinition{P}% decidable. *)
 
 Definition Unfold_Apply (c : component) : Prop :=
   All P (Unfold c).
@@ -480,7 +577,6 @@ Definition Unfold_Apply (c : component) : Prop :=
   Crafting and using the correct induction principle seems problematic. *)
 
  (* end hide *)
-
 
 (* begin hide *)
 End AADL_Iterators.
