@@ -1,21 +1,21 @@
 (**
-%\section{AADL System Category}\label{chap::aadl_system}%
+%\section{AADL System Category}\label{sec::aadl_system}%
 
-%\textit{Note: the following is inspired from AADLv2.2 \S 13.3. We heavily simplified it to the bare minimal level of information. We also corrected some of this description to better reflect the modular nature of AADL instance hierarchy.}\\
-\noindent\rule{4cm}{0.4pt}
-%
+%\N cincoinc%
 
-The %\texttt{system}% component category denotes an assembly of interacting application
-software, execution platform, and system components. Systems may be hierarchically nested.
+%\N% The %\texttt{system}% component category denotes an assembly of interacting application software, execution platform, and sub-systems as sub-components. Systems may be hierarchically nested%\footnote{Note: the following is inspired from AADLv2.2 \S 13.3. We heavily simplified it to the bare minimal level of information. We also corrected some of this description to better reflect the modular nature of AADL instance hierarchy and remove redundant information that belongs to the description of other component categories.}%.
 
-%\subsection{System behavioral semantics}%
+** System behavioral semantics
 
-Figure%~\ref{fig:aadl_system_beh}% defines the behavior of system component category.
+*** Informal definition
+
+In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}%).
 
 %
 \tikzset{elliptic state/.style={draw,ellipse}, -Triangle, node distance=2cm}
 
 \begin{figure}[!h]
+\centering
 \begin{tikzpicture}
 \node[elliptic state, very thick] (s0) {system offline};
 \node[elliptic state, below=1cm of s0] (s1) {system starting};
@@ -37,7 +37,7 @@ This automata semantics can also be described as follows:
 
 - %\textit{"system offline"}% is the system initial state.
 
-- On system startup the system instance transitions from %\textit{"system offline"}% to %\textit{system starting}% through the action %\textbf{start(system)}%
+- On system startup the system instance transitions from %\textit{"system offline"}% to %\textit{"system starting"}% through the action %\textbf{start(system)}%
 
 - When in state %\textit{"system starting"}%, the system perform the initialization of the system subcomponents. In case of an error during this step, the system goes back to %\textit{"system offline"}% through the the %\textbf{abort(system)}% action. When all subsystems have been successfully initialized, the system moves to the state %\textit{"system operational"}% through the %\textbf{started(system)}% action.
 
@@ -47,9 +47,62 @@ This automata semantics can also be described as follows:
 
 *)
 
-Inductive system_states :=
+(* begin hide *)
+Require Import pautomata.
+Require Import time.
+Import NaturalTime.
+Set Implicit Arguments.
+(* end hide *)
+
+(** *** Coq mechanization
+
+    The following provides a Coq mechanization of the previous automata using p-Automata. *)
+
+(** We use Coq unit as a system has no variable attached to is *)
+
+Definition system_var : Type := unit.
+
+(** The informal definition provides a direct path to the definition of    states, actions and transitions.
+*)
+
+Inductive system_states : Set :=
     system_offline | system_starting | system_operational | system_stoping.
 
+Inductive system_actions : Set :=
+    start_system | abort_system | started_system | stop_system | stopped_system.
+
+Definition system_transitions
+    (a : system_actions) (t : Time)
+    (l1 : system_states) (v1 : system_var)
+    (l2 : system_states) (v2 : system_var) : Prop :=
+    match a, t, l1, v1, l2, v2 with
+    (* capture the transitions of the automata *)
+    | start_system, _, system_offline, _, system_starting, _ => True
+    | started_system, _, system_starting, _, system_operational, _ => True
+    | stop_system, _, system_operational, _, system_stoping, _ => True
+    | stopped_system, _, system_stoping, _, system_offline, _ => True
+    | abort_system, _, system_starting, _, system_offline, _ => True
+    | abort_system, _, system_operational, _, system_offline, _ => True
+    (* any other configuration is invalid *)
+    | _, _, _, _, _, _   => False
+    end.
+
+(** An AADL system is an hybrid category, there is no invariant
+    attached to it. *)
+
+Definition system_invariants
+     (l : system_states) (t : Time) (v : system_var) : Prop :=
+    match l, t, v with
+    | _, _,_ => True
+    end.
+
+Module System_Automata <: Pautomata.
+    Definition Var := system_var.
+    Definition Loc := system_states.
+    Definition Act := system_actions.
+    Definition Inv := system_invariants.
+    Definition Trans := system_transitions.
+End System_Automata.
 
 
-(** *)
+(* http://newartisans.com/2016/10/using-fmap-in-coq/ *)
