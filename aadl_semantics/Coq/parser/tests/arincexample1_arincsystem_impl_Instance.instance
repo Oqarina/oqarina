@@ -1,0 +1,69 @@
+system arincsystem_impl_Instance : arincexample1::arincsystem.impl {
+	memory arincexample1::main_memory.impl mem : arincexample1::arincsystem.impl:mem {
+		memory arincexample1::partition1_memory part1mem : arincexample1::main_memory.impl:part1mem
+		memory arincexample1::partition2_memory part2mem : arincexample1::main_memory.impl:part2mem
+	}
+	process arincexample1::partition1_process.impl partition1_pr : arincexample1::arincsystem.impl:partition1_pr {
+		out dataPort samplingout : arincexample1::partition1_process:samplingout
+		in eventDataPort queueingin : arincexample1::partition1_process:queueingin
+		thread arincexample1::sensor_temperature_thread.impl temperature : arincexample1::partition1_process.impl:temperature {
+			out dataPort tempout : arincexample1::sensor_temperature_thread:tempout
+			in eventDataPort order : arincexample1::sensor_temperature_thread:order
+		}
+		thread arincexample1::sensor_receiveinput_thread.impl order : arincexample1::partition1_process.impl:order {
+			in eventDataPort commandin : arincexample1::sensor_receiveinput_thread:commandin
+			out eventDataPort order : arincexample1::sensor_receiveinput_thread:order
+		}
+		complete portConnection "order.order -> temperature.order" : order.order -> temperature.order {
+			order.order -> temperature.order : arincexample1::partition1_process.impl:bufferconnectionexample in parent
+		}
+	}
+	process arincexample1::partition2_process.impl partition2_pr : arincexample1::arincsystem.impl:partition2_pr {
+		in dataPort samplingin : arincexample1::partition2_process:samplingin
+		out eventDataPort queueingout : arincexample1::partition2_process:queueingout
+		data arincexample1::protected_data sem : arincexample1::partition2_process.impl:sem
+		data arincexample1::integer blackboard : arincexample1::partition2_process.impl:blackboard
+		thread arincexample1::commandboard_receiveinput_thread receiver : arincexample1::partition2_process.impl:receiver {
+			in dataPort temp : arincexample1::commandboard_receiveinput_thread:temp
+			out eventPort newavg : arincexample1::commandboard_receiveinput_thread:newavg
+			in dataAccess tempavg : arincexample1::commandboard_receiveinput_thread:tempavg
+			in dataAccess need_semaphore : arincexample1::commandboard_receiveinput_thread:need_semaphore
+		}
+		thread arincexample1::commandboard_printinfos_thread printer : arincexample1::partition2_process.impl:printer {
+			out eventDataPort ordersensor : arincexample1::commandboard_printinfos_thread:ordersensor
+			in eventPort newavg : arincexample1::commandboard_printinfos_thread:newavg
+			in dataAccess tempavg : arincexample1::commandboard_printinfos_thread:tempavg
+			in dataAccess need_semaphore : arincexample1::commandboard_printinfos_thread:need_semaphore
+		}
+		complete accessConnection "sem -> receiver.need_semaphore" : sem -> receiver.need_semaphore {
+			sem -> receiver.need_semaphore : arincexample1::partition2_process.impl:c2 in parent
+		}
+		complete accessConnection "sem -> printer.need_semaphore" : sem -> printer.need_semaphore {
+			sem -> printer.need_semaphore : arincexample1::partition2_process.impl:c3 in parent
+		}
+		complete accessConnection "blackboard -> printer.tempavg" : blackboard -> printer.tempavg {
+			blackboard -> printer.tempavg : arincexample1::partition2_process.impl:blackboardconnection1 in parent
+		}
+		complete accessConnection "blackboard -> receiver.tempavg" : blackboard -> receiver.tempavg {
+			blackboard -> receiver.tempavg : arincexample1::partition2_process.impl:blackboardconnection2 in parent
+		}
+		complete portConnection "receiver.newavg -> printer.newavg" : receiver.newavg -> printer.newavg {
+			receiver.newavg -> printer.newavg : arincexample1::partition2_process.impl:eventconnectionexample in parent
+		}
+	}
+	processor arincexample1::powerpc.impl cpu : arincexample1::arincsystem.impl:cpu {
+		virtual processor arincexample1::partition1_rt.impl part1 : arincexample1::powerpc.impl:part1
+		virtual processor arincexample1::partition2_rt.impl part2 : arincexample1::powerpc.impl:part2
+	}
+	complete portConnection "partition1_pr.temperature.tempout -> partition2_pr.receiver.temp" : partition1_pr.temperature.tempout -> partition2_pr.receiver.temp {
+		partition1_pr.temperature.tempout -> partition1_pr.samplingout : arincexample1::partition1_process.impl:c2 in partition1_pr
+		partition1_pr.samplingout -> partition2_pr.samplingin : arincexample1::arincsystem.impl:samplingconnection in parent
+		partition2_pr.samplingin -> partition2_pr.receiver.temp : arincexample1::partition2_process.impl:c1 in partition2_pr
+	}
+	complete portConnection "partition2_pr.printer.ordersensor -> partition1_pr.order.commandin" : partition2_pr.printer.ordersensor -> partition1_pr.order.commandin {
+		partition2_pr.printer.ordersensor -> partition2_pr.queueingout : arincexample1::partition2_process.impl:c0 in partition2_pr
+		partition2_pr.queueingout -> partition1_pr.queueingin : arincexample1::arincsystem.impl:queueingconnection in parent
+		partition1_pr.queueingin -> partition1_pr.order.commandin : arincexample1::partition1_process.impl:c1 in partition1_pr
+	}
+	som "No Modes"
+}
