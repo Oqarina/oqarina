@@ -6,11 +6,21 @@ This folder is a very preliminary attempt at formalizing some aspects of AADL us
 
 * `extra` : additional material for producing HTML from coq
 * `latex-src` : LaTeX source code of the corresponding TR.
-* `src`: Coq sources
+* `src`: Coq sources for AADL mechanization
+* `parser`: prototype area for AADL parser for AADL textual notation
 
 ## Required software
 
-This demo has been tested using Coq version 8.12.1 and VSCoq extension for Visual Code.
+This demo has been tested using Coq version 8.13.1 and VSCoq extension for Visual Code.
+
+## Additional packages
+
+The following packages should be installed separately using opam:
+
+* `https://github.com/clarus/coq-list-string`: some string manipulation functions
+* `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
+
+Use `opam install coq-list-string menhir`
 
 ## Usage
 
