@@ -3,7 +3,6 @@
 (* begin hide *)
 From Coq Require Import List.
 Require Import Coq.Logic.Decidable.
-Require Import cpdttactics.
 
 Set Implicit Arguments.
 (* end hide *)
@@ -67,7 +66,9 @@ Section Decidability.
   Lemma dec_sumbool_and:  { A /\ B  } + { ~ (A /\ B)}.
   Proof.
       unfold eq_dec.
-      crush. (* From CPDTTactics, powerful *)
+      destruct HA , HB ;
+      auto ||
+      right; intuition.
   Qed.
 
   Lemma eq_dec_decidable (T: Type) (x y:T) : {x=y}+{x<>y} -> x = y \/ x <> y.
