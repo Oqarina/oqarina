@@ -288,6 +288,6 @@ Section WellFormedness_Rules.
 (* begin hide *)
 End WellFormedness_Rules.
 
-Hint Resolve Well_Formed_Component_Hierarchy_dec : core.
+Global Hint Resolve Well_Formed_Component_Hierarchy_dec : core.
 
 (* end hide *)
