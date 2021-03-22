@@ -41,8 +41,11 @@ generate_latex:     ## Generate LaTeX files from Coq
 		-d latex-src/generated-content -s --body-only -g --interpolate `coqdep -sort $(COQMF_VFILES)`
 		mv latex-src/generated-content/*.sty latex-src/
 
-pdf:
+pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
+
+sloc:               ## Get SLOCs
+	cloc src
 
 debug:
 	echo $(COQMF_VFILES)
