@@ -53,9 +53,17 @@ End All.
 Section Decidability.
 (* end hide *)
 
-  (** The following defines a shortcut to use sumbool-based definition for decidability. See %\cite{appel2018software}%, chapter "Programming with Decision Procedures" for details. *)
+Section Definitions.
 
-  Definition eq_dec T := forall x y:T, {x=y}+{x<>y}.
+  (** The following defines a shortcut to use sumbool-based definition for decidability. See %\cite{appel2018software}%, chapter "Programming with Decision Procedures" for details. *)
+  Variable A : Prop.
+  Definition eq_dec T := forall x y : T, {x=y}+{x<>y}.
+
+  Definition dec_sumbool := { A } + { ~ A }.
+
+End Definitions.
+
+Section Predicates.
 
   Variable A : Prop.
   Hypothesis HA : { A } + {~ A}.
@@ -63,7 +71,7 @@ Section Decidability.
   Variable B : Prop.
   Hypothesis HB : { B } + {~ B}.
 
-  Lemma dec_sumbool_and:  { A /\ B  } + { ~ (A /\ B)}.
+  Lemma dec_sumbool_and:  { A /\ B  } + { ~ (A /\ B) }.
   Proof.
       unfold eq_dec.
       destruct HA , HB ;
@@ -71,7 +79,7 @@ Section Decidability.
       right; intuition.
   Qed.
 
-  Lemma eq_dec_decidable (T: Type) (x y:T) : {x=y}+{x<>y} -> x = y \/ x <> y.
+  Lemma eq_dec_decidable T (x y:T) : {x=y}+{x<>y} -> x = y \/ x <> y.
   Proof.
     intros.
     destruct H.
@@ -79,15 +87,24 @@ Section Decidability.
     - right. apply n.
   Qed.
 
-(*
-  Lemma decidable_eq_dec T : forall x y:T,  x = y \/ x <> y -> {x=y}+{x<>y}.
-  Proof.
-    intros.
-    -
-    destruct H.
-    - left. apply H.
-*)
+End Predicates.
 
+Section Lists.
+
+  Variable T : Set.
+  Variable P : T -> Prop.
+  Hypothesis HP' : forall t : T, {P t} + {~ P t}.
+
+  Lemma sumbool_All_dec (l : list T): { All P l } + {~ All P l}.
+  Proof.
+    induction l.
+    - unfold All. auto.
+    - simpl. apply dec_sumbool_and.
+      * apply HP'.
+      * apply IHl.
+  Qed.
+
+End Lists.
 
 (* begin hide *)
 End Decidability.

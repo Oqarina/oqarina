@@ -27,7 +27,7 @@ Module Type AbstractTime.
     Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
     Notation "t1 @+ t2" := (tadd t1 t2) (at level 50, left associativity).
 
-    Axiom tzerop: forall n, {n = Zero} + {Zero @< n}.
+    Axiom tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
     Axiom Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
 
     (** Axioms for total order:
@@ -62,7 +62,7 @@ Module NaturalTime <: AbstractTime.
     Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
     Notation "t1 @+ t2" := (tadd t1 t2) (at level 50, left associativity).
 
-    Lemma tzerop: forall n, {n = Zero} + {Zero @< n}.
+    Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
     Proof.
         unfold Zero. unfold "@<".
         apply zerop.

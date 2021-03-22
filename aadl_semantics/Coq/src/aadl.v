@@ -276,7 +276,6 @@ Section AADL_Component_Decidability.
   Scheme Equality for Property_Base_Type.
   Scheme Equality for ComponentCategory.
   Scheme Equality for FeatureCategory.
-  Scheme Equality for identifier.
   Scheme Equality for DirectionType.
 
   (** For other types, we manually define and prove decidability for equality *)
@@ -350,11 +349,26 @@ Section AADL_Component_Decidability.
       apply component_eq_dec.
   Qed.
 
+  Lemma list_component_eq_dec : eq_dec (list component).
+  Proof.
+      unfold eq_dec.
+      apply list_eq_dec.
+      apply component_dec.
+  Qed.
+
+  Lemma list_connection_eq_dec : eq_dec (list connection).
+  Proof.
+      unfold eq_dec.
+      apply list_eq_dec.
+      apply connection_eq_dec.
+  Qed.
+
 (* begin hide *)
 End AADL_Component_Decidability.
 
 Global Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
-  identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_dec : core.
+  identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_dec
+  list_component_eq_dec list_connection_eq_dec : core.
 (* end hide *)
 
 (** * Accessor functions
@@ -497,7 +511,7 @@ Section AADL_Iterators.
 
   (* begin show *)
   Variable P : component -> Prop.
-  Hypothesis HP : forall c : component, decidable (P c).
+  Hypothesis HP : forall c : component, {P c} + {~P c}.
   (* end show *)
 
   (** Component_Iterate_List_prop applies predicate P on all elements of l, a list of component%\footnote{We are leveraging Coq section mechanism, therefore \coqdocvar{P} and \coqdocvar{HP} are part of the definition context, we do not need to make them visible in the definitions.}%. We then demonstrate that it yields a decidable proposition if P is decidable. *)
@@ -506,9 +520,9 @@ Section AADL_Iterators.
     All P l.
 
   Lemma Component_Iterate_List_prop_dec :
-    forall l : list component, decidable (Component_Iterate_List_prop (l)).
+    forall l : list component, {Component_Iterate_List_prop (l)} + {~Component_Iterate_List_prop (l)}.
   Proof.
-    apply All_dec.
+    apply sumbool_All_dec.
     apply HP.
   Qed.
 
@@ -523,15 +537,13 @@ Section AADL_Iterators.
     Component_Iterate_List_prop (c->subcomps).
 
   Lemma Component_prop_dec :
-    forall c : component, decidable(Component_prop c).
+    forall c : component, { Component_prop c } + {~ Component_prop c }.
   Proof.
     intros.
     unfold Component_prop.
-    apply dec_and.
+    apply dec_sumbool_and.
     - apply HP.
-    - apply dec_and.
-      * apply Component_Iterate_List_prop_dec.
-      * apply Component_Iterate_List_prop_dec.
+    - apply dec_sumbool_and; apply Component_Iterate_List_prop_dec.
   Qed.
 
   (** ** Iteration over a component hierarchy  *)
@@ -562,11 +574,11 @@ Definition Unfold_Apply (c : component) : Prop :=
   All P (Unfold c).
 
  Theorem Unfold_Apply_dec : forall c : component,
-  decidable (Unfold_Apply c).
+  { Unfold_Apply c } + { ~Unfold_Apply c }.
  Proof.
    intros.
    unfold Unfold_Apply.
-   apply All_dec.
+   apply sumbool_All_dec.
    apply HP.
  Qed.
 
