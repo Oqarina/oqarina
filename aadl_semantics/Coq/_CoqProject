@@ -5,7 +5,7 @@ src/core/time.v
 #src/formalisms/pautomata.v
 src/utils.v
 src/aadl.v
-#src/aadl_decl.v
+src/aadl_decl.v
 src/aadl_wf.v
 #src/aadl_system.v
 #src/cpdttactics.v
