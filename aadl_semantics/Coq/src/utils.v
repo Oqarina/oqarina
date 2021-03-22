@@ -7,14 +7,12 @@ Require Import Coq.Logic.Decidable.
 Set Implicit Arguments.
 (* end hide *)
 
-
 (** Additional definition of utility functions. *)
 
 (** * All *)
 
 (** We define a variant of %\coqdocvar{All}% that matches the types used when
-defining our induction principles. See %\S 3.8% from %\cite{DBLP:books/daglib/0035083}% for more details
-*)
+defining our induction principles. See %\S 3.8% from %\cite{DBLP:books/daglib/0035083}% for more details. *)
 
 (* begin hide *)
 Section All.
@@ -51,19 +49,22 @@ End All.
 
 (* begin hide*)
 Section Decidability.
-(* end hide *)
 
 Section Definitions.
+(* end hide *)
 
   (** The following defines a shortcut to use sumbool-based definition for decidability. See %\cite{appel2018software}%, chapter "Programming with Decision Procedures" for details. *)
+
   Variable A : Prop.
   Definition eq_dec T := forall x y : T, {x=y}+{x<>y}.
 
   Definition dec_sumbool := { A } + { ~ A }.
 
+(* begin hide *)
 End Definitions.
 
 Section Predicates.
+(* end hide *)
 
   Variable A : Prop.
   Hypothesis HA : { A } + {~ A}.
@@ -87,10 +88,11 @@ Section Predicates.
     - right. apply n.
   Qed.
 
+(* begin hide *)
 End Predicates.
 
 Section Lists.
-
+(* end hide *)
   Variable T : Set.
   Variable P : T -> Prop.
   Hypothesis HP' : forall t : T, {P t} + {~ P t}.
@@ -104,8 +106,8 @@ Section Lists.
       * apply IHl.
   Qed.
 
+(* begin hide *)
 End Lists.
 
-(* begin hide *)
 End Decidability.
 (* end hide *)
