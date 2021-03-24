@@ -89,3 +89,5 @@ Module NaturalTime <: AbstractTime.
     Qed.
 
 End NaturalTime.
+
+(** XXX As an exercise, do the same for Decimal, or a similar type. *)

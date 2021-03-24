@@ -32,7 +32,7 @@ Section WellFormedness_Rules.
 
   The AADL language defines some basic rules that are evaluated during the
   parsing of the model itself. We define them as a first validation step:
-   any instance model validates these rules.
+   any component validates these rules.
 
   *)
 
@@ -219,8 +219,10 @@ Section WellFormedness_Rules.
     apply Subcomponents_Identifiers_Are_Well_Formed_dec.
   Qed.
 
+  (* begin hide *)
   Hint Resolve Rule_4_5_N1_dec : core.
-
+  (* end hide *)
+  
   (** ** Consistency rule 4.5 (C1) *)
   (** 4.5 (C1)	The classifier of a subcomponent cannot recursively contain
     subcomponents with the same component classifier. In other words, there cannot
@@ -232,20 +234,18 @@ Section WellFormedness_Rules.
 
   (** * General validation rules *)
 
-  (** An instance model verifies all the rules above.
+  (** A component hierarchy verifies all the rules above.
       These two master theorem combines them.
-    *)
 
-  (** ** Master theorem %\# 1%: well-formedness of a single component instance *)
+  %\paragraph{}\begin{wfrule}[Master theorem \#1]
+  A component is well-formed iff. all the previous rules are validated:
+  \begin{itemize}
+    \item the component identifier is well-formed and
+    \item its properties are correctly applied and
+    \item subcomponents identifiers are well-formed  (Rule 4.5 N1) and
+  \end{itemize}
+  \end{wfrule}%
 
-  (** A component instance is well-formed iff. all the previous rules are validated:
-    - the component identifier is well-formed and
-    - its properties are correctly applied and
-    - subcomponents identifiers are well-formed  (Rule 4.5 N1) and
-    - TBD
-
-    _Note: this theorem does not traverse the component hierarchy, it is local to
-    the component instance passed as parameter_.
 
     *)
 
@@ -268,10 +268,13 @@ Section WellFormedness_Rules.
     database, see above "Hint Resolve Rule_4_5_N1_dec : core."  *)
   Defined.
 
-  (** ** Master theorem %\# 2%: well-formedness of a component hierarchy *)
+  (** This theorem does not consider the component hierarchy, it is local to
+  the component passed as parameter. THis is addressed by the following theorem.
 
-  (** This second theorem is the main theorem to assess a component is well-formed.
-    It applies the previous rules on the whole instance hierarchy. *)
+  %\paragraph{}\begin{wfrule}[Master theorem \# 2]
+  A component hierarchy is well-formed iff a component and its subcomponent are well-formed.
+  \end{wfrule}%
+  *)
 
   Definition Well_Formed_Component_Hierarchy (c : component ) : Prop :=
     Unfold_Apply Well_Formed_Component c.
@@ -284,6 +287,8 @@ Section WellFormedness_Rules.
     apply Unfold_Apply_dec.
     apply Well_Formed_Component_dec.
   Qed.
+
+(**  This second theorem is the main theorem to assess a component is well-formed. It applies the previous rules on the whole component hierarchy. *)
 
 (* begin hide *)
 End WellFormedness_Rules.

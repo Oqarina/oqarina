@@ -2,6 +2,8 @@
 
 (** This file defines the identifier type, a basic type that stores a string. *)
 
+(* begin hide *)
+(** Coq Library *)
 Require Export String.
 From Coq Require Import Bool.Bool.
 From Coq Require Import Logic.Decidable.
@@ -9,7 +11,8 @@ From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
 
 Require Import utils.
-Require Import cpdttactics.
+(* end hide *)
+
 (** * Identifier type *)
 
 (** An identifier is a string element *)

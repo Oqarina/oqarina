@@ -325,8 +325,12 @@ Section AADL_Component_Decidability.
       apply property_type_eq_dec.
   Qed.
 
+  (* begin hide *)
   Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
       identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec: core.
+  (* end hide *)
+
+  (** Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
 
   Fixpoint component_eq_dec (a b : component) : {a=b}+{a<>b}
       with feature_eq_dec (a b : feature) : {a=b}+{a<>b}.
@@ -563,7 +567,7 @@ Section AADL_Iterators.
       Component_prop (l')
       end. ]]
 
-  Such a definition is rejected as it is not strictly decreasing on the main argument [lc] because of the recursive call [Features\_Components (c->features)].
+  Such a definition is rejected as it is not strictly decreasing on the main argument [lc] because of the recursive call [Features_Components (c->features)].
 *)
 
 (** **** Iterating via unfolding:
