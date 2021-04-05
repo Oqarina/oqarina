@@ -1,15 +1,13 @@
 (**
 %\section{AADL System Category}\label{sec::aadl_system}%
 
-%\N cincoinc%
-
 %\N% The %\texttt{system}% component category denotes an assembly of interacting application software, execution platform, and sub-systems as sub-components. Systems may be hierarchically nested%\footnote{Note: the following is inspired from AADLv2.2 \S 13.3. We heavily simplified it to the bare minimal level of information. We also corrected some of this description to better reflect the modular nature of AADL instance hierarchy and remove redundant information that belongs to the description of other component categories.}%.
 
 ** System behavioral semantics
 
 *** Informal definition
 
-In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}%).
+%\N% In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}%).
 
 %
 \tikzset{elliptic state/.style={draw,ellipse}, -Triangle, node distance=2cm}
@@ -33,7 +31,7 @@ In the following, we start by presenting the expected behavior of any system com
 \end{figure}
 %
 
-This automata semantics can also be described as follows:
+%\N% This automata semantics can also be described as follows:
 
 - %\textit{"system offline"}% is the system initial state.
 

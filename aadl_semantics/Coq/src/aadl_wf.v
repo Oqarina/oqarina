@@ -84,7 +84,7 @@ Section WellFormedness_Rules.
       *)
 
   Definition Source_Language : property_type :=
-    Property_Type [ subprogram ] aadlstring_t.
+    Property_Type (Ident "source_language") [ subprogram ] aadlstring_t.
 
   Definition A_Source_Language :=
     Property_Value Source_Language (aadlstring (Ident "C")).
@@ -108,6 +108,7 @@ Section WellFormedness_Rules.
   | aadlreal _  => Base_Type (Get_Property_Type p) = aadlreal_t
   | aadllist _ => False (* TBD *)
   | aadlrecord _ => False (* TBD *)
+  | aadlenum _ => False (* TBD *)
   end.
 
   Lemma Well_Formed_Property_Value_dec : forall p : property_value,
@@ -222,7 +223,7 @@ Section WellFormedness_Rules.
   (* begin hide *)
   Hint Resolve Rule_4_5_N1_dec : core.
   (* end hide *)
-  
+
   (** ** Consistency rule 4.5 (C1) *)
   (** 4.5 (C1)	The classifier of a subcomponent cannot recursively contain
     subcomponents with the same component classifier. In other words, there cannot
