@@ -20,11 +20,13 @@ Require Import identifiers.
 Require Import utils.
 (* end hide *)
 
-(** * AADL component type and implementations
+(**
 
-%In this chapter, we refine an AADL generic component into either a component type or a component implementation.\paragraph{}
+In this chapter, we refine an AADL generic component into either a component type or a component implementation. We then introduce the concept of AADL packages as a collection of components, and AADL model has a collection of packages.
 
-\begin{definition}[AADL component type] An AADL component type is a well-formed generic AADL component without subcomponents and connections.
+* AADL Component Type
+
+%\begin{definition}[AADL component type] An AADL component type is a well-formed generic AADL component without subcomponents and connections.
 \end{definition}%
 *)
 
@@ -46,14 +48,61 @@ Section AADL_Component_Type.
         repeat apply dec_sumbool_and; auto.
     Defined.
 
+(**
+%\begin{wfrule}[AADL component type well-formedness]
+
+An AADL component type is well-formed iff. its features match some restrictions imposed by its category. This leads to the following definition and decidability results:
+\end{wfrule}%
+*)
+
+(** XXX Actually wrong, we must check for the direction of the feature as well *)
+    Fixpoint Valid_Features_Category
+        (l : list feature) (lcat : list FeatureCategory) :=
+            match l with
+            | nil => True
+            | h :: t => In (projectionFeatureCategory  h) lcat /\
+                        Valid_Features_Category t lcat
+            end.
+
+    Lemma Valid_Features_Category_dec :
+        forall (l:list feature) (lcat :list FeatureCategory),
+            {Valid_Features_Category l lcat} +
+            {~Valid_Features_Category l lcat}.
+    Proof.
+        intros.
+        unfold Valid_Features_Category.
+        induction l.
+        auto.
+        apply dec_sumbool_and.
+        - apply In_dec; apply FeatureCategory_eq_dec.
+        - auto.
+    Qed.
+
+    Definition Well_Formed_Component_Type
+        (c: component) (l : list FeatureCategory) :=
+            Is_AADL_Component_Type c /\
+            Valid_Features_Category (c->features) l.
+
+    Lemma Well_Formed_Component_Type_dec :
+        forall (c:component) (lcat :list FeatureCategory),
+            {Well_Formed_Component_Type c lcat} +
+            {~ Well_Formed_Component_Type c lcat}.
+    Proof.
+        intros.
+        unfold Well_Formed_Component_Type.
+        apply dec_sumbool_and.
+        apply Is_AADL_Component_Type_dec.
+        apply Valid_Features_Category_dec.
+      Qed.
+
 (* begin hide *)
 End AADL_Component_Type.
 (* end hide *)
 
-(**
+(** * AADL Component Implementation
+
 %\begin{definition}[AADL component implementation] An AADL component implementation is a well-formed generic AADL component.
-\end{definition}%
-*)
+\end{definition}% *)
 
 (* begin hide *)
 Section AADL_Component_Implementation.
@@ -69,6 +118,51 @@ Section AADL_Component_Implementation.
         unfold Is_AADL_Component_Implementation.
         auto.
     Defined.
+
+(**
+%\begin{wfrule}[AADL component implementation well-formedness]
+
+An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category. This leads to the following definition and decidability results:
+\end{wfrule}%
+*)
+
+    Fixpoint Valid_Subcomponents_Category
+        (l : list component) (lcat : list ComponentCategory) :=
+        match l with
+        | nil => True
+        | h :: t => In (h->category) lcat /\ Valid_Subcomponents_Category t lcat
+        end.
+
+    Lemma Valid_Subcomponents_Category_dec :
+        forall (l:list component) (lcat :list ComponentCategory),
+            {Valid_Subcomponents_Category l lcat} +
+            {~Valid_Subcomponents_Category l lcat}.
+    Proof.
+        intros.
+        unfold Valid_Subcomponents_Category.
+        induction l.
+        auto.
+        apply dec_sumbool_and.
+        - apply In_dec; apply ComponentCategory_eq_dec.
+        - auto.
+    Qed.
+
+    Definition Well_Formed_Component_Implementation
+        (c: component) (l : list ComponentCategory) :=
+            Is_AADL_Component_Implementation c /\
+            Valid_Subcomponents_Category (c->subcomps) l.
+
+    Lemma Well_Formed_Component_Implementation_dec :
+        forall (c:component) (lcat :list ComponentCategory),
+            {Well_Formed_Component_Implementation c lcat} +
+            {~ Well_Formed_Component_Implementation c lcat}.
+    Proof.
+        intros.
+        unfold Well_Formed_Component_Implementation.
+        apply dec_sumbool_and.
+        apply Is_AADL_Component_Implementation_dec.
+        apply Valid_Subcomponents_Category_dec.
+      Qed.
 
 (* begin hide *)
 End AADL_Component_Implementation.
