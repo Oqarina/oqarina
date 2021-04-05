@@ -2,8 +2,11 @@
 
 Set Warnings "-parsing".
 (** printing -> %\ensuremath{\rightarrow}% *)
+(** printing abstract %\coqdocvar{abstract}% *)
 
 (* begin hide *)
+(* XXX abstract is recoginized as a tactic keyword by coqdoc .. this does not fully address the issue *)
+
 (** Coq Library *)
 
 Require Import Bool.
@@ -33,7 +36,7 @@ This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DB
 
 (** * AADL Component Model -- Concepts Definition
 
-  In this section, we provide the core definition of AADL model elements. The names and hierarchy follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}% provides a concise definition of the concepts that form an AADL model. In chapter%~\ref{chap::decl}%, we show how to derive the concepts of component type, implementation and instances from these definitions.
+  In this section, we provide the core definition of AADL model elements. The names and hierarchy follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}% provides a concise definition of the concepts that form an AADL model. In chapter%~\ref{chap::aadl_decl}%, we show how to derive the concepts of component type, implementation and instances from these definitions.
 
   In the following, we provide a formalization of the AADL component model
   grammar as a collection of Coq inductive types.
@@ -80,6 +83,7 @@ Section AADL_Definitions.
   (** ** Feature Categories
 
     The %\coqdocvar{FeatureCategory}% type denotes AADL feature categories.
+    The [invalid] category is an addition used to denote an invalid feature.
 
   *)
 
@@ -144,7 +148,7 @@ Section AADL_Definitions.
     | aadlrecord : list property_base_value -> property_base_value
     | aadlenum : identifier -> property_base_value
     (* | aadlreference -> component -> property_base_value ...*)
-    (* XXX also missing: units *)
+    (* XXX also missing: units, range, classifier *)
     .
 
   Inductive property_type : Type :=
