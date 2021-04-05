@@ -15,6 +15,7 @@ Require Import Coq.Logic.Decidable.
 Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
+Require Import Sumbool.
 
 (** AADL library *)
 
@@ -96,7 +97,7 @@ Section AADL_Definitions.
   Inductive FeatureCategory : Type :=
     dataPort | eventPort | eventDataPort | parameter |
 	  busAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
-	  featureGroup | abstractFeature.
+	  featureGroup | abstractFeature | invalid.
 
   (** ** Feature Directions
 
@@ -125,12 +126,14 @@ Section AADL_Definitions.
       We replicated this separation so that we can typecheck that
       a property value matches its definition.
 
-      %\textbf{XXX change to match AADL Instance Textual notation??}%
-
   *)
 
   Inductive Property_Base_Type : Type :=
-    | aadlboolean_t | aadlinteger_t | aadlstring_t | aadlreal_t.
+    | aadlboolean_t
+    | aadlinteger_t
+    | aadlstring_t
+    | aadlreal_t
+    | aadlenum_t : list identifier -> Property_Base_Type.
 
   Inductive property_base_value : Type :=
     | aadlboolean : bool -> property_base_value
@@ -139,12 +142,15 @@ Section AADL_Definitions.
     | aadlreal : decimal -> property_base_value
     | aadllist : list property_base_value -> property_base_value
     | aadlrecord : list property_base_value -> property_base_value
+    | aadlenum : identifier -> property_base_value
     (* | aadlreference -> component -> property_base_value ...*)
+    (* XXX also missing: units *)
     .
 
   Inductive property_type : Type :=
-  | Property_Type : list ComponentCategory -> (* applies to categories *)
-                    Property_Base_Type -> (* the type of the property *)
+  | Property_Type : identifier ->             (* name of the property *)
+                    list ComponentCategory -> (* applies to categories *)
+                    Property_Base_Type ->     (* the type of the property *)
                     property_type.
 
   Inductive property_value : Type :=
@@ -154,11 +160,11 @@ Section AADL_Definitions.
 
   (** ** Definition of AADL Components
 
-  An AADL component is made of an identifier, a category, a list of features a list of subcomponents %\footnote{Properties will be added in a subsequent iteration. Flows and modes are subject to further discussions.}%.
+  An AADL component is made of an identifier, a category, a list of features, a list of properties, a list of subcomponents %\footnote{Flows and modes are subject to further discussions.}%.
 
-  Per definition of the AADL component model, features and subcomponents also list components as their parts. From a Coq perspective, we must define all three types as mutually dependent types at once. The following defines actually those 4 types: component, subcomponent, feature and connection.
+  Per definition of the AADL component model, features and subcomponents list components as their parts. From a Coq perspective, we must define these three types as mutually dependent types at once.
 
-  _Note: actually, this definition allows also for the definition of component type, implementation and instance_.
+  _Note: actually, this definition allows also for the definition of component type, implementation and instance. This is discussed in the next chapters_.
 
 <<
   <component_category> <classifier>
@@ -245,7 +251,7 @@ End AADL_Definitions.
 (** - Definition of the Priority property *)
 
 Definition Priority : property_type :=
-  Property_Type [ thread ] aadlinteger_t.
+  Property_Type (Ident "priority") [ thread ] aadlinteger_t.
 
 Definition A_Priority_Value :=
   Property_Value Priority (aadlinteger 42).
@@ -266,19 +272,26 @@ Definition A_Feature := Feature (Ident "a_feature") inF eventPort nil_component.
 Most of AADL model manipulations revolve around comparison of model subelements and iterations. In this section, we provide results on the decidability of equality.
 *)
 
-(** We use decision procedure (see https://softwarefoundations.cis.upenn.edu/vfa-current/Decide.html)
-then we could use [bool_of_sumbool] from https://coq.inria.fr/library/Coq.Bool.Sumbool.html *)
+(** We use decision procedure (see https://softwarefoundations.cis.upenn.edu/vfa-current/Decide.html) so that we can perform code extraction. *)
 
+(* begin hide *)
 Section AADL_Component_Decidability.
+(* end hide *)
 
   (** First, we define decidability results for basic types, using Coq default equality schemes.*)
 
-  Scheme Equality for Property_Base_Type.
   Scheme Equality for ComponentCategory.
   Scheme Equality for FeatureCategory.
   Scheme Equality for DirectionType.
 
   (** For other types, we manually define and prove decidability for equality *)
+
+  Lemma Property_Base_Type_eq_dec : eq_dec Property_Base_Type.
+  Proof.
+    unfold eq_dec.
+    decide equality.
+    apply list_eq_dec; apply identifier_eq_dec.
+  Qed.
 
   Lemma connection_eq_dec : eq_dec connection.
   Proof.
@@ -290,19 +303,20 @@ Section AADL_Component_Decidability.
     (a b : property_base_value) : {a=b}+{a<>b}.
   Proof.
     decide equality.
-    apply bool_dec .
-    apply PeanoNat.Nat.eq_dec .
-    apply identifier_eq_dec .
+    apply bool_dec.
+    apply PeanoNat.Nat.eq_dec.
+    apply identifier_eq_dec.
     apply decimal_eq_dec .
     - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
-    * left. f_equal. auto.
-    * right. apply neH.
+      * left. f_equal. auto.
+      * right. apply neH.
     - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
-    * left. f_equal. auto.
-    * right. apply neH.
+      * left. f_equal. auto.
+      * right. apply neH.
+    - apply identifier_eq_dec .
   Defined.
 
-  Lemma  property_base_value_eq_dec : eq_dec property_base_value.
+  Lemma property_base_value_eq_dec : eq_dec property_base_value.
   Proof.
     unfold eq_dec.
     apply property_base_value_eq_dec'.
@@ -315,6 +329,7 @@ Section AADL_Component_Decidability.
       apply Property_Base_Type_eq_dec.
       apply list_eq_dec; unfold eq_dec.
       apply ComponentCategory_eq_dec.
+      apply identifier_eq_dec.
   Qed.
 
   Lemma property_value_eq_dec : eq_dec property_value.
@@ -421,21 +436,40 @@ Section AADL_Accessors.
 
   (** - Feature *)
 
-  Definition projectionFeatureComponent (c : feature) : component :=
-    match c with
+  Definition projectionFeatureIdentifier (f : feature) : identifier :=
+  match f with
+  | Feature id _ _ _ _ => id
+  end.
+  Definition projectionFeatureComponent (f : feature) : component :=
+    match f with
     | Feature _ _ _ comp _ => comp
+    end.
+
+  Definition projectionFeatureDirection (f : feature) : DirectionType :=
+    match f with
+    | Feature _ d _ _ _ => d
+  end.
+
+  Definition projectionFeatureCategory (f : feature) : FeatureCategory :=
+    match f with
+    | Feature _ _ c _ _ => c
   end.
 
   (** - Property type *)
 
+  Definition Property_Name (p : property_type) :=
+    match p with
+    | Property_Type  name _ _ => name
+    end.
+
   Definition Base_Type (p : property_type) :=
     match p with
-    | Property_Type  _ pbt => pbt
+    | Property_Type  _ _ pbt => pbt
     end.
 
   Definition Applicable_ComponentCategory (p : property_type) :=
     match p with
-    | Property_Type lcat _ => lcat
+    | Property_Type _ lcat _ => lcat
     end.
 
   (** - Property value *)
@@ -463,6 +497,9 @@ Section AADL_Accessors.
 
   Definition Components_Identifiers (l : list component) : list identifier :=
     map (fun x => projectionComponentId x) l.
+
+  Definition Is_Property_Name_Defined (s : identifier) (v : property_value) : bool :=
+    if identifier_eq_dec s (Property_Name (Get_Property_Type v)) then true else false.
 
   (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c (e.g. as subcomponents) %\textbf{XXX features ??}%
   *)
