@@ -15,17 +15,16 @@ Require Import utils.
 
 (** * Identifier type *)
 
-(** An identifier is a string element *)
+(**
+%\define{Identifier}{identifier}{An identifier is a string element. It is supported by an equality scheme, and a notation to extract the string from the type.}
+*)
 
 Inductive identifier : Type :=
 | Ident : string -> identifier.
 
 Definition empty_identifier := Ident "".
 
-(** Equality on identifier is a decidable proposition *)
 Scheme Equality for identifier.
-
-(** .. an accessor method *)
 
 Definition projectionIdentifierString (i : identifier) : string :=
   match i with
@@ -35,30 +34,28 @@ Definition projectionIdentifierString (i : identifier) : string :=
 Notation "c '->toString' " := (projectionIdentifierString c)
                                 (at level 80, right associativity).
 
-(** .. and a definition of a well-formed identifier
-
-An identifier is well-formed iff it is not the empty identifier.
-
-Rationale: an identifier being used to identify a model element, it
-must be trivially non empty.
+(**
+%\wfrule{Well-formed identifier}{well-formed!identifier}{An identifier is well-formed iff it is not the empty identifier.
+\textit{Rationale: an identifier being used to identify a model element, it
+must be trivially non empty.}
+}%
 
 XXX Actually, we could check for more things like this is ASCII, no whitespace, etc. See https://github.com/clarus/coq-list-string for an API to make this easy.
 
 *)
 
-
 Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
   (i <> empty_identifier).
 
 Lemma Well_Formed_Identifier_prop_dec: forall id: identifier,
-  { Well_Formed_Identifier_prop id } + { ~Well_Formed_Identifier_prop id}.
-  Proof.
-    intros.
-    unfold Well_Formed_Identifier_prop.
-    destruct (identifier_eq_dec id empty_identifier).
-    - subst. auto.
-    - subst. auto.
-  Qed.
+  { Well_Formed_Identifier_prop id } + { ~ Well_Formed_Identifier_prop id }.
+Proof.
+  intros.
+  unfold Well_Formed_Identifier_prop.
+  destruct (identifier_eq_dec id empty_identifier).
+  - subst. auto.
+  - subst. auto.
+Qed.
 
 (** * Examples *)
 
