@@ -1,3 +1,4 @@
+# Coq generated files
 *.aux
 *.glob
 *.vo
@@ -7,3 +8,20 @@ coq_makefile
 coq_makefile.conf
 .coq_makefile.d
 .lia.cache
+
+# LaTeX temporary files
+latex-src/coqdoc.sty
+latex-src/generated-content/
+*.aux
+*.log
+*.toc
+*.fls
+*.idx
+*.ilg
+*.ind
+*.lof
+*.lot
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
