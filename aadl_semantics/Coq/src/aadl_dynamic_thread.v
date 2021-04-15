@@ -16,6 +16,7 @@ Require Import queue.
 Require Import utils.
 Require Import aadl_declarative.
 Require Import aadl_thread_properties.
+Require Import aadl_aadl_project.
 (* end hide *)
 
 (** % \subsection{Thread Dispatching}
@@ -64,12 +65,6 @@ Definition A_Sporadic_Thread := Component
   nil.
 
 (* end hide *)
-
-
-
-
-
-Definition Thread_Time : Type := NaturalTime.Time.
 
 (* begin hide *)
 Section AADL_Dispatching.

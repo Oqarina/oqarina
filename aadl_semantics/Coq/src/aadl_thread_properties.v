@@ -8,6 +8,7 @@ Import ListNotations. (* from List *)
 (** AADL library *)
 Require Import identifiers.
 Require Import aadl.
+Require Import aadl_aadl_project.
 (* end hide *)
 
 (** %

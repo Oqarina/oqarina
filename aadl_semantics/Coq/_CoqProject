@@ -12,6 +12,7 @@ src/aadl_wf.v
 src/aadl_static_thread.v
 src/aadl_dynamic_thread.v
 src/aadl_thread_properties.v
+src/aadl_aadl_project.v
 #src/aadl_system.v
 #src/cpdttactics.v
 #src/extraction.v
