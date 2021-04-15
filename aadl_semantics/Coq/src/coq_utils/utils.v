@@ -11,8 +11,7 @@ Set Implicit Arguments.
 
 (** * All *)
 
-(** We define a variant of %\coqdocvar{All}% that matches the types used when
-defining our induction principles. See %\S 3.8% from %\cite{DBLP:books/daglib/0035083}% for more details. *)
+(** We define a variant of %\coqdocvar{All}% that matches the types used when defining our induction principles. See %\S 3.8% from %\cite{DBLP:books/daglib/0035083}% for more details. *)
 
 (* begin hide *)
 Section All.
@@ -56,9 +55,8 @@ Section Definitions.
   (** The following defines a shortcut to use sumbool-based definition for decidability. See %\cite{appel2018software}%, chapter "Programming with Decision Procedures" for details. *)
 
   Variable A : Prop.
-  Definition eq_dec T := forall x y : T, {x=y}+{x<>y}.
-
   Definition dec_sumbool := { A } + { ~ A }.
+  Definition eq_dec T := forall x y : T, {x=y}+{x<>y}.
 
 (* begin hide *)
 End Definitions.
@@ -74,7 +72,6 @@ Section Predicates.
 
   Lemma dec_sumbool_and:  { A /\ B  } + { ~ (A /\ B) }.
   Proof.
-      unfold eq_dec.
       destruct HA , HB ;
       auto ||
       right; intuition.
@@ -110,4 +107,34 @@ Section Lists.
 End Lists.
 
 End Decidability.
+(* end hide *)
+
+(** ** Helper functions to build a boolean equality from a decidable equqlity. *)
+
+(* begin hide *)
+Section EqEqb.
+(* end hide *)
+
+  Variable T : Type.
+
+  Definition eq (x : T) (y : T) := { x = y } + { x <> y }.
+  Hypothesis eq_dec' : forall x y : T, eq x y.
+
+  Definition eqb (x : T) (y : T) : bool :=
+  match eq_dec' x y with
+  | left _ => true
+  | right _ => false
+  end.
+
+  Lemma eqb_eq : forall x y, eqb x y = true <->  x = y.
+  Proof.
+  intros x y. unfold eqb. destruct eq_dec' as [EQ|NEQ].
+  - auto with *.
+  - split.
+    + discriminate.
+    + intro EQ; elim NEQ; auto.
+  Qed.
+
+(* begin hide *)
+End EqEqb.
 (* end hide *)
