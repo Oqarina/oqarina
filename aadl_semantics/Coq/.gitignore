@@ -12,6 +12,7 @@ coq_makefile.conf
 # LaTeX temporary files
 latex-src/coqdoc.sty
 latex-src/generated-content/
+latex-src/techreport.pdf
 *.aux
 *.log
 *.toc
@@ -25,3 +26,4 @@ latex-src/generated-content/
 *.synctex.gz
 *.bbl
 *.blg
+*.out
