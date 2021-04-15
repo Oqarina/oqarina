@@ -25,3 +25,6 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 
 * AADL dynamic semantics
     * For each component category, a file `aadl_dynamic_<category>.v` must be defined
+
+* Helper packages
+    * `aadl_thread_properties.v`: accessor to manipulate some of the properties from AADL property set thread_properties. This package could be generated from AADL property sets

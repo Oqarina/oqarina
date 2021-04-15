@@ -15,60 +15,21 @@ Require Import time.
 Require Import queue.
 Require Import utils.
 Require Import aadl_declarative.
+Require Import aadl_thread_properties.
 (* end hide *)
 
 (** % \subsection{Thread Dispatching}
 
 The litterature on real-time scheduling proposes one canonical task model \cite{XXX}. The AADL core language supports this task model through a collection of properties. The dispatch of a thread is configured by several core properties:  \texttt{Dispatch\_Protocol}, \texttt{Priority}, \texttt{Period}, .
+%
 
-First, we define those properties using plain AADL concepts, then we map them to a more precise set of Coq types.%
 *)
 
 (** *** Canonical task model as AADL model elements
 
-In the following, we first provide a definition of some AADL properties:
+
 
 *)
-
-(**
-%
-  \begin{definition}[Period (\S XXX]
- TBD
-  \end{definition}
-% *)
-
-Definition Period_Name := Ident "period".
-
-Definition Period : property_type :=
-  Property_Type (Ident "period")  [ thread ] aadlinteger_t. (* XXX should use a unit !*)
-
-
-(**
-%
-  \begin{definition}[Priority (AADLv2.2 \S XXX]
- TBD
-  \end{definition}
-% *)
-
-Definition Priority_Name := Ident "priority".
-
-Definition Priority : property_type :=
-  Property_Type Priority_Name [ thread ] aadlinteger_t.
-
-(**
-%
-  \begin{definition}[Dispatch\_Protocol (AADLv2.2 \S 5.4.2 (34)\index{Dispatch\_Protocol (AADL)}]
-  The \texttt{Dispatch\_Protocol} property of a thread determines the characteristics of dispatch requests to the thread.
-  \end{definition}
-% *)
-
-Definition Scheduling_Protocol_Name := Ident "scheduling_protocol".
-
-Definition Scheduling_Protocol : property_type :=
-  Property_Type Scheduling_Protocol_Name [ thread ]
-  (aadlenum_t [ (Ident "periodic") ; (Ident "sporadic") ; (Ident "aperiodic") ;
-                (Ident "background") ; (Ident "timed") ; (Ident "hybrid") ] ).
-
 (* begin hide *)
 Definition Periodic_Dispatch :=
   Property_Value Scheduling_Protocol (aadlenum (Ident "periodic")).
@@ -104,104 +65,15 @@ Definition A_Sporadic_Thread := Component
 
 (* end hide *)
 
-(** *** Canonical task model as Coq types
 
-In the following, we provide concrete Coq type definitions, and a mapping from AADL concepts. This deeper embedding of AADL as Coq type will allow for more precise processing. For each property, we defines its corresponding Coq type, a function mapping the AADL property value to this type, and accessor to test that this property is defined in a list of property.
 
-_Note: these functions implictly assumes the input AADL model elements are well-formed. In particular that property values are unique in a component_.
 
-*)
 
 Definition Thread_Time : Type := NaturalTime.Time.
 
 (* begin hide *)
 Section AADL_Dispatching.
 (* end hide *)
-
-(**
-
-%
-  \begin{definition}[Dispatch\_Protocol (Coq)]
-  TBD
-  \end{definition}
-%
-
-*)
-
-Inductive Dispatch_Protocol :=
-    Unspecified | Periodic | Sporadic | Aperiodic | Background | Timed | Hybrid.
-
-Scheme Equality for Dispatch_Protocol.
-
-Definition Map_Scheduling_Protocol_pv (pv : property_value) : Dispatch_Protocol :=
-  match Get_Base_Value pv with
-    | (aadlenum (Ident "periodic")) => Periodic
-    | (aadlenum (Ident "sporadic")) => Sporadic
-    | (aadlenum (Ident "aperiodic")) => Aperiodic
-    | (aadlenum (Ident "background")) => Background
-    | (aadlenum (Ident "timed")) => Timed
-    | (aadlenum (Ident "Hybrid")) => Hybrid
-    | _ => Unspecified
-  end.
-
-Definition Is_Scheduling_Protocol (v : property_value) : bool :=
-  Is_Property_Name Scheduling_Protocol_Name v.
-
-Definition Map_Scheduling_Protocol (pv : list property_value) : Dispatch_Protocol :=
-  match filter Is_Scheduling_Protocol pv with
-  | nil => Unspecified
-  | v :: _ => Map_Scheduling_Protocol_pv v
-  end.
-
-(**
-
-%
-  \begin{definition}[Period (Coq)]
-  TBD
-  \end{definition}
-%
-
-*)
-
-Definition Map_Period_pv (pv : property_value) : nat :=
-  match Get_Base_Value pv with
-    | aadlinteger int => int
-    | _ => 0
-  end.
-
-  Definition Is_Period (v : property_value) : bool :=
-    Is_Property_Name Period_Name v.
-
-  Definition Map_Period (pv : list property_value) : nat :=
-    match filter Is_Period pv with
-    | nil => 0
-    | v :: _ => Map_Period_pv v
-    end.
-
-(**
-
-%
-  \begin{definition}[Priority (Coq)]
-  TBD
-  \end{definition}
-%
-
-*)
-
-Definition Map_Priority_pv (pv : property_value) : nat :=
-  match Get_Base_Value pv with
-    | aadlinteger int => int
-    | _ => 0
-  end.
-
-  Definition Is_Priority (v : property_value) : bool :=
-    Is_Property_Name Priority_Name v.
-
-  Definition Map_Priority (pv : list property_value) : Thread_Time :=
-    match filter Is_Priority pv with
-    | nil => 0
-    | v :: _ => Map_Priority_pv v
-    end.
 
 Definition Port_Queue : Type := ListQueue.queue.
 
