@@ -6,3 +6,4 @@
 coq_makefile
 coq_makefile.conf
 .coq_makefile.d
+.lia.cache
