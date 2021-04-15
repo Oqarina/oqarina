@@ -1,0 +1,25 @@
+\chapter{AADL Static Semantics}
+\label{chap::aadl_static_semantics}
+
+\section{Rationale}
+
+\N An AADL specification is governed by a set of static semantics rules that specify how model elements are organized in terms of containment hierarchy, allowed relationships (connections, bindings) with other components, and modeling patterns for system configuration and deployment.
+
+\N Dynamic semantics provide an additional set of rules that describe the behavior of atomic AADL components and how these behaviors can be composed to describe the execution of an AADL model, and predicting through analysis the non-functional qualities of the running real-time system, composed of software, hardware, and systems of systems specified.
+
+\N The purpose of this part is to describe the static semantics of component categories.
+
+\N Dynamic semantics and consideration on modeling guidelines for capturing specific model of executions or architectural styles are presented in \ref{chap::aadl_dynamic_semantics}.
+
+\N An AADL component can have one of several categories:
+\begin{enumerate}[label=\alph*]
+\item Software category refers to software elements as they are regularly seen in computer systems: \texttt{data, subprogram, subprogram group, thread, thread group, process};
+\item Execution platform category refers to hardware elements that support the execution of software: \texttt{memory, virtual memory, processor, virtual processor, bus, virtual bus, and device};
+\item Generic category refers to \texttt{abstract} components whose actual semantics is undefined, and would be later refined;
+\item Composite category refers to \texttt{system} components as a unit of composition. Components are combined as a collection of interconnected subcomponents to form systems and systems of systems.
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Software Components}
+
+\input{generated-content/aadl_static_thread.tex}

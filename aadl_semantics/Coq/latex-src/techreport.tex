@@ -39,18 +39,18 @@
 \hyphenation{itself repre-sen-tations linear}
 
 % Packages required for the report to compile.
-\usepackage{amsmath} % special symbols
-\usepackage{amssymb} % more special symbols
+%\usepackage{amsmath} % special symbols
+%\usepackage{amssymb} % more special symbols
 \usepackage{epsfig} % needed for including figures
 \usepackage{lipsum} % generate placeholder text
 \usepackage[hyphens]{url} % line break URLs
 \usepackage{hyperref} % allow internal/external document linking
 %\usepackage[usenames,dvipsnames,svgnames,table]{xcolor} % custom color definition
 \usepackage{xcolor}
-\usepackage[figure]{algorithm2e} % advanced written algorithm handling
+%\usepackage[figure]{algorithm2e} % advanced written algorithm handling
 \usepackage{graphicx} % advanced graphic manipulation handling
 \usepackage{epstopdf} % converts vector graphics (eps) to pdf for embedding
-\usepackage{longtable} % allows tables to break across multiple pages
+%\usepackage{longtable} % allows tables to break across multiple pages
 \usepackage{makeidx} % create an index
 \epstopdfsetup{update} % only regenerate pdf files when eps file has changed
 
@@ -59,18 +59,18 @@
 % packages added by sagar
 %---------------------------------------------------------------------%
 \usepackage{xspace}
-\usepackage{amssymb}
-\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{amsmath}
 \usepackage{graphicx}
 \usepackage{listings}
-\usepackage{mathpartir}
+%\usepackage{mathpartir}
 \usepackage{url}
 
 %---------------------------------------------------------------------%
 % packages added by Nancy Ott
 %---------------------------------------------------------------------%
-\usepackage[labelfont=it,textfont=it]{caption}
-\usepackage[labelfont=it,textfont=it]{subcaption}
+%\usepackage[labelfont=it,textfont=it]{caption}
+%\usepackage[labelfont=it,textfont=it]{subcaption}
 \usepackage{ragged2e}
 
 %---------------------------------------------------------------------%
@@ -79,28 +79,67 @@
 \usepackage[color]{coqdoc}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{xargs}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
 \usepackage{tikz}
 \usetikzlibrary{arrows,arrows.meta,automata,shapes.geometric,chains,matrix,positioning,scopes}
+\input{aadl_macros.tex}
+
+\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+
+\newcommand{\processingrp}[0]{\vspace{\medskipamount} {\center{\textit Processing Requirements and Permissions\\}}\vspace{\medskipamount}}
+
+\newcommand{\semantics}[0]{\vspace{\medskipamount} {\center{\textit Semantics\\}}\vspace{\medskipamount}}
 
 \newtheorem{definition}{Definition}[chapter]
+\newtheorem{wfruleenv}{Rule}[chapter]
 
-%\makeatletter
-%\tikzset{join/.code=\tikzset{after node path={%
-%\ifx\tikzchainprevious\pgfutil@empty\else(\tikzchainprevious)%
-%edge[every join]#1(\tikzchaincurrent)\fi}}}
-%\makeatother
+% Well-formedness rule
+% #1: title of the rule
+% #2: index entry
+% #3: text
+
+\newcommand{\wfrule}[3]{
+	\begin{wfruleenv}[#1\index{#2}]
+		#3
+	\end{wfruleenv}
+}
+% Definition
+% #1: title of the definition
+% #2: index entry
+% #3: text
+\newcommand{\define}[3]{
+	\begin{definition}[#1\index{#2}]
+		#3
+	\end{definition}
+}
 
 % A counter to display a paragraph number in the margin
 \newcounter{parnum}
 \newlength{\parnumwidth}
 \setlength{\parnumwidth}{3em}
 \newcommand{\N}{%
+\vspace{\smallskipamount}%
   \noindent\refstepcounter{parnum}%
-  \makebox[0pt][r]{\makebox[\parnumwidth][l]{{(\arabic{parnum})}}}%
-  \hspace*{\parindent}\ignorespaces}
+  \makebox[0pt][r]{\makebox[\parnumwidth][l]{{(\arabic{parnum})}}}}
 \setlength{\parindent}{2em}
 
 \sloppy
+
+% Vertical bar for theorems, definitions, etc.
+\usepackage[framemethod=tikz]{mdframed}
+\surroundwithmdframed[outerlinewidth=0.4pt,
+  %innerlinewidth=0.4pt,
+  middlelinewidth=1pt,
+  middlelinecolor=black,
+  bottomline=false,topline=false,rightline=false]{definition}
+  \surroundwithmdframed[outerlinewidth=0.4pt,
+  %innerlinewidth=0.4pt,
+  middlelinewidth=1pt,
+  middlelinecolor=black,
+  bottomline=false,topline=false,rightline=false]{wfruleenv}
 
 % Generate index
 \makeindex
@@ -134,7 +173,7 @@
 \hypersetup{pageanchor=false}
 
 % Turn off justification for the entire document (ragged2e package)
-\RaggedRight
+%\RaggedRight
 
 % ***********************************
 %         Document Information
@@ -153,7 +192,7 @@
 \monthandyear{Month Year}
 
 % Insert report number for TR, TN, or SR
-\reportnumber{CMU/SEI-2020-TR-XXX} % Technical Report number
+\reportnumber{CMU/SEI-2021-TR-XXX} % Technical Report number
 %\reportnumber{CMU/SEI-2020-TR-XXX -DRAFT (REPORT NUMBER ADDED AT TIME OF PUBLICATION)} % Draft Technical report
 %\reportnumber{CMU/SEI-2020-TN-XXX} % Technical Note Number
 %\reportnumber{CMU/SEI-2020-SR-XXX} % Special Report Number
@@ -233,11 +272,19 @@
 {\fontfamily{cmr}\selectfont
 
 \include{content/introduction}
+
+\part{AADL Component Model Mechanization}
 \include{generated-content/aadl}
 \include{generated-content/aadl_wf}
-\include{generated-content/aadl_decl}
-\include{content/comp_categories}
-%\include{generated-content/aadl_system}
+\include{generated-content/aadl_declarative}
+\include{generated-content/aadl_instance}
+
+\part{AADL Static Semantics}
+\include{content/aadl_static_semantics}
+
+\part{AADL Dynamic Semantics}
+\include{content/aadl_dynamic_semantics}
+
 \include{content/conclusion}
 
 }
@@ -255,7 +302,8 @@
 % ******************************************
  \appendix % INSTRUCTS LATEX TO CHANGE FROM NUMBERED "CHAPTER" HEADINGS TO LETTERED "APPENDIX" HEADINGS
  {\fontfamily{cmr}\selectfont
-	% \include{content/appa}
+
+ \part{Appendices}
 	\include{generated-content/identifiers}
 	\include{generated-content/time}
 	%\include{generated-content/lts}
@@ -278,9 +326,9 @@
 
 
 % Print out the index!
-%\clearpage
-%\addcontentsline{toc}{chapter}{Index}
-%\printindex
+\clearpage
+\addcontentsline{toc}{chapter}{Index}
+\printindex
 
 % \newpage\null\newpage % make blank page
 

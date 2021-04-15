@@ -69,19 +69,45 @@ We make the following contributions
 %=============================================================================
 \section{Outline}
 
-In chapter \ref{chap::aadl_mecha}, we define the structure of an AADL instance model. From the definition of a component instance and its constituent, we build a collection of Coq helper functions that help manipulating instance models.
+\begin{figure}[!h]
+    \centering
+    \begin{tikzpicture}[auto,
+        %decision/.style={diamond, draw=black, thick, fill=white,
+        %text width=8em, text badly centered,
+        %inner sep=1pt, font=\sffamily\small},
+        block_center/.style ={rectangle, draw=black, thick, fill=white,
+          text width=12em, text centered,
+          minimum height=4em},
+        block_left/.style ={rectangle, draw=black, thick, fill=white,
+          text width=16em, text ragged, minimum height=4em, inner sep=6pt},
+        block_noborder/.style ={rectangle, draw=none, thick, fill=none,
+          text width=18em, text centered, minimum height=1em},
+        block_assign/.style ={rectangle, draw=black, thick, fill=white,
+          text width=18em, text ragged, minimum height=3em, inner sep=6pt},
+        block_lost/.style ={rectangle, draw=black, thick, fill=white,
+          text width=16em, text ragged, minimum height=3em, inner sep=6pt},
+          line/.style ={draw, thick, -latex', shorten >=0pt}]
 
-In chapter \ref{chap::aadl_wf}, we specify several legality rules and demonstrate they are all decidable. This allod us to define the concept of \textit{well-formed} AADL instance model as a model that conforms to these legality rules.
+    \node [block_center] (s0) {AADL Component Model (chap.~\ref{chap::aadl_mecha})};
+    \node[block_center,right=1cm of s0] (s0r) {Well-formedness rules (chap.~\ref{chap::aadl_wf})};
 
-\textit{XXX TBD:
-\begin{itemize}
-    \item implement more legality rules, ideally until we cover them all. Many are easy to translate thanks to Coq functional programming.
-\end{itemize}
-}
+    \node[block_center,below=1cm of s0] (s1) {AADL Declarative model (chap.~\ref{chap::aadl_decl})};
+
+    \draw (s0) -- (s0r);
+    \draw (s0) -- (s1);
+
+    \end{tikzpicture}
+    \caption{Structure of the mechanization of AADL} \label{fig:mechanization_overview}
+    \end{figure}
+
+In chapter \ref{chap::aadl_mecha}, we define the structure of a generic AADL component. This definition covers both component type and implementations. We build a collection of Coq helper functions that help manipulating collections of componenents.
+
+In chapter \ref{chap::aadl_wf}, we specify several legality rules and demonstrate they are all decidable. This allows us to define the concept of \textit{well-formed} AADL component as a component that conforms to these legality rules.
+
+In chapter \ref{chap::aadl_decl}, we build the basic blocks of the AADL declarative models: component types, component implementation and packages. XXX this chapters also defines more legality rules that are specific to the AADL declarative model.
 
 In chapter XXX, we extend the previous definitions and add models of the execution semantics for each component category. Then, we define the semanics of a composition of models.
 
-Combined, chapters \ref{chap::aadl_mecha}, \ref{chap::aadl_wf}, and XXX form the full mechanization of an AADL Instance model.
 
 Subsequent chapters will refine and specialize this semantics for specific model of conputations.
 

@@ -1,0 +1,930 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\abstractconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{abstract} &
+\multirow{15}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item   port
+\item feature group
+\item provides data access
+\item provides subprogram access
+\item provides subprogram group access
+\item provides bus access
+\item requires data access
+\item requires subprogram access
+\item requires subprogram group access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{20}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   subprogram
+\item   subprogram group
+\item   thread
+\item   thread group
+\item   process
+\item   processor
+\item   virtual processor
+\item   memory
+\item   bus
+\item   virtual bus
+\item   device
+\item   system
+\item   abstract
+\end{itemize}
+Subprogram calls: yes \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_abstract.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{abstract} components}
+\label{cons::abstract}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\systemconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{system} &
+\multirow{15}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item feature group
+\item provides data access
+\item requires data access
+\item provides subprogram access
+\item requires subprogram access
+\item provides subprogram group access
+\item requires subprogram group access
+\item provides bus access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{18}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   subprogram
+\item   subprogram group
+\item   process
+\item   processor
+\item   virtual processor
+\item   memory
+\item   bus
+\item   virtual bus
+\item   device
+\item   system
+\item   abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_system.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{system} components}
+\label{cons::system}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\dataconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{data} &
+\multirow{9}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item	provides subprogram access
+\item	requires subprogram access
+\item	requires subprogram group access
+\item	feature group
+\item	feature
+\medskip
+\end{itemize}
+Flow specifications: no \\
+Modes: no\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{9}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   subprogram
+\item   abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: access \\
+Flows: no \\
+Modes: no \\
+Properties: yes\\
+\medskip
+\end{minipage}
+}
+\\
+&&\\
+\includegraphics[scale=0.8]{figs/aadl_data.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{data} components}
+\label{cons::data}
+\end{figure}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\subprogramconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{subprogram} &
+\multirow{11}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item out event [data] port
+\item feature group
+\item requires data access
+\item requires subprogram access
+\item requires subprogram group access
+\item parameter
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\medskip
+\end{minipage}
+}
+&
+\multirow{8}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   abstract
+\end{itemize}
+Subprogram calls: yes \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\medskip
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_spg.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{subprogram} components}
+\label{cons::subprogram}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\subprogramgroupconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{subprogram group} &
+\multirow{9}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item provides subprogram access
+\item requires subprogram access
+\item requires subprogram group access
+\item feature group
+\item feature
+\end{itemize}
+Flow specifications: no \\
+Modes: no\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{8}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   subprogram
+\item   abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: no \\
+Modes: no \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_spg_group.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{subprogram} components}
+\label{cons::subprogram}
+\end{figure}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\threadconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{thread} &
+\multirow{13}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item feature group
+\item provides data access
+\item requires data access
+\item provides subprogram access
+\item requires subprogram access
+\item provides subprogram group access
+\item requires subprogram group access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{10}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   subprogram
+\item   subprogram group
+\item   abstract
+\end{itemize}
+Subprogram calls: yes \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_thread.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{thread} components}
+\label{cons::thread}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\threadgroupconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{threadgroup} &
+\multirow{13}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item feature group
+\item provides data access
+\item requires data access
+\item provides subprogram access
+\item requires subprogram access
+\item provides subprogram group access
+\item requires subprogram group access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{10}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item   data
+\item   subprogram
+\item   subprogram group
+\item   abstract
+\end{itemize}
+Subprogram calls: yes \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_thread_group.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{thread group} components}
+\label{cons::threadgroup}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\processconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{process} &
+\multirow{13}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item feature group
+\item provides data access
+\item requires data access
+\item provides subprogram access
+\item requires subprogram access
+\item provides subprogram group access
+\item requires subprogram group access
+\item provides bus access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{12}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item data
+\item subprogram
+\item subprogram group
+\item thread
+\item thread group
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: yes \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_process.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{process} components}
+\label{cons::process}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\processorconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{processor} &
+\multirow{10}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item provides subprogram access
+\item provides subprogram group access
+\item provides bus access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{11}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item memory
+\item bus
+\item virtual processor
+\item virtual bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: no \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_processor.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{processor} components}
+\label{cons::processor}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\virtualprocessorconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{virtual processor} &
+\multirow{10}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item port
+\item provides subprogram access
+\item provides subprogram group access
+\item provides bus access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{9}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item virtual processor
+\item virtual bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: no \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_virtual_processor.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{virtual processor} components}
+\label{cons::virtualprocessor}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\deviceconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{device} &
+\multirow{10}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item provides subprogram access
+\item provides subprogram group access
+\item port
+\item feature group
+\item provides bus access
+\item requires bus access
+\item feature
+\end{itemize}
+Flow specifications: yes \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{9}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item bus
+\item virtual bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_device.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{device} components}
+\label{cons::device}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\memoryconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{memory} &
+\multirow{8}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item feature
+\item feature group
+\item provides bus access
+\item requires bus access
+\end{itemize}
+Flow specifications: no \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{9}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item memory
+\item bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_memory.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{memory} components}
+\label{cons::memory}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\busconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{bus} &
+\multirow{7}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item feature
+\item feature group
+\item requires bus access
+\end{itemize}
+Flow specifications: no \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{8}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item virtual bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: yes \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_bus.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{bus} components}
+\label{cons::bus}
+\end{figure}
+}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\virtualbusconstraints}{
+\begin{figure}[!h]
+{\center
+\begin{tabular}{|c|l|l|}
+\hline
+Category & Type & Implementation \\
+\hline
+\hline
+\texttt{virtualbus} &
+\multirow{5}*{
+\begin{minipage}{0.5 \textwidth}
+\medskip
+Features:
+\begin{itemize}
+\item \textit{none}
+\end{itemize}
+Flow specifications: no \\
+Modes: yes\\
+Properties: yes\\
+\end{minipage}
+}
+&
+\multirow{8}*{
+\begin{minipage}{0.3 \textwidth}
+\medskip
+Subcomponents:
+\begin{itemize}
+\item virtual bus
+\item abstract
+\end{itemize}
+Subprogram calls: no \\
+Connections: no \\
+Flows: no \\
+Modes: yes \\
+Properties: yes\\
+\end{minipage}
+}
+\\
+\includegraphics[scale=0.8]{figs/aadl_virtual_bus.pdf}&& \\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+&&\\
+\hline
+\end{tabular}
+}
+\caption{Constraints on \texttt{virtua lbus} components}
+\label{cons::virtualbus}
+\end{figure}
+}
+
