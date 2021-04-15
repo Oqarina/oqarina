@@ -40,8 +40,8 @@ Section AADL_Component_Type.
         c->connections = nil.
 
     Lemma Is_AADL_Component_Type_dec :
-        forall c : component, { (Is_AADL_Component_Type (c)) } +
-                              {~(Is_AADL_Component_Type (c))}.
+        forall c : component, { Is_AADL_Component_Type c } +
+                              { ~Is_AADL_Component_Type c }.
     Proof.
         unfold Is_AADL_Component_Type.
         intros.
@@ -49,13 +49,11 @@ Section AADL_Component_Type.
     Defined.
 
 (**
-%\begin{wfrule}[AADL component type well-formedness]
-
-An AADL component type is well-formed iff. its features match some restrictions imposed by its category. This leads to the following definition and decidability results:
-\end{wfrule}%
+%\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category.}%
 *)
 
 (** XXX Actually wrong, we must check for the direction of the feature as well *)
+
     Fixpoint Valid_Features_Category
         (l : list feature) (lcat : list FeatureCategory) :=
             match l with
@@ -66,8 +64,8 @@ An AADL component type is well-formed iff. its features match some restrictions 
 
     Lemma Valid_Features_Category_dec :
         forall (l:list feature) (lcat :list FeatureCategory),
-            {Valid_Features_Category l lcat} +
-            {~Valid_Features_Category l lcat}.
+            { Valid_Features_Category l lcat } +
+            { ~Valid_Features_Category l lcat }.
     Proof.
         intros.
         unfold Valid_Features_Category.
@@ -86,7 +84,7 @@ An AADL component type is well-formed iff. its features match some restrictions 
     Lemma Well_Formed_Component_Type_dec :
         forall (c:component) (lcat :list FeatureCategory),
             {Well_Formed_Component_Type c lcat} +
-            {~ Well_Formed_Component_Type c lcat}.
+            { ~Well_Formed_Component_Type c lcat}.
     Proof.
         intros.
         unfold Well_Formed_Component_Type.
@@ -112,31 +110,30 @@ Section AADL_Component_Implementation.
         Well_Formed_Component_Hierarchy c .
 
     Lemma Is_AADL_Component_Implementation_dec :
-        forall c : component, { (Is_AADL_Component_Implementation (c)) } +
-                              {~(Is_AADL_Component_Implementation (c))}.
+        forall c : component, { Is_AADL_Component_Implementation c } +
+                              { ~Is_AADL_Component_Implementation c}.
     Proof.
         unfold Is_AADL_Component_Implementation.
         auto.
     Defined.
 
 (**
-%\begin{wfrule}[AADL component implementation well-formedness]
-
-An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category. This leads to the following definition and decidability results:
-\end{wfrule}%
+%\wfrule{AADL component implementation well-formedness}{}
+{An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.}%
 *)
 
     Fixpoint Valid_Subcomponents_Category
         (l : list component) (lcat : list ComponentCategory) :=
         match l with
         | nil => True
-        | h :: t => In (h->category) lcat /\ Valid_Subcomponents_Category t lcat
+        | h :: t => In (h->category) lcat /\
+            Valid_Subcomponents_Category t lcat
         end.
 
     Lemma Valid_Subcomponents_Category_dec :
         forall (l:list component) (lcat :list ComponentCategory),
-            {Valid_Subcomponents_Category l lcat} +
-            {~Valid_Subcomponents_Category l lcat}.
+            { Valid_Subcomponents_Category l lcat } +
+            { ~Valid_Subcomponents_Category l lcat }.
     Proof.
         intros.
         unfold Valid_Subcomponents_Category.
@@ -155,7 +152,7 @@ An AADL component implementation is well-formed iff. its subcomponents match som
     Lemma Well_Formed_Component_Implementation_dec :
         forall (c:component) (lcat :list ComponentCategory),
             {Well_Formed_Component_Implementation c lcat} +
-            {~ Well_Formed_Component_Implementation c lcat}.
+            { ~Well_Formed_Component_Implementation c lcat}.
     Proof.
         intros.
         unfold Well_Formed_Component_Implementation.
@@ -205,14 +202,14 @@ Section AADL_Package.
     Notation "p '->components' " := (projectionPackageComponents p)
         (at level 80, right associativity).
 
-    (** %\begin{wfrule}An AADL package is well-formed iff its identifier is well-formed and its components are also well-formed. \end{wfrule}%*)
+    (** %\wfrule{Well-formed AADL package}{}{An AADL package is well-formed iff its identifier is well-formed and its components are also well-formed.}%*)
 
     Definition Well_Formed_Package (p : package) :=
         Well_Formed_Identifier_prop (p->idp) /\
         All Well_Formed_Component (p->components).
 
     Lemma Well_Formed_Package_dec :
-    forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
+        forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
     Proof.
         intros.
         unfold Well_Formed_Package.

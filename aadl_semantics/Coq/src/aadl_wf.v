@@ -238,17 +238,15 @@ Section WellFormedness_Rules.
   (** A component hierarchy verifies all the rules above.
       These two master theorem combines them.
 
-  %\paragraph{}\begin{wfrule}[Master theorem \#1]
+  %\paragraph{}\wfrule{[Master theorem \#1}{well-formed!component}{
   A component is well-formed iff. all the previous rules are validated:
   \begin{itemize}
     \item the component identifier is well-formed and
     \item its properties are correctly applied and
     \item subcomponents identifiers are well-formed  (Rule 4.5 N1) and
   \end{itemize}
-  \end{wfrule}%
-
-
-    *)
+  }%
+ *)
 
   Definition Well_Formed_Component (c : component) : Prop :=
    Well_Formed_Component_Id (c) /\
@@ -272,9 +270,9 @@ Section WellFormedness_Rules.
   (** This theorem does not consider the component hierarchy, it is local to
   the component passed as parameter. THis is addressed by the following theorem.
 
-  %\paragraph{}\begin{wfrule}[Master theorem \# 2]
+  %\paragraph{}\wfrule{Master theorem \# 2}{well-formed!component hierarchy}{
   A component hierarchy is well-formed iff a component and its subcomponent are well-formed.
-  \end{wfrule}%
+  }%
   *)
 
   Definition Well_Formed_Component_Hierarchy (c : component ) : Prop :=

@@ -502,7 +502,9 @@ Section AADL_Accessors.
   Definition Components_Identifiers (l : list component) : list identifier :=
     map (fun x => projectionComponentId x) l.
 
-  Definition Is_Property_Name_Defined (s : identifier) (v : property_value) : bool :=
+  (** [Is_Property_Name] return true if [v] has property name [s]. *)
+
+  Definition Is_Property_Name (s : identifier) (v : property_value) : bool :=
     if identifier_eq_dec s (Property_Name (Get_Property_Type v)) then true else false.
 
   (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c (e.g. as subcomponents) %\textbf{XXX features ??}%

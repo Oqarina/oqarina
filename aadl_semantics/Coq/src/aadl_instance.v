@@ -37,8 +37,8 @@ Section AADL_Instance.
         c->connections = nil.
 
     Lemma Is_AADL_Instance_dec :
-        forall c : component, { (Is_AADL_Instance (c)) } +
-                              {~(Is_AADL_Instance (c))}.
+        forall c : component, { Is_AADL_Instance c } +
+                              { ~Is_AADL_Instance c }.
     Proof.
         unfold Is_AADL_Instance.
         intros.
