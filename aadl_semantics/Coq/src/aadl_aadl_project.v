@@ -7,4 +7,4 @@ Some elemenets like Support_xxx enumerators are defined in the corresponding pro
 
 Require Import time.
 
-Definition Thread_Time : Type := NaturalTime.Time.
+Definition AADL_Time : Type := NaturalTime.Time.

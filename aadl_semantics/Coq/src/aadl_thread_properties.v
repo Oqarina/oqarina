@@ -149,7 +149,7 @@ Definition Map_Priority_pv (pv : property_value) : nat :=
     | _ => 0
   end.
 
-Definition Map_Priority (pv : list property_value) : Thread_Time :=
+Definition Map_Priority (pv : list property_value) : AADL_Time :=
     match filter Is_Priority pv with
     | nil => 0
     | v :: _ => Map_Priority_pv v

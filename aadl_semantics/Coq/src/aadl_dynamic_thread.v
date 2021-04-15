@@ -98,8 +98,8 @@ Definition Get_Input_Features (l : list feature) :=
 
 Inductive Dispatch_Time :=
 | Dispatch
-| Start : Thread_Time -> Dispatch_Time
-| Completion : Thread_Time -> Dispatch_Time
+| Start : AADL_Time -> Dispatch_Time
+| Completion : AADL_Time -> Dispatch_Time
 | NoIo.
 
 Scheme Equality for Dispatch_Time.
@@ -203,11 +203,11 @@ TBD
 
 Record thread_state : Type := {
   dispatch_protocol : Dispatch_Protocol;
-  period : Thread_Time;
-(*  deadline : Thread_Time;
-  wcet : Thread_Time; *)
+  period : AADL_Time;
+(*  deadline : AADL_Time;
+  wcet : AADL_Time; *)
   priority : nat;
-  clock : Thread_Time;
+  clock : AADL_Time;
   input_ports : list port_variable;
   output_ports : list port_variable;
   dispatch_trigger : list feature;
@@ -232,7 +232,7 @@ TBD
 
 (** Coq has no syntax to update records, but a plugin that I prefer not to use. This provides a sufficient alternative *)
 
-Definition advance_time (t : thread_state) (tt : Thread_Time): thread_state := {|
+Definition advance_time (t : thread_state) (tt : AADL_Time): thread_state := {|
   dispatch_protocol := t.(dispatch_protocol);
   period := t.(period);
   priority := t.(priority);
