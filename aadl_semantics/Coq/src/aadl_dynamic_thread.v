@@ -16,22 +16,21 @@ Require Import queue.
 Require Import utils.
 Require Import aadl_declarative.
 Require Import aadl_thread_properties.
+Require Import aadl_communication_properties.
 Require Import aadl_aadl_project.
+Require Import aadl_feature_helper.
+
 (* end hide *)
 
-(** % \subsection{Thread Dispatching}
 
-The litterature on real-time scheduling proposes one canonical task model \cite{XXX}. The AADL core language supports this task model through a collection of properties. The dispatch of a thread is configured by several core properties:  \texttt{Dispatch\_Protocol}, \texttt{Priority}, \texttt{Period}, .
-%
+(** % \subsection{Examples}%
 
-*)
+We first define example that will serve as a validation of our concepts. Here, we definitely use some form of test-driven engineering to ensure our formalization is going in the right direction.
 
-(** *** Canonical task model as AADL model elements
-
-
+*** A Periodic Thread
 
 *)
-(* begin hide *)
+
 Definition Periodic_Dispatch :=
   Property_Value Scheduling_Protocol (aadlenum (Ident "periodic")).
 
@@ -49,6 +48,8 @@ Definition A_Periodic_Thread := Component
   nil
   [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
 
+(** *** A Sporadic Thread*)
+
 Definition Sporadic_Dispatch :=
   Property_Value Scheduling_Protocol (aadlenum (Ident "sporadic")).
 
@@ -64,7 +65,13 @@ Definition A_Sporadic_Thread := Component
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
   nil.
 
-(* end hide *)
+
+(** % \subsection{Thread Dispatching}
+
+This section captures the content of \S 5.4.2 of  \cite{as2-cArchitectureAnalysisDesign2017}.
+%
+
+*)
 
 (* begin hide *)
 Section AADL_Dispatching.
@@ -72,45 +79,12 @@ Section AADL_Dispatching.
 
 Definition Port_Queue : Type := ListQueue.queue.
 
-(** ** Mapping of ports *)
-
-Definition Is_Input_Port (f : feature) :=
-  (DirectionType_beq (projectionFeatureDirection f) inF) ||
-  (DirectionType_beq (projectionFeatureDirection f) inoutF).
-
-Definition Is_Triggerable_Port (f : feature) :=
-  (FeatureCategory_beq (projectionFeatureCategory f) eventPort) ||
-  (FeatureCategory_beq (projectionFeatureCategory f) eventDataPort) ||
-  (FeatureCategory_beq (projectionFeatureCategory f) subprogramAccess) ||
-  (FeatureCategory_beq (projectionFeatureCategory f) subprogramGroupAccess).
-
-Definition Is_Triggerable_Port_p (f : feature) :=
-  In (projectionFeatureCategory f) [ eventPort ; eventDataPort ;
-                                     subprogramAccess ; subprogramGroupAccess].
-
-Definition Is_Data_Port (f : feature) :=
-  (projectionFeatureCategory f) = dataPort.
-
-Definition Get_Input_Features (l : list feature) :=
-  filter Is_Input_Port l.
-
 (** ** Port variable *)
-
-Inductive Dispatch_Time :=
-| Dispatch
-| Start : AADL_Time -> Dispatch_Time
-| Completion : AADL_Time -> Dispatch_Time
-| NoIo.
-
-Scheme Equality for Dispatch_Time.
-
-Definition Invalid_Feature :=
-  Feature (Ident "invalid" ) inF invalid nil_component nil.
 
 Record port_variable : Type := {
   port : feature;
   variable : Port_Queue;
-  dispatch_time : Dispatch_Time;
+  port_input_times : input_time;
   urgency : nat;
 }.
 
@@ -118,7 +92,7 @@ Lemma port_variable_eq_dec : forall x y : port_variable, {x=y}+{x<>y}.
 Proof.
   decide equality.
   apply PeanoNat.Nat.eq_dec.
-  apply Dispatch_Time_eq_dec.
+  apply input_time_eq_dec.
   apply list_eq_dec; apply PeanoNat.Nat.eq_dec.
   apply feature_eq_dec.
 Qed.
@@ -126,7 +100,7 @@ Qed.
 Definition mkPortVariable (f : feature) := {|
   port := f;
   variable := [];
-  dispatch_time := Dispatch;
+  port_input_times := Input_Time [ Default_IO_Time_Spec ];
   urgency := 0;
 |}.
 
@@ -135,19 +109,12 @@ Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
 Definition Update_Variable (p : port_variable) (v : Port_Queue): port_variable := {|
   port := p.(port);
   variable := v;
-  dispatch_time := p.(dispatch_time);
+  port_input_times := p.( port_input_times);
   urgency := p.(urgency);
 |}.
 
 Definition Build_Input_Port_Variables (l : list feature) :=
   map mkPortVariable (Get_Input_Features l).
-
-Definition Is_Output_Port (f : feature) :=
-  DirectionType_beq (projectionFeatureDirection f) outF ||
-  DirectionType_beq (projectionFeatureDirection f) inoutF.
-
-Definition Get_Output_Features (l : list feature) :=
-  filter Is_Output_Port l.
 
 Definition Build_Output_Port_Variables (l : list feature) :=
   map mkPortVariable (Get_Output_Features l).
@@ -165,7 +132,7 @@ Let us note $E$ the set of features that can trigger a dispatch with a non-empty
 \end{definition}%*)
 
 Definition Build_Dispatch_Trigger (l : list feature) :=
-  filter Is_Triggerable_Port l. (* XXX should use also property Dispatch_Trigger *)
+  filter Is_Triggering_Feature l. (* XXX should use also property Dispatch_Trigger *)
 
 Definition Pending_Request_On (p : port_variable) :=
   negb (ListQueue.is_empty p.(variable)).
@@ -323,8 +290,10 @@ Definition Dispatching_Port (th : thread_state) : port_variable :=
   Dispatch_Port' Invalid_Port_Variable
       (Port_Variables_With_Pending_Request th.(input_ports) th.(dispatch_trigger)).
 
+(** Not even sure this is enough. For the moment, a port is frozen iff. the corresponding Input_Time is dispatch. We also make the assumption this is the only one IO_Time_Spec given, probably too strong ...*)
+
 Definition Frozen (p : port_variable) (th : thread_state) :=
-match p.(dispatch_time) with
+match (hd Default_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times))) with
 | Dispatch => (p = Dispatching_Port th) \/ ~ (In_Dispatch_Trigger p th.(dispatch_trigger))
 | NoIo => False
 | Start _ => False

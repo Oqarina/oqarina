@@ -1,4 +1,4 @@
-(** %\chapter{\texttt{Thread\_Properties}} %*)
+(** %\section{\texttt{Thread\_Properties}} %*)
 
 (* begin hide *)
 (** Coq Library *)
@@ -11,20 +11,7 @@ Require Import aadl.
 Require Import aadl_aadl_project.
 (* end hide *)
 
-(** %
-
-This section gather basic function to manipulate the properties  defined in the property set \texttt{thread\_properties}.
-
-First, we define those properties using plain AADL concepts, then we map them to a more precise set of Coq types. This two-step approach allows for a step-by-step refinement from an AADL model to a deep embedding in Coq terms. %
-
-*)
-
-(** * Mapping of %\texttt{thread\_properties}%
-
-In the following, we first provide a definition of some AADL properties using the formalizations of AADL concepts from [aadl]. For each property, we define
-- its name as an identifier [<property_nane>_Name]
-- the corresponding property type definition as [<property_nane>]
-- a helper function [Is_<property_nane>] that returns true iff. a property_value has period as name. XXX we might consider checking the type is valid as well.
+(** ** %\texttt{thread\_properties}% as Coq/AADL property_types
 
 %\paragraph{} \begin{definition}[Period (\S XXX]
  TBD
@@ -69,13 +56,8 @@ Definition Scheduling_Protocol : property_type :=
 Definition Is_Scheduling_Protocol (v : property_value) : bool :=
     Is_Property_Name Scheduling_Protocol_Name v.
 
-(** * Mapping of %\texttt{thread\_properties}% as Coq types
+(** ** %\texttt{thread\_properties}% as Coq native types
 
-In the following, we provide concrete Coq type definitions, and a mapping from AADL concepts. This deeper embedding of AADL as Coq type will allow for more precise processing. For each property, we define
-- its corresponding Coq type,
-- a function mapping the AADL property value to this type.
-
-_Note: these functions implictly assumes the input AADL model elements are well-formed. In particular that property values are unique in a component_.
 
 *)
 

@@ -238,8 +238,12 @@ Section AADL_Definitions.
                    connection
     .
 
-  (* Definition of an empty component *)
+  (** Definition of an empty component *)
   Definition nil_component := Component empty_identifier (null) empty_identifier nil nil nil nil.
+
+  (** Definition of an invalid feature *)
+  Definition Invalid_Feature :=
+    Feature (Ident "invalid" ) inF invalid nil_component nil.
 
 (* begin hide *)
 End AADL_Definitions.
