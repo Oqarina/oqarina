@@ -25,7 +25,7 @@ Require Import aadl_feature_helper.
 
 (** % \subsection{Examples}%
 
-We first define example that will serve as a validation of our concepts. Here, we definitely use some form of test-driven engineering to ensure our formalization is going in the right direction.
+We first define two examples that will serve as a validation of our concepts. Here, we definitely use some form of test-driven engineering to ensure our formalization is going in the right direction.
 
 *** A Periodic Thread
 
@@ -65,11 +65,72 @@ Definition A_Sporadic_Thread := Component
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
   nil.
 
+(** ** Port Variable *)
 
-(** % \subsection{Thread Dispatching}
+(**
+Port variable maps AADL features to runtime level entities. Since we use Coq to define the dynamic semantics of AADL, it is also reasonnable to define the concept of port variable and use it to capture further the dynamic semantics of AADL threads.
 
-This section captures the content of \S 5.4.2 of  \cite{as2-cArchitectureAnalysisDesign2017}.
-%
+ %\paragraph{}\define{Port Variable (AADLv2.2 \S 8.2)}{Port Variable (AADL)}{A port variable captures the feature at runtime. It implements runtime services to interact with the feature.}%
+
+A port variable is captured using a Coq record. We define the concept of invalid port variable and a constructor for this record.
+*)
+
+Definition Port_Queue : Type := ListQueue.queue.
+
+
+(* begin hide *)
+Section Port_Variable.
+(* end hide *)
+
+  Record port_variable : Type := {
+    port : feature;
+    variable : Port_Queue;
+    port_input_times : input_time;
+    urgency : nat;
+  }.
+
+  Lemma port_variable_eq_dec : forall x y : port_variable, {x=y}+{x<>y}.
+  Proof.
+    decide equality.
+    apply PeanoNat.Nat.eq_dec.
+    apply input_time_eq_dec.
+    apply list_eq_dec; apply PeanoNat.Nat.eq_dec.
+    apply feature_eq_dec.
+  Qed.
+
+  Definition mkPortVariable (f : feature) := {|
+    port := f;
+    variable := [];
+    port_input_times := Input_Time [ Default_IO_Time_Spec ];
+    urgency := 0;
+  |}.
+
+  Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
+
+  Definition Update_Variable (p : port_variable) (v : Port_Queue): port_variable := {|
+    port := p.(port);
+    variable := v;
+    port_input_times := p.( port_input_times);
+    urgency := p.(urgency);
+  |}.
+
+(** [Build_Input_Port_Variables] (resp. [Build_Output_Port_Variables]) is a utility functions that builds port variables from input (resp. output) features. XXX what about inout? *)
+
+  Definition Build_Input_Port_Variables (l : list feature) :=
+    map mkPortVariable (Get_Input_Features l).
+
+  Definition Build_Output_Port_Variables (l : list feature) :=
+    map mkPortVariable (Get_Output_Features l).
+
+(* begin hide *)
+End Port_Variable.
+(* end hide *)
+
+(** % \subsection{Thread Dispatching}%
+
+This section captures the content of %\S 5.4.2 of  \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. Therefore, we must first define different types that refine the [feature] from previous chapter into port variables and associated predicates to evaluate dispatch triggers.
+
+The AADL standard defines the concept of port variable in %\S 8.3%. We first define the concept of port variable as a prox
 
 *)
 
@@ -77,47 +138,6 @@ This section captures the content of \S 5.4.2 of  \cite{as2-cArchitectureAnalysi
 Section AADL_Dispatching.
 (* end hide *)
 
-Definition Port_Queue : Type := ListQueue.queue.
-
-(** ** Port variable *)
-
-Record port_variable : Type := {
-  port : feature;
-  variable : Port_Queue;
-  port_input_times : input_time;
-  urgency : nat;
-}.
-
-Lemma port_variable_eq_dec : forall x y : port_variable, {x=y}+{x<>y}.
-Proof.
-  decide equality.
-  apply PeanoNat.Nat.eq_dec.
-  apply input_time_eq_dec.
-  apply list_eq_dec; apply PeanoNat.Nat.eq_dec.
-  apply feature_eq_dec.
-Qed.
-
-Definition mkPortVariable (f : feature) := {|
-  port := f;
-  variable := [];
-  port_input_times := Input_Time [ Default_IO_Time_Spec ];
-  urgency := 0;
-|}.
-
-Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
-
-Definition Update_Variable (p : port_variable) (v : Port_Queue): port_variable := {|
-  port := p.(port);
-  variable := v;
-  port_input_times := p.( port_input_times);
-  urgency := p.(urgency);
-|}.
-
-Definition Build_Input_Port_Variables (l : list feature) :=
-  map mkPortVariable (Get_Input_Features l).
-
-Definition Build_Output_Port_Variables (l : list feature) :=
-  map mkPortVariable (Get_Output_Features l).
 
 (** %\begin{definition}[Enabled set] (AADLv2.2 \S 5.4.2 37, 38)\\
 
