@@ -1,0 +1,17 @@
+package test_1
+public
+	
+	system s
+		
+	end s;
+
+	system sc
+		
+	end sc;
+	
+	system implementation s.impl
+		subcomponents
+			sc1 : system sc;
+	end s.impl;
+	
+end test_1;
