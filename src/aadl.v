@@ -355,8 +355,8 @@ Section AADL_Component_Decidability.
 
   (** Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
 
-  Fixpoint component_eq_dec (a b : component) : {a=b}+{a<>b}
-      with feature_eq_dec (a b : feature) : {a=b}+{a<>b}.
+  Fixpoint component_eq_dec' (a b : component) : {a=b}+{a<>b}
+      with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
   Proof.
       (* decide equality for component type *)
       decide equality;
@@ -369,18 +369,25 @@ Section AADL_Component_Decidability.
       || auto.
   Defined.
 
-  Lemma component_dec: eq_dec component.
+  Lemma component_eq_dec: eq_dec component.
   Proof.
       unfold eq_dec.
       intros.
-      apply component_eq_dec.
+      apply component_eq_dec'.
   Qed.
+
+  Lemma feature_eq_dec: eq_dec feature.
+  Proof.
+      unfold eq_dec.
+      intros.
+      apply feature_eq_dec'.
+  Defined.
 
   Lemma list_component_eq_dec : eq_dec (list component).
   Proof.
       unfold eq_dec.
       apply list_eq_dec.
-      apply component_dec.
+      apply component_eq_dec.
   Qed.
 
   Lemma list_connection_eq_dec : eq_dec (list connection).
@@ -394,7 +401,7 @@ Section AADL_Component_Decidability.
 End AADL_Component_Decidability.
 
 Global Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
-  identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_dec
+  identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_eq_dec
   list_component_eq_dec list_connection_eq_dec : core.
 (* end hide *)
 
