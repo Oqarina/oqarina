@@ -32,9 +32,12 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 
     XXX TBH, it is only when we define the global semantics of an instanticated system as the combination of the semantics of its parts that we need the complete instance model. In this case, the instance model is equivalent to one generic component representing the full hierarchy.
 
+* Property sets
+    * `aadl_aadl_project.v`: accessors to manipulate some of the properties from AADL property set `aadl_project`.
+    * `aadl_communication_properties.v`: accessors to manipulate some of the properties from AADL property set `communication_properties`.
+    * `aadl_thread_properties.v`: accessors to manipulate some of the properties from AADL property set `thread_properties`.
+  XXX This package could be generated from AADL property sets.
+  
 * Helper packages
-    * `aadl_communication_properties.v`: accessor to manipulate some of the properties from AADL property set `communication_properties`.
-    * `aadl_thread_properties.v`: accessor to manipulate some of the properties from AADL property set `thread_properties`.
     * `aadl_feature_helper`: helper function to manipulate features
 
-    XXX This package could be generated from AADL property sets.
