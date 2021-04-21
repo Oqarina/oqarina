@@ -4,6 +4,9 @@
 
 Require Import List.
 Import ListNotations. (* from List *)
+Require Import Coq.Bool.Bool.
+Require Import Coq.Lists.ListDec.
+Require Import utils.
 
 Module Type Queue.
   Parameter V : Type.
@@ -22,7 +25,7 @@ Module Type Queue.
 End Queue.
 
 Module ListQueue <: Queue.
-  Definition V := nat. (* for simplicity *)
+  Definition V := bool. (* for simplicity *)
   Definition queue := list V.
   Definition empty : queue := nil.
 
@@ -31,6 +34,18 @@ Module ListQueue <: Queue.
     | nil => true
     | _ :: _ => false
     end.
+
+  Definition Is_Empty (q : queue) : Prop :=
+    match q with
+    | nil => True
+    | _ => False
+    end.
+
+  Lemma Is_Empty_dec : forall q, {Is_Empty q} + { ~Is_Empty q}.
+  Proof.
+    unfold Is_Empty.
+    induction q; auto.
+  Defined.
 
   Definition enq (q : queue) (v : V) : queue :=  v :: q.
 

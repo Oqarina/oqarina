@@ -7,13 +7,16 @@ Import ListNotations. (* from List *)
 Require Import Coq.Bool.Bool.
 Require Import Coq.Bool.Sumbool.
 Require Import Coq.Arith.PeanoNat.
+Require Import Coq.Arith.Compare_dec.
+Require Import Coq.Bool.Bool.
 
 (** AADL library *)
+Require Import utils.
+(*Require Import hlist. *)
 Require Import identifiers.
 Require Import aadl.
 Require Import time.
 Require Import queue.
-Require Import utils.
 Require Import aadl_declarative.
 Require Import aadl_thread_properties.
 Require Import aadl_communication_properties.
@@ -29,11 +32,10 @@ Port variable maps AADL features to runtime level entities. Since we use Coq to 
 
  %\paragraph{}\define{Port Variable (AADLv2.2 \S 8.2)}{Port Variable (AADL)}{A port variable captures the feature at runtime. It implements runtime services to interact with the feature.}%
 
-A port variable is captured using a Coq record. We define the concept of invalid port variable and a constructor for this record.
+A port variable is captured using a Coq record. We define the concept of invalid port variable and a constructor for this record, along with the well-formedness rule and decidability result.
 *)
 
 Definition Port_Queue : Type := ListQueue.queue.
-
 
 (* begin hide *)
 Section Port_Variable.
@@ -51,9 +53,9 @@ Section Port_Variable.
     decide equality.
     apply PeanoNat.Nat.eq_dec.
     apply input_time_eq_dec.
-    apply list_eq_dec; apply PeanoNat.Nat.eq_dec.
+    apply list_eq_dec; apply bool_dec.
     apply feature_eq_dec.
-  Qed.
+  Defined.
 
   Definition mkPortVariable (f : feature) := {|
     port := f;
@@ -61,6 +63,18 @@ Section Port_Variable.
     port_input_times := Input_Time [ Default_IO_Time_Spec ]; (* XXX default value to change*)
     urgency := 0;
   |}.
+
+  Definition port_variable_wf (p : port_variable) :=
+    input_time_wf p.(port_input_times).
+
+  Definition port_variable_wf_dec : forall p : port_variable,
+    dec_sumbool (port_variable_wf p).
+  Proof.
+    intros.
+    unfold port_variable_wf.
+    destruct port_input_times.
+    apply input_time_wf_dec.
+  Defined.
 
   Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
 
@@ -135,64 +149,172 @@ Section AADL_Dispatching.
 
 (** *** Intermediate Predicates
 
-Most dispatch protocols review the state of triggering features. We build the [Thread_Has_Activated_Triggering_Feature] predicate as a conjunction of more basic predicates, either in [Prop] or [bool]. First, we check whether the feature is activated, [Is_Feature_Activiated], then whether it is in the dispatch trigger, in [Feature_In_Dispatch_Trigger]. *)
+Most dispatch protocols review the state of triggering features. We build the [Thread_Has_Activated_Triggering_Feature] predicate as a conjunction of more basic predicates,  in [Prop], and demonstrate their decidability.
 
-  Definition Is_Feature_Activated_b (p : port_variable) :=
-    negb (ListQueue.is_empty p.(variable)).
+First, we check whether the feature is activated, [Is_Feature_Activiated], then whether it is in the dispatch trigger, in [Feature_In_Dispatch_Trigger]. *)
 
   Definition Is_Feature_Activated (p : port_variable) :=
-    p.(variable) <> nil.
+    ~ ListQueue.Is_Empty p.(variable).
+
+  Lemma Is_Feature_Activated_dec :
+    forall (p : port_variable), dec_sumbool (Is_Feature_Activated p).
+  Proof.
+    intros.
+    unfold dec_sumbool.
+    unfold Is_Feature_Activated.
+    apply dec_sumbool_not.
+    apply ListQueue.Is_Empty_dec.
+  Defined.
 
   Definition Feature_In_Dispatch_Trigger (p : port_variable) (d : list feature) :=
     In p.(port) d.
 
-  Fixpoint Feature_In_Dispatch_Trigger_b (p : port_variable) (d : list feature) :=
-    match d with
-    | nil => false
-    | h :: t => (eqb feature_eq_dec (p.(port)) h) || Feature_In_Dispatch_Trigger_b p t
-    end.
+  Definition Feature_In_Dispatch_Trigger_dec :
+    forall (p : port_variable) (d : list feature),
+      dec_sumbool (Feature_In_Dispatch_Trigger p d).
+  Proof.
+    unfold Feature_In_Dispatch_Trigger.
+    unfold dec_sumbool.
+    intros.
+    apply In_dec.
+    apply feature_eq_dec.
+  Defined.
 
-  Definition Has_Activated_Triggering_Feature
-    (l : list port_variable) (d : list feature) : Prop :=
-    exists p, In p l -> Is_Feature_Activated p  /\ Feature_In_Dispatch_Trigger p d.
+  (** From that point, we can build [Thread_Has_Activated_Triggering_Feature] that is true iff. the thread has at least one activated triggering feature (predicate [Is_Activated_Triggering_Feature]). *)
 
-  Definition Is_Activated_Triggering_Feature_b (p : port_variable) (d : list feature) :=
-    Is_Feature_Activated_b p && Feature_In_Dispatch_Trigger_b p d.
+  Definition Is_Activated_Triggering_Feature (p : port_variable)  (d : list feature) :=
+    Is_Feature_Activated p /\ Feature_In_Dispatch_Trigger p d.
 
-  Fixpoint Has_Activated_Triggering_Feature_b (l : list port_variable) (d : list feature) :=
+  Lemma Is_Activated_Triggering_Feature_dec:
+    forall (p : port_variable)  (d : list feature),
+      dec_sumbool (Is_Activated_Triggering_Feature p d).
+  Proof.
+    intros.
+    unfold Is_Activated_Triggering_Feature.
+    apply dec_sumbool_and.
+    apply Is_Feature_Activated_dec.
+    apply Feature_In_Dispatch_Trigger_dec.
+  Defined.
+
+  Fixpoint Has_Activated_Triggering_Feature (l : list port_variable) (d : list feature) :=
     match l with
-    | nil => false
-    | h :: t => (Is_Activated_Triggering_Feature_b h d ) ||
-                (Has_Activated_Triggering_Feature_b t d)
+      | nil => False
+      | h :: t => Is_Activated_Triggering_Feature h d \/
+                  Has_Activated_Triggering_Feature t d
     end.
+
+  Lemma Has_Activated_Triggering_Feature_dec :
+    forall (l : list port_variable) (d : list feature),
+      dec_sumbool (Has_Activated_Triggering_Feature l d).
+  Proof.
+    intros.
+    unfold dec_sumbool.
+    unfold Has_Activated_Triggering_Feature.
+    induction l.
+    - auto.
+    - apply dec_sumbool_or.
+      * apply Is_Activated_Triggering_Feature_dec.
+      * apply IHl.
+  Defined.
 
   Definition Thread_Has_Activated_Triggering_Feature (th : thread_state_variable) :=
-    Has_Activated_Triggering_Feature_b th.(input_ports) th.(dispatch_trigger).
+    Has_Activated_Triggering_Feature
+      th.(input_ports) th.(dispatch_trigger).
+
+  Lemma Thread_Has_Activated_Triggering_Feature_dec :
+    forall (th : thread_state_variable),
+      dec_sumbool (Thread_Has_Activated_Triggering_Feature th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Thread_Has_Activated_Triggering_Feature.
+    unfold Has_Activated_Triggering_Feature.
+    intros.
+    apply Has_Activated_Triggering_Feature_dec.
+  Defined.
 
 (** *** Definition of [Enabled]
 
 From the previous definitions, we can now define the [Enabled] function that returns [true] when a thread is dispatched.  *)
 
   Definition Periodic_Enabled (th : thread_state_variable) :=
-    (th.(clock) mod th.(period)) =? 0.
+    th.(clock) mod th.(period) = 0.
+
+  Lemma Periodic_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Periodic_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Periodic_Enabled.
+    intros.
+    apply PeanoNat.Nat.eq_dec.
+  Defined.
 
   Definition Aperiodic_Enabled (th : thread_state_variable) :=
     Thread_Has_Activated_Triggering_Feature th.
 
+  Lemma Aperiodic_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Aperiodic_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Aperiodic_Enabled.
+    intros.
+    apply Thread_Has_Activated_Triggering_Feature_dec.
+  Defined.
+
   Definition Sporadic_Enabled (th : thread_state_variable) :=
-    (th.(period) <=? th.(clock)) &&
+    th.(period) <= th.(clock) /\
      Thread_Has_Activated_Triggering_Feature th.
 
+  Lemma Sporadic_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Sporadic_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Sporadic_Enabled.
+    intros.
+    apply dec_sumbool_and.
+    apply le_dec. (* {period th <= clock th} + {~ period th <= clock th} *)
+    apply Thread_Has_Activated_Triggering_Feature_dec.
+  Defined.
+
   Definition Timed_Enabled (th : thread_state_variable) :=
-    (th.(period) =? th.(clock)) ||
+    (th.(period) = th.(clock)) \/
     Thread_Has_Activated_Triggering_Feature th.
+
+  Lemma Timed_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Timed_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Timed_Enabled.
+    intros.
+    apply dec_sumbool_or.
+    apply PeanoNat.Nat.eq_dec.
+    apply Thread_Has_Activated_Triggering_Feature_dec.
+  Defined.
 
   Definition Hybrid_Enabled (th : thread_state_variable) :=
-    (th.(period) =? th.(clock)) ||
+    (th.(period) = th.(clock)) /\
     Thread_Has_Activated_Triggering_Feature th.
 
+  Lemma Hybrid_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Hybrid_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Hybrid_Enabled.
+    intros.
+    apply dec_sumbool_and.
+    apply PeanoNat.Nat.eq_dec.
+    apply Thread_Has_Activated_Triggering_Feature_dec.
+  Defined.
+
   Definition Background_Enabled (th : thread_state_variable) :=
-    true.
+    True.
+
+  Lemma Background_Enabled_dec:
+    forall (th : thread_state_variable), dec_sumbool (Background_Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Background_Enabled.
+    auto.
+  Defined.
 
   Definition Enabled (th : thread_state_variable) :=
     match th.(dispatch_protocol) with
@@ -202,8 +324,23 @@ From the previous definitions, we can now define the [Enabled] function that ret
     | Timed => Timed_Enabled th
     | Hybrid => Hybrid_Enabled th
     | Background => Background_Enabled th
-    | Unspecified => false
+    | Unspecified => False
     end.
+
+  Lemma Enabled_dec: forall (th : thread_state_variable), dec_sumbool (Enabled th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Enabled.
+    intros.
+    destruct (dispatch_protocol th).
+    auto.
+    apply Periodic_Enabled_dec.
+    apply Sporadic_Enabled_dec.
+    apply Aperiodic_Enabled_dec.
+    apply Background_Enabled_dec.
+    apply Timed_Enabled_dec.
+    apply Hybrid_Enabled_dec.
+  Defined.
 
 (* begin hide *)
 End AADL_Dispatching.
@@ -213,15 +350,24 @@ End AADL_Dispatching.
 
 (**  The following is a first cut at formalizing ports from %\S 8.3%. We capture the definition of [Frozen] for ports. *)
 
-(** [Activated_Triggering_Features] returns the list of all Activated_Trigger_Features *)
+(** [Activated_Triggering_Features] returns the list of Activated Triggering Features. *)
 
-Definition Activated_Triggering_Features (th : thread_state_variable): list port_variable :=
-  filter (fun l => Is_Activated_Triggering_Feature_b l th.(dispatch_trigger))
-     th.(input_ports).
+Fixpoint Activated_Triggering_Features' (l : list port_variable) (d : list feature) :=
+  match l with
+  | nil => nil
+  | h :: t => match Is_Activated_Triggering_Feature_dec h d with
+                  | left _=> h :: (Activated_Triggering_Features' t d)
+                  | right _ => Activated_Triggering_Features' t d
+              end
+  end.
 
-(** see %\S 8.3 (32)% XXX We should also address the FIFO for ports with same urgency .. *)
+Definition Activated_Triggering_Features (th : thread_state_variable) :=
+  Activated_Triggering_Features' th.(input_ports) th.(dispatch_trigger).
 
-Fixpoint Get_Port_Variable_With_Max_Urgency (p : port_variable) (l : list port_variable) :=
+(** [Get_Port_Variable_With_Max_Urgency] returns the port variable with the maximum urgency, see %\S 8.3 (32) \change{We should also address the FIFO for ports with same urgency .. }% *)
+
+Fixpoint Get_Port_Variable_With_Max_Urgency
+  (p : port_variable) (l : list port_variable) : port_variable :=
   match l with
   | nil => p
   | h :: t => if p.(urgency) <=? h.(urgency) then
@@ -231,22 +377,43 @@ Fixpoint Get_Port_Variable_With_Max_Urgency (p : port_variable) (l : list port_v
        first argument is [Invalid_Feature] *)
   end.
 
-(** From that, we can define the [Get_Elected_Triggering_Feature] that returns the elected features among Triggering Features that have been activated. XXX must define this concept in the standard. *)
+(** Then, we can define the [Get_Elected_Triggering_Feature] that returns the elected features among Activated Triggering Features. XXX must define this concept in the standard. *)
 
 Definition Get_Elected_Triggering_Feature (th : thread_state_variable) : port_variable :=
   Get_Port_Variable_With_Max_Urgency Invalid_Port_Variable
       (Activated_Triggering_Features th).
 
-(** Not even sure this is enough. For the moment, a port is frozen iff. the corresponding Input_Time is dispatch. We also make the assumption this is the only one IO_Time_Spec given, probably too strong ...*)
+(** [Current_Valid_IO_Time_Spec] returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}% *)
 
-Definition Frozen (p : port_variable) (th : thread_state_variable) :=
-match (hd Default_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times))) with
-| Dispatch => (p = Get_Elected_Triggering_Feature  th) \/
-              ~ (Feature_In_Dispatch_Trigger p th.(dispatch_trigger))
-| NoIo => False
-| Start _ => False
-| Completion _ => False
-end.
+Definition Current_Valid_IO_Time_Spec (p : port_variable) (th : thread_state_variable) :=
+  hd Default_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times)).
+
+(** The definition of the [Frozen] predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc.*)
+
+Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
+   (p = Get_Elected_Triggering_Feature  th) \/
+       ~ (Feature_In_Dispatch_Trigger p th.(dispatch_trigger)).
+
+Definition Dispatch_Frozen_dec: forall p th, { Dispatch_Frozen p th } + { ~ Dispatch_Frozen p th }.
+Proof.
+  intros.
+  unfold Dispatch_Frozen.
+  apply dec_sumbool_or.
+  apply port_variable_eq_dec.
+  apply dec_sumbool_not.
+  apply Feature_In_Dispatch_Trigger_dec.
+Defined.
+
+Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
+  match Current_Valid_IO_Time_Spec p th with
+  | Dispatch => Dispatch_Frozen p th
+  | NoIo => False
+  | Start _ => False
+  | Completion _ => False
+  end.
+
+Definition Frozen_Ports' (th : thread_state_variable): list port_variable :=
+  filter_dec port_variable_wf port_variable_wf_dec th.(input_ports).
 
 (** ** Runtime support for threads *)
 
@@ -274,19 +441,19 @@ Section Thread_RTS.
 TBD
   \end{definition} %*)
 
-  Definition Store_In_ (p : port_variable) (name : identifier) (value : nat) :=
+  Definition Store_In_ (p : port_variable) (name : identifier) (value : bool) :=
     if identifier_beq (projectionFeatureIdentifier p.(port)) name then
       Update_Variable p (ListQueue.enq p.(variable) value)
     else
       p.
 
-  Fixpoint Store_In (l : list port_variable) (name : identifier) (value : nat) :=
+  Fixpoint Store_In (l : list port_variable) (name : identifier) (value : bool) :=
     match l with
     | nil => l
     | h :: t => Store_In_ h name value :: Store_In t name value
     end.
 
-  Definition store_in (t : thread_state_variable) (name : identifier) (value : nat) : thread_state_variable := {|
+  Definition store_in (t : thread_state_variable) (name : identifier) (value : bool) : thread_state_variable := {|
     dispatch_protocol := t.(dispatch_protocol);
     period := t.(period);
     priority := t.(priority);
@@ -325,7 +492,7 @@ Eval compute in mk_thread_state_variable (A_Periodic_Thread).
 
 Definition A_Periodic_Thread_State := mk_thread_state_variable (A_Periodic_Thread).
 
-Eval compute in Enabled (A_Periodic_Thread_State).
+Eval vm_compute in Enabled (A_Periodic_Thread_State).
 
 Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 4.
 
@@ -350,21 +517,31 @@ Definition A_Sporadic_Thread := Component
 
 (** We can continue a build a sporadic thread, add an event, avancd time and check it is enabled *)
 
-Eval compute in mk_thread_state_variable (A_Sporadic_Thread).
-
 Definition A_Sporadic_Thread_State := mk_thread_state_variable (A_Sporadic_Thread).
 
-Eval compute in Enabled (A_Sporadic_Thread_State).
+Eval vm_compute in Enabled (A_Sporadic_Thread_State).
 
-Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Ident "a_feature") 42.
+Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Ident "a_feature") true.
 Compute A_Sporadic_Thread_State'.
 
 Eval compute in Enabled (A_Sporadic_Thread_State').
 
-Eval compute in Enabled (advance_time A_Sporadic_Thread_State' 32).
-
-Compute advance_time A_Sporadic_Thread_State' 32.
-
 Definition th := advance_time A_Sporadic_Thread_State' 32.
 
-Eval compute in Get_Elected_Triggering_Feature (th).
+Compute Enabled th.
+Compute Get_Elected_Triggering_Feature (th).
+
+Compute Frozen_Ports' (th).
+
+(*
+Record Request : Type := {
+  received_time : AADL_Time;
+  payload : hlist;
+}.
+
+Definition mkRequest (t : AADL_Time) (T : Type) := {|
+  received_time := t;
+  payload := T;
+|}.
+
+*)
