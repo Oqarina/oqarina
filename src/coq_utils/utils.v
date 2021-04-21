@@ -75,7 +75,22 @@ Section Predicates.
       destruct HA , HB ;
       auto ||
       right; intuition.
-  Qed.
+  Defined.
+
+  Lemma dec_sumbool_or:  { A \/ B  } + { ~ (A \/ B) }.
+  Proof.
+      destruct HA , HB ;
+      auto ||
+      right; intuition.
+  Defined.
+
+  Lemma dec_sumbool_not: dec_sumbool ( ~ A ).
+  Proof.
+      unfold dec_sumbool.
+      destruct HA.
+      - right. auto.
+      - left. auto.
+  Defined.
 
   Lemma eq_dec_decidable T (x y:T) : {x=y}+{x<>y} -> x = y \/ x <> y.
   Proof.
@@ -83,7 +98,7 @@ Section Predicates.
     destruct H.
     - left. apply e.
     - right. apply n.
-  Qed.
+  Defined.
 
 (* begin hide *)
 End Predicates.
@@ -109,32 +124,63 @@ End Lists.
 End Decidability.
 (* end hide *)
 
-(** ** Helper functions to build a boolean equality from a decidable equqlity. *)
+(** ** Helper functions to build a boolean equality from a decidable equality. *)
 
 (* begin hide *)
 Section EqEqb.
 (* end hide *)
 
   Variable T : Type.
+  Variable HT : T -> Prop.
+  Hypothesis T_Prop_dec : forall t : T, { HT t} + {~ HT t}.
+
+  Fixpoint filter_dec (l:list T) : list T :=
+    match l with
+     | nil => nil
+     | h :: t => match T_Prop_dec h with
+                | left _ => h::(filter_dec t)
+                | right _ => filter_dec t
+                end
+    end.
 
   Definition eq (x : T) (y : T) := { x = y } + { x <> y }.
   Hypothesis eq_dec' : forall x y : T, eq x y.
 
-  Definition eqb (x : T) (y : T) : bool :=
-  match eq_dec' x y with
-  | left _ => true
-  | right _ => false
-  end.
+  Definition eqdec2eqb (x : T) (y : T) : bool :=
+    match eq_dec' x y with
+    | left _ => true
+    | right _ => false
+    end.
 
-  Lemma eqb_eq : forall x y, eqb x y = true <->  x = y.
+  Lemma eqb_eq : forall x y, eqdec2eqb x y = true <-> x = y.
   Proof.
-  intros x y. unfold eqb. destruct eq_dec' as [EQ|NEQ].
-  - auto with *.
-  - split.
-    + discriminate.
-    + intro EQ; elim NEQ; auto.
+    intros x y. unfold eqdec2eqb. destruct eq_dec' as [EQ|NEQ].
+    - auto with *.
+    - split.
+      + discriminate.
+      + intro EQ; elim NEQ; auto.
   Qed.
 
 (* begin hide *)
 End EqEqb.
 (* end hide *)
+
+Section CoqLib_Defined.
+  Variables (A:Type)(dec : forall x y:A, {x=y}+{x<>y}).
+
+  Definition In_dec := List.In_dec dec. (* Already in List.v *)
+
+  (** The following duplicates the proof of [NoDup_dec]. This is required since we need a non-opaque (i.e. terminated by [Defined] proof. *)
+
+  Lemma NoDup_dec' (l:list A) : {NoDup l}+{~NoDup l}.
+  Proof.
+    induction l as [|a l IH].
+    - left; now constructor.
+    - destruct (In_dec a l).
+      + right. inversion_clear 1. tauto.
+      + destruct IH.
+        * left. now constructor.
+        * right. inversion_clear 1. tauto.
+  Defined.
+
+End CoqLib_Defined.
