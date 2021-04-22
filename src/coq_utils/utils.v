@@ -170,7 +170,7 @@ Section CoqLib_Defined.
 
   Definition In_dec := List.In_dec dec. (* Already in List.v *)
 
-  (** The following duplicates the proof of [NoDup_dec]. This is required since we need a non-opaque (i.e. terminated by [Defined] proof. *)
+  (** The following duplicates the proof of [NoDup_dec]. This is required since we need a non-opaque (i.e. terminated by [Defined] proof). See https://github.com/coq/coq/issues/14149, issue suggested by X. Leroy *)
 
   Lemma NoDup_dec' (l:list A) : {NoDup l}+{~NoDup l}.
   Proof.
