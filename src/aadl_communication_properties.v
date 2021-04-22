@@ -13,20 +13,13 @@ Require Import utils.
 
 (** ** %\texttt{Communication\_Properties}% as Coq native types
 
-%
-  \begin{definition}[Queue\_Processing\_Protocol (Coq)]
- TBD. This version
-  \end{definition} %
+%\define{Queue\_Processing\_Protocol (Coq)}{}{TBD} %
 *)
 
 Inductive Queue_Processing_Protocol :=
 | FIFO.
 
-(** %
-  \begin{definition}[IO\_Time\_Spec (Coq)]
- TBD. This version
-  \end{definition} %
-*)
+(** %\define{IO\_Time\_Spec (Coq)}{}{TBD} % *)
 
 Inductive IO_Time_Spec :=
 | Dispatch
@@ -54,9 +47,7 @@ Definition projectionIO_Time_Spec (i : input_time) :=
 end.
 
 (** %
-  \begin{wfrule}[IO\_Time\_Spec Well-formedness rule (Coq)]
-  An input time is well-formed iff. there is no duplicate in the list of IO\_Time\_Spec.
-  \end{wfrule} %
+  \wfrule{IO\_Time\_Spec Well-formedness rule (Coq)}{}{An input time is well-formed iff. there is no duplicate in the list of IO\_Time\_Spec.} %
 *)
 
 Definition input_time_wf  (i : input_time) :=
