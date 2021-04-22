@@ -342,6 +342,10 @@ From the previous definitions, we can now define the [Enabled] function that ret
     apply Hybrid_Enabled_dec.
   Defined.
 
+  (** [Enabled_oracle] return a [bool] as a witness, useful only for debugging purposes. *)
+  Definition Enabled_oracle (th : thread_state_variable) :=
+    if Enabled_dec th then true else false.
+
 (* begin hide *)
 End AADL_Dispatching.
 (* end hide *)
@@ -488,15 +492,19 @@ Definition A_Periodic_Thread := Component
   nil
   [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
 
-Eval compute in mk_thread_state_variable (A_Periodic_Thread).
-
 Definition A_Periodic_Thread_State := mk_thread_state_variable (A_Periodic_Thread).
 
-Eval vm_compute in Enabled (A_Periodic_Thread_State).
+(** At t = 0, the periodic thread is enabled *)
+Compute Enabled_oracle (A_Periodic_Thread_State).
+(*
+	 = true
+     : bool
+*)
 
 Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 4.
 
-Eval compute in Enabled (A_Periodic_Thread_State').
+(** At t = 4, the periodic thread is not enabled *)
+Compute Enabled_oracle (A_Periodic_Thread_State').
 
 (** *** A Sporadic Thread*)
 
@@ -515,22 +523,25 @@ Definition A_Sporadic_Thread := Component
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
   nil.
 
-(** We can continue a build a sporadic thread, add an event, avancd time and check it is enabled *)
+(** We can continue ant build a sporadic thread, add an event, avancd time and check if it is enabled *)
 
 Definition A_Sporadic_Thread_State := mk_thread_state_variable (A_Sporadic_Thread).
 
-Eval vm_compute in Enabled (A_Sporadic_Thread_State).
+(** initially, the sporadic thread is not enabled *)
+Eval vm_compute in Enabled_oracle (A_Sporadic_Thread_State).
 
+(** inject en event *)
 Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Ident "a_feature") true.
-Compute A_Sporadic_Thread_State'.
 
-Eval compute in Enabled (A_Sporadic_Thread_State').
+(** the thread is not enabled yet *)
+Compute Enabled_oracle (A_Sporadic_Thread_State').
 
+(** we advance time *)
 Definition th := advance_time A_Sporadic_Thread_State' 32.
 
-Compute Enabled th.
+(** the thread is enabled, and we can check frozen port *)
+Compute Enabled_oracle th.
 Compute Get_Elected_Triggering_Feature (th).
-
 Compute Frozen_Ports' (th).
 
 (*
