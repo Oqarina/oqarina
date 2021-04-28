@@ -8,4 +8,4 @@ Although Coq is a theorem prover, developing large proofs as we do here requires
 * Vericert: https://vericert.ymhg.org/coq-style-guide/
 * CPDT book, read the part on module: http://adam.chlipala.net/cpdt/html/Cpdt.Large.html
 * https://blog.zhen-zhang.com/2016/09/19/coq-dev.html
-
+* PROSA: https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs/blob/master/doc/guidelines.md
