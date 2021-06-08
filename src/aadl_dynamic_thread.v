@@ -35,11 +35,11 @@ Port variable maps AADL features to runtime level entities. Since we use Coq to 
 A port variable is captured using a Coq record. We define the concept of invalid port variable and a constructor for this record, along with the well-formedness rule and decidability result.
 *)
 
-Definition Port_Queue : Type := ListQueue.queue.
-
 (* begin hide *)
 Section Port_Variable.
 (* end hide *)
+
+  Definition Port_Queue : Type := ListQueue.queue.
 
   Record port_variable : Type := {
     port : feature;
@@ -344,7 +344,8 @@ From the previous definitions, we can now define the [Enabled] function that ret
 
   (** [Enabled_oracle] return a [bool] as a witness, useful only for debugging purposes. *)
   Definition Enabled_oracle (th : thread_state_variable) :=
-    if Enabled_dec th then true else false.
+    Oracle (Enabled_dec th).
+  (*  if Enabled_dec th then true else false.*)
 
 (* begin hide *)
 End AADL_Dispatching.
@@ -543,16 +544,3 @@ Definition th := advance_time A_Sporadic_Thread_State' 32.
 Compute Enabled_oracle th.
 Compute Get_Elected_Triggering_Feature (th).
 Compute Frozen_Ports' (th).
-
-(*
-Record Request : Type := {
-  received_time : AADL_Time;
-  payload : hlist;
-}.
-
-Definition mkRequest (t : AADL_Time) (T : Type) := {|
-  received_time := t;
-  payload := T;
-|}.
-
-*)
