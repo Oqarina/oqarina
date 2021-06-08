@@ -41,7 +41,14 @@ Module ListQueue <: Queue.
     | _ => False
     end.
 
-  Lemma Is_Empty_dec : forall q, {Is_Empty q} + { ~Is_Empty q}.
+  (** It is tempting to define [Is_Empty] as
+    [[
+      Definition Is_Empty (q : queue) : Prop := q = empty.
+    ]]
+
+    but this obfuscates the evaluation procedure. This style seems preferable. *)
+
+  Lemma Is_Empty_dec : forall q, { Is_Empty q } + { ~ Is_Empty q }.
   Proof.
     unfold Is_Empty.
     induction q; auto.
