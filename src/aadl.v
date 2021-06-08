@@ -8,7 +8,6 @@ Set Warnings "-parsing".
 (* XXX abstract is recoginized as a tactic keyword by coqdoc .. this does not fully address the issue *)
 
 (** Coq Library *)
-
 Require Import Bool.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Floats.PrimFloat.
@@ -21,7 +20,6 @@ Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
 
 (** AADL library *)
-
 Require Import identifiers.
 Require Import utils.
 (* end hide *)
