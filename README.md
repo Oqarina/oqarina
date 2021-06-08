@@ -20,7 +20,7 @@ The following packages should be installed separately using opam:
 * `https://github.com/clarus/coq-list-string`: some string manipulation functions
 * `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
 
-Use `opam install coq-list-string menhir`
+Use `opam install coq-list-string menhir coq-menhirlib` or `make install_deps` to install these packages.
 
 ## Usage
 
@@ -38,4 +38,6 @@ Many (free) books exist for Coq, the following one is a good introduction for th
 
   This book is available from the author website: http://adam.chlipala.net/cpdt/
 
-An additional reference is the collection of books from https://softwarefoundations.cis.upenn.edu/
+- An additional reference is the collection of books from https://softwarefoundations.cis.upenn.edu/
+
+- This list gathers many other relevant projects and links: https://project-awesome.org/coq-community/awesome-coq
