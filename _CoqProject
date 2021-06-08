@@ -2,6 +2,7 @@
 src/core/identifiers.v
 src/core/time.v
 src/core/queue.v
+src/formalisms/actor.v
 src/formalisms/lts.v
 src/formalisms/pautomata.v
 src/coq_utils/utils.v
@@ -18,4 +19,3 @@ src/aadl_feature_helper.v
 src/aadl_dynamic_system.v
 #src/cpdttactics.v
 #src/extraction.v
-#src/fp_rta_example.v

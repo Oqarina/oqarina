@@ -46,9 +46,14 @@
 *)
 
 (* begin hide *)
+Require Import Coq.Init.Datatypes.
+
 Require Import pautomata.
+Require Import actor.
 Require Import time.
 Import NaturalTime.
+Require Import aadl_aadl_project.
+Require Import utils.
 Set Implicit Arguments.
 (* end hide *)
 
@@ -65,6 +70,8 @@ Definition system_var : Type := unit.
 
 Inductive system_states : Set :=
     system_offline | system_starting | system_operational | system_stoping.
+
+Scheme Equality for system_states.
 
 Inductive system_actions : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
@@ -102,5 +109,65 @@ Module System_Automata <: Pautomata.
     Definition Trans := system_transitions.
 End System_Automata.
 
+Record System_State_Variable : Type := mkSystemStateVariable {
+    current_state : system_states;
+    system_time : AADL_Time;
+}.
 
-(* http://newartisans.com/2016/10/using-fmap-in-coq/ *)
+Definition System_Initial_State : System_State_Variable := {|
+    current_state := system_offline;
+    system_time := 0;
+|}.
+
+Definition start_system_pre (ssv : System_State_Variable)  :=
+    system_states_beq ssv.(current_state) system_offline.
+
+Definition start_system_op (ssv : System_State_Variable) :=
+    if start_system_pre ssv then
+        {| current_state := system_starting; system_time := 0; |}
+    else
+        ssv.
+
+Example s := start_system_op  System_Initial_State .
+Compute s.
+
+(***********
+
+*)
+
+Definition system_Fire (s : system_states) (a : system_actions) : unit := tt.
+
+Definition system_Post_Fire
+    (s : system_states)
+    (a : system_actions) : system_states :=
+    match s, a with
+    (* capture the transitions of the automata *)
+    | system_offline, start_system => system_starting
+    | system_starting, started_system => system_operational
+    | system_operational, stop_system => system_stoping
+    | system_stoping, stopped_system=> system_offline
+    | system_starting, abort_system => system_offline
+    | system_operational, abort_system => system_offline
+    (* any other configuration is invalid *)
+    | _, _ => s
+    end.
+
+Definition system_Deadline
+    (s : system_states)  (i : system_actions) : Time :=
+    0.
+
+Definition system_Time_Update
+    (s : system_states)  (i : system_actions) (t : Time) : system_states :=
+    s.
+
+(*Definition System_Actor : Actor system_states system_actions unit := {|
+    Initial_State := system_offline;
+    Fire := system_Fire;
+    Post_Fire := system_Post_Fire;
+    Deadline := system_Deadline;
+    Time_Update := system_Time_Update;
+|}.
+*)
+
+
+
