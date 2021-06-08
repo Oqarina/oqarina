@@ -21,7 +21,7 @@ help:               ## Show this help
 
 
 install_deps:        ## Install dependencies
-	opam install coq-list-string menhir coq-menhirlib
+	opam install coq-list-string menhir coq-menhirlib coq-reduction-effects
 
 ##
 
