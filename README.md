@@ -19,8 +19,9 @@ The following packages should be installed separately using opam:
 
 * `https://github.com/clarus/coq-list-string`: some string manipulation functions
 * `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
+* `https://github.com/coq-community/reduction-effects`: add reduction side effects to some Coq reduction strategies
 
-Use `opam install coq-list-string menhir coq-menhirlib` or `make install_deps` to install these packages.
+Use `make install_deps` to install these packages.
 
 ## Usage
 
