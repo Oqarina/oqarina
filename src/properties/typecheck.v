@@ -7,10 +7,11 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Setoids.Setoid.
 Require Import Coq.Classes.Morphisms.
 
+
 From ReductionEffect Require Import PrintingEffect.
 
-Require Import AADL.identifiers.
-Require Import AADL.properties.
+Require Import identifiers.
+Require Import properties.
 
 (*! Type Checking *)
 
@@ -18,7 +19,7 @@ Inductive in_enumR (id : identifier) (t : property_type) : Prop :=
 | In_Enum (literals : list identifier) :
     t = PT_Enumeration literals ->
     In id literals -> in_enumR id t.
-  
+
 Definition in_enum (id : identifier) (t : property_type) : bool  :=
   match t with
   | PT_Enumeration literals => existsb (identifier_beq id) literals
@@ -45,13 +46,13 @@ Proof.
         inversion H; clear H. inversion H0; subst; clear H0.
         destruct H2. rewrite H in H1. contradiction.
         apply H.
-Qed. 
+Qed.
 
 Inductive is_unitR (id : identifier) (unit : unit_literal) : Prop :=
 | Is_Base :
     unit = BaseUnit id -> is_unitR id unit
 | Is_Derived base_id factor :
-    unit = DerivedUnit id base_id factor -> is_unitR id unit.      
+    unit = DerivedUnit id base_id factor -> is_unitR id unit.
 
 Definition is_unit (id : identifier) (unit : unit_literal) : bool :=
   match unit with
@@ -85,7 +86,7 @@ Proof.
         destruct (id_beqP name id).
         -- reflexivity.
         -- contradiction.
-Qed.  
+Qed.
 
 Definition in_unitsR (id : identifier) (t : property_type) : Prop :=
   match t with
@@ -246,7 +247,7 @@ Proof.
            rewrite H.
            apply IHd' in H2. apply H2.
            apply H2.
-Qed.            
+Qed.
 
 Definition is_psR (setid : identifier) (mu : model_unit) : Prop :=
   let 'PropertySet id _ := mu in
@@ -274,7 +275,7 @@ Definition in_modelR (setid id : identifier) (d : property_set_declaration) (m :
          model_units.
 
 Definition in_model (m : aadl_model) (setid id: identifier) : option property_set_declaration :=
-  let 'Model model_units := m in 
+  let 'Model model_units := m in
   fold_left (fun (o : option property_set_declaration) mu =>
                if o then o else in_propertyset id mu)
             (filter (is_ps setid) model_units) None.
@@ -311,7 +312,7 @@ Fixpoint resolve_type' (fuel : nat) (m : aadl_model) (t : property_type) : optio
 Definition resolve_type := resolve_type' 10.
 
 Definition resolve_value (m : aadl_model) (qname : ps_qname) : option property_type :=
-  let 'PSQN setname name := qname in 
+  let 'PSQN setname name := qname in
   match in_model m (Id setname) (Id name) with
   | Some decl => match decl with
                 | PropertyConstantDecl _ r _
@@ -327,15 +328,15 @@ Inductive same_typeR (m : aadl_model) (t t' : property_type) : Prop :=
 | ST_TypeRef0 (qname1 qname2 : ps_qname) :
     t = PT_TypeRef qname1 ->
     t' = PT_TypeRef qname2 ->
-    qname1 = qname2 -> m |- t == t' 
+    qname1 = qname2 -> m |- t == t'
 | ST_TypeRef1 (qname : ps_qname) (r : property_type) :
     t = PT_TypeRef qname ->
     is_resolved_typeR m qname r ->
-    same_typeR m r t' -> m |- t == t' 
+    same_typeR m r t' -> m |- t == t'
 | ST_TypeRef2 (qname : ps_qname) (r : property_type) :
     t' = PT_TypeRef qname ->
     is_resolved_typeR m qname r ->
-    m |- t == r -> m |- t == t' 
+    m |- t == r -> m |- t == t'
 | ST_Bool :
     t = aadlboolean ->
     t' = aadlboolean -> m |- t == t'
@@ -395,23 +396,23 @@ Inductive has_typeR (m : aadl_model) (t : property_type) (v : property_value) : 
     has_typeR m t u -> has_typeR m t v
 | HT_IntRange (min max : property_value) :
     t = PT_Range aadlinteger ->
-    v = PV_IntRange min max -> 
+    v = PV_IntRange min max ->
     m |- min ∈ aadlinteger ->
     m |- max ∈ aadlinteger -> m |- v ∈ t
 | HT_RealRange (min max : property_value) :
     t = PT_Range aadlreal ->
-    v = PV_RealRange min max -> 
+    v = PV_RealRange min max ->
     m |- min ∈ aadlreal ->
     m |- max ∈ aadlreal -> m |- v ∈ t
 | HT_IntRangeD (bt : property_type) (min max Δ : property_value) :
     t = PT_Range aadlinteger ->
-    v = PV_IntRangeD min max Δ -> 
+    v = PV_IntRangeD min max Δ ->
     m |- min ∈ aadlinteger ->
     m |- max ∈ aadlinteger ->
     m |- Δ ∈ aadlinteger -> m |- v ∈ t
 | HT_RealRangeD (bt : property_type) (min max Δ : property_value) :
     t = PT_Range aadlreal ->
-    v = PV_RealRangeD min max Δ -> 
+    v = PV_RealRangeD min max Δ ->
     m |- min ∈ aadlreal ->
     m |- max ∈ aadlreal ->
     m |- Δ ∈ aadlreal -> m |- v ∈ t
@@ -432,7 +433,7 @@ Inductive has_typeR (m : aadl_model) (t : property_type) (v : property_value) : 
     m |- (PV_Record fvals) ∈ t -> m |- v ∈ t
 | HT_Record_tl did ft fdecls fval fvals:
     t = PT_Record (FieldDecl did ft :: fdecls) ->
-    v = PV_Record (fval :: fvals) -> 
+    v = PV_Record (fval :: fvals) ->
     m |- (PV_Record [fval]) ∈ (PT_Record fdecls) ->
     m |- (PV_Record fvals) ∈ t -> m |- v ∈ t
 | HT_List (et : property_type) (elements : list property_value) :
@@ -478,12 +479,12 @@ Definition same_type := same_type' 10.
 Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : property_value) : bool :=
   match print_id fuel with
   | 0%nat => false
-  | S n => 
+  | S n =>
   match resolve_type m t with
   | Some t' =>
     match v with
     | PV_PropertyRef qname => match resolve_value m qname with
-                             | Some t'' => same_type m t' t'' 
+                             | Some t'' => same_type m t' t''
                              | _ => false
                              end
     | PV_Bool b => match t' with aadlboolean => true | _ => false end
@@ -534,7 +535,7 @@ Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : proper
           else
             false
         else
-          has_type' n m (PT_Record fdecls) (PV_Record [fval]) 
+          has_type' n m (PT_Record fdecls) (PV_Record [fval])
       | _ => false
                                             end
     | PV_List elements => match t' with
@@ -563,7 +564,7 @@ Definition typecheck_ps_decl (m : aadl_model) (decl : property_set_declaration) 
 Definition typecheck_model_unit (m : aadl_model) (mu : model_unit) : bool :=
   match mu with
   | PropertySet _ decls =>
-    fold_left (fun acc decl => acc && typecheck_ps_decl m decl) decls true  
+    fold_left (fun acc decl => acc && typecheck_ps_decl m decl) decls true
   end.
 
 Definition typecheck_model (m: aadl_model) : bool :=
@@ -571,7 +572,7 @@ Definition typecheck_model (m: aadl_model) : bool :=
   | Model mus =>
     fold_left (fun acc mu => acc && typecheck_model_unit m mu) mus true
   end.
-    
+
 (* TODO :
    - check that the references are not cyclic
    - prove termination for resolution and typing fixpoints if there are no cycles

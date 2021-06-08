@@ -20,5 +20,7 @@ src/aadl_communication_properties.v
 src/aadl_aadl_project.v
 src/aadl_feature_helper.v
 src/aadl_dynamic_system.v
-#src/cpdttactics.v
-#src/extraction.v
+
+src/properties/properties.v
+src/properties/typecheck.v
+src/properties/typing_test.v

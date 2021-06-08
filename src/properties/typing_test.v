@@ -9,9 +9,9 @@ Require Import Coq.Classes.Morphisms.
 
 From ReductionEffect Require Import PrintingEffect.
 
-Require Import AADL.identifiers.
-Require Import AADL.properties.
-Require Import AADL.typecheck.
+Require Import identifiers.
+Require Import properties.
+Require Import typecheck.
 
 (*! Tests for Type Checking *)
 
@@ -63,7 +63,7 @@ Definition PS1 :=
                         (FieldDecl (Id "Rate_Unit") (PT_Enumeration [Id "PerSecond"; Id "PerDispatch"]));
                         (FieldDecl (Id "Rate_Distribution") (PT_TypeRef (PSQN "PS1" "Supported_Distributions")))
                           ]
-                                   
+
   ].
 
 Definition M := Model [PS1; PS0].
@@ -99,7 +99,7 @@ Proof. trivial. Qed.
 
 Goal M |= PV_Enum (Id "Sporadic") ∈ Supported_Dispatch_Protocols = true.
 Proof. trivial. Qed.
-     
+
 Compute M |= PV_Enum (Id "Sporadic") ∈ Supported_Dispatch_Protocols.
 
 Example eht3 :

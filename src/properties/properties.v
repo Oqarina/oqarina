@@ -4,7 +4,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import AADL.identifiers.
+Require Import identifiers.
 
 Open Scope Z_scope.
 Open Scope string_scope.
@@ -24,7 +24,7 @@ Definition enumeration_type :=
 
 Inductive unit_literal :=
 | BaseUnit (name : identifier)
-| DerivedUnit (name : identifier) (base: identifier) (factor: nat).            
+| DerivedUnit (name : identifier) (base: identifier) (factor: nat).
 
 Definition units_type :=
   list unit_literal.
@@ -41,7 +41,7 @@ Inductive real_range_constraint :=
 Inductive range_constraint :=
 | C_IntRange (irc : int_range_constraint)
 | C_RealRange (rrc : real_range_constraint).
-    
+
 Inductive property_type :=
 (* Predeclared types are constructors for performance *)
 | aadlboolean | aadlstring | aadlinteger | aadlreal
@@ -64,8 +64,8 @@ with field_decl :=
 Check PT_TypeRef (PSQN "ps" "pt") : property_type.
 Check aadlboolean : property_type.
 Check PT_Units [BaseUnit (Id "m"); DerivedUnit (Id "cm") (Id "m") 100] : property_type.
-Check PT_Number aadlinteger None None : property_type.      
-Check PT_Range aadlinteger : property_type.      
+Check PT_Number aadlinteger None None : property_type.
+Check PT_Range aadlinteger : property_type.
 
 Definition is_numeric_predef (p : property_type) : bool :=
   match p with
@@ -130,7 +130,7 @@ Notation "s ':prop' t '=>' d 'applies' a" :=
 (*! AADL Model *)
 
 Inductive model_unit :=
-| PropertySet (name : identifier) (declarations : list property_set_declaration). 
+| PropertySet (name : identifier) (declarations : list property_set_declaration).
 
 Inductive aadl_model :=
 | Model (modelUnits : list model_unit).
