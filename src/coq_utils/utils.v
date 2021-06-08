@@ -1,7 +1,8 @@
 (** %\chapter{utils.v -- Additional definition }% *)
 
 (* begin hide *)
-From Coq Require Import List.
+Require Import Coq.Lists.List.
+Import ListNotations. (* from List *)
 Require Import Coq.Logic.Decidable.
 
 Set Implicit Arguments.
@@ -57,6 +58,14 @@ Section Definitions.
   Variable A : Prop.
   Definition dec_sumbool := { A } + { ~ A }.
   Definition eq_dec T := forall x y : T, {x=y}+{x<>y}.
+
+  Definition eq_dec_Prop (P : Prop) := { P } + { ~P }.
+
+  Definition Oracle (P : Prop) (eq_dec : eq_dec_Prop P): bool :=
+    match (eq_dec) with
+      | left _ => true
+      | right _ => false
+    end.
 
 (* begin hide *)
 End Definitions.
@@ -163,14 +172,17 @@ Section EqEqb.
 
 (* begin hide *)
 End EqEqb.
-(* end hide *)
 
-Section CoqLib_Defined.
+Section Lists_Misc.
+
   Variables (A:Type)(dec : forall x y:A, {x=y}+{x<>y}).
 
   Definition In_dec := List.In_dec dec. (* Already in List.v *)
+(* end hide *)
 
-  (** The following duplicates the proof of [NoDup_dec]. This is required since we need a non-opaque (i.e. terminated by [Defined] proof). See https://github.com/coq/coq/issues/14149, issue suggested by X. Leroy *)
+(** * Additional definitions for lists *)
+
+  (** The following duplicates the proof of [NoDup_dec]. This is required since we need a non-opaque (i.e. terminated by [Defined] proof). See https://github.com/coq/coq/issues/14149. *)
 
   Lemma NoDup_dec' (l:list A) : {NoDup l}+{~NoDup l}.
   Proof.
@@ -183,4 +195,17 @@ Section CoqLib_Defined.
         * right. inversion_clear 1. tauto.
   Defined.
 
-End CoqLib_Defined.
+(** [list_alter] apply [f] on the pos-th element of [l] *)
+
+Fixpoint list_alter {A} (pos : nat) (l: list A) (f : A -> A) :=
+  match l with
+  | [] => []
+  | x :: l => match pos with
+                | 0 => f x :: l
+                | S i => x :: list_alter i l f
+              end
+  end.
+
+(* begin hide *)
+End Lists_Misc.
+(* end hide *)
