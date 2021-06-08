@@ -19,6 +19,10 @@ all: help
 help:               ## Show this help
 	    @sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
+
+install_deps:        ## Install dependencies
+	opam install coq-list-string menhir coq-menhirlib
+
 ##
 
 build_makefile:     ## Generate coq makefile
