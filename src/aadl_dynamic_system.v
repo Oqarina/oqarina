@@ -48,7 +48,6 @@
 (* begin hide *)
 Require Import Coq.Init.Datatypes.
 
-Require Import pautomata.
 Require Import actor.
 Require Import time.
 Import NaturalTime.
@@ -100,14 +99,6 @@ Definition system_invariants
     match l, t, v with
     | _, _,_ => True
     end.
-
-Module System_Automata <: Pautomata.
-    Definition Var := system_var.
-    Definition Loc := system_states.
-    Definition Act := system_actions.
-    Definition Inv := system_invariants.
-    Definition Trans := system_transitions.
-End System_Automata.
 
 Record System_State_Variable : Type := mkSystemStateVariable {
     current_state : system_states;

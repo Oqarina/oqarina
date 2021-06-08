@@ -1,11 +1,14 @@
 -R src "Oqarina"
+
+src/coq_utils/utils.v
+
 src/core/identifiers.v
 src/core/time.v
 src/core/queue.v
-src/formalisms/actor.v
 src/formalisms/lts.v
-src/formalisms/pautomata.v
-src/coq_utils/utils.v
+
+src/formalisms/actor.v
+
 src/aadl.v
 src/aadl_declarative.v
 src/aadl_instance.v

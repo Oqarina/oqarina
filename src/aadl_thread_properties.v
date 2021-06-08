@@ -17,10 +17,10 @@ Require Import aadl_aadl_project.
  TBD
   \end{definition}% *)
 
-Definition Period_Name := Ident "period".
+Definition Period_Name := Id "period".
 
 Definition Period : property_type :=
-  Property_Type (Ident "period")  [ thread ] aadlinteger_t. (* XXX should use a unit !*)
+  Property_Type (Id "period")  [ thread ] aadlinteger_t. (* XXX should use a unit !*)
 
 Definition Is_Period (v : property_value) : bool :=
     Is_Property_Name Period_Name v.
@@ -31,7 +31,7 @@ Definition Is_Period (v : property_value) : bool :=
   \end{definition}
 % *)
 
-Definition Priority_Name := Ident "priority".
+Definition Priority_Name := Id "priority".
 
 Definition Priority : property_type :=
   Property_Type Priority_Name [ thread ] aadlinteger_t.
@@ -46,12 +46,12 @@ Definition Is_Priority (v : property_value) : bool :=
   \end{definition}
 % *)
 
-Definition Scheduling_Protocol_Name := Ident "scheduling_protocol".
+Definition Scheduling_Protocol_Name := Id "scheduling_protocol".
 
 Definition Scheduling_Protocol : property_type :=
   Property_Type Scheduling_Protocol_Name [ thread ]
-  (aadlenum_t [ (Ident "periodic") ; (Ident "sporadic") ; (Ident "aperiodic") ;
-                (Ident "background") ; (Ident "timed") ; (Ident "hybrid") ] ).
+  (aadlenum_t [ (Id "periodic") ; (Id "sporadic") ; (Id "aperiodic") ;
+                (Id "background") ; (Id "timed") ; (Id "hybrid") ] ).
 
 Definition Is_Scheduling_Protocol (v : property_value) : bool :=
     Is_Property_Name Scheduling_Protocol_Name v.
@@ -76,12 +76,12 @@ Scheme Equality for Dispatch_Protocol.
 
 Definition Map_Scheduling_Protocol_pv (pv : property_value) : Dispatch_Protocol :=
   match Get_Base_Value pv with
-    | (aadlenum (Ident "periodic")) => Periodic
-    | (aadlenum (Ident "sporadic")) => Sporadic
-    | (aadlenum (Ident "aperiodic")) => Aperiodic
-    | (aadlenum (Ident "background")) => Background
-    | (aadlenum (Ident "timed")) => Timed
-    | (aadlenum (Ident "Hybrid")) => Hybrid
+    | (aadlenum (Id "periodic")) => Periodic
+    | (aadlenum (Id "sporadic")) => Sporadic
+    | (aadlenum (Id "aperiodic")) => Aperiodic
+    | (aadlenum (Id "background")) => Background
+    | (aadlenum (Id "timed")) => Timed
+    | (aadlenum (Id "Hybrid")) => Hybrid
     | _ => Unspecified
   end.
 

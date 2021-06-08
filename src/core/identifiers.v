@@ -20,19 +20,38 @@ Require Import utils.
 *)
 
 Inductive identifier : Type :=
-| Ident : string -> identifier.
+| Id (name : string).
 
-Definition empty_identifier := Ident "".
+Definition empty_identifier := Id "".
 
 Scheme Equality for identifier.
 
 Definition projectionIdentifierString (i : identifier) : string :=
   match i with
-  | Ident s => s
+  | Id s => s
   end.
 
 Notation "c '->toString' " := (projectionIdentifierString c)
                                 (at level 80, right associativity).
+
+Lemma identifier_beq_eq: forall id1 id2,
+    identifier_beq id1 id2 = true <-> id1 = id2.
+Proof.
+  split.
+  - apply internal_identifier_dec_bl.
+  - apply internal_identifier_dec_lb.
+Qed.
+
+Lemma id_beqP :  forall id1 id2,
+    reflect (id1 = id2) (identifier_beq id1 id2).
+Proof.
+  intros. apply iff_reflect. symmetry. apply identifier_beq_eq.
+Qed.
+
+Inductive ps_qname :=
+| PSQN (psname : string) (name : string).
+
+Scheme Equality for ps_qname.
 
 (**
 %\wfrule{Well-formed identifier}{well-formed!identifier}{An identifier is well-formed iff it is not the empty identifier.
@@ -60,7 +79,7 @@ Qed.
 (** * Examples *)
 
 Example A_WFI : identifier :=
-  Ident "o<".
+  Id "o<".
 
 Lemma A_WFI_is_well_formed:
   Well_Formed_Identifier_prop A_WFI.

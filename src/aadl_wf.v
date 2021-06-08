@@ -84,13 +84,13 @@ Section WellFormedness_Rules.
       *)
 
   Definition Source_Language : property_type :=
-    Property_Type (Ident "source_language") [ subprogram ] aadlstring_t.
+    Property_Type (Id "source_language") [ subprogram ] aadlstring_t.
 
   Definition A_Source_Language :=
-    Property_Value Source_Language (aadlstring (Ident "C")).
+    Property_Value Source_Language (aadlstring (Id "C")).
 
   Definition A_Subprogram :=
-    Component (Ident "Hello_World") (subprogram) (Ident "spg") nil nil
+    Component (Id "Hello_World") (subprogram) (Id "spg") nil nil
     [A_Source_Language] nil.
 
   (** From this example, we can deduce the two rules to check:

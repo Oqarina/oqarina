@@ -241,7 +241,7 @@ Section AADL_Definitions.
 
   (** Definition of an invalid feature *)
   Definition Invalid_Feature :=
-    Feature (Ident "invalid" ) inF invalid nil_component nil.
+    Feature (Id "invalid" ) inF invalid nil_component nil.
 
 (* begin hide *)
 End AADL_Definitions.
@@ -257,21 +257,21 @@ End AADL_Definitions.
 (** - Definition of the Priority property *)
 
 Definition Priority : property_type :=
-  Property_Type (Ident "priority") [ thread ] aadlinteger_t.
+  Property_Type (Id "priority") [ thread ] aadlinteger_t.
 
 Definition A_Priority_Value :=
   Property_Value Priority (aadlinteger 42).
 
 (** - Definition of a component *)
 
-Definition A_Component := Component (Ident "a_component") (abstract)
-  (Ident "foo_classifier") nil nil nil nil.
+Definition A_Component := Component (Id "a_component") (abstract)
+  (Id "foo_classifier") nil nil nil nil.
 
 Definition A_Component_Impl :=
-  Component (Ident "another_component_impl") (abstract) (Ident "bar_classifier.impl") nil
+  Component (Id "another_component_impl") (abstract) (Id "bar_classifier.impl") nil
   [ A_Component ] nil nil.
 
-Definition A_Feature := Feature (Ident "a_feature") inF eventPort nil_component.
+Definition A_Feature := Feature (Id "a_feature") inF eventPort nil_component.
 
 (** * Decidability of equality
 

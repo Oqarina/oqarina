@@ -477,7 +477,7 @@ End Thread_RTS.
 (** *** A Periodic Thread *)
 
 Definition Periodic_Dispatch :=
-  Property_Value Scheduling_Protocol (aadlenum (Ident "periodic")).
+  Property_Value Scheduling_Protocol (aadlenum (Id "periodic")).
 
 Definition A_Priority_Value :=
     Property_Value Priority (aadlinteger 42).
@@ -486,9 +486,9 @@ Definition A_Period :=
     Property_Value Period (aadlinteger 3).
 
 Definition A_Periodic_Thread := Component
-  (Ident "a_periodic_thread")
+  (Id "a_periodic_thread")
   (thread)
-  (Ident "a_periodic_thread_classifier")
+  (Id "a_periodic_thread_classifier")
   nil
   nil
   [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
@@ -510,15 +510,15 @@ Compute Enabled_oracle (A_Periodic_Thread_State').
 (** *** A Sporadic Thread*)
 
 Definition Sporadic_Dispatch :=
-  Property_Value Scheduling_Protocol (aadlenum (Ident "sporadic")).
+  Property_Value Scheduling_Protocol (aadlenum (Id "sporadic")).
 
 Definition An_Input_Feature :=
-  Feature (Ident "a_feature") inF eventPort nil_component nil.
+  Feature (Id "a_feature") inF eventPort nil_component nil.
 
 Definition A_Sporadic_Thread := Component
-  (Ident "a_sporadic_thread")
+  (Id "a_sporadic_thread")
   (thread)
-  (Ident "a_sporadic_thread_classifier")
+  (Id "a_sporadic_thread_classifier")
   [ An_Input_Feature ]
   nil
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
@@ -532,7 +532,7 @@ Definition A_Sporadic_Thread_State := mk_thread_state_variable (A_Sporadic_Threa
 Eval vm_compute in Enabled_oracle (A_Sporadic_Thread_State).
 
 (** inject en event *)
-Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Ident "a_feature") true.
+Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Id "a_feature") true.
 
 (** the thread is not enabled yet *)
 Compute Enabled_oracle (A_Sporadic_Thread_State').
