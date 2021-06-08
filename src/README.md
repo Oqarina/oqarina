@@ -37,7 +37,7 @@ This is a work-in-progress, the organization may evolve as we add more elements 
     * `aadl_communication_properties.v`: accessors to manipulate some of the properties from AADL property set `communication_properties`.
     * `aadl_thread_properties.v`: accessors to manipulate some of the properties from AADL property set `thread_properties`.
   XXX This package could be generated from AADL property sets.
-  
+
 * Helper packages
     * `aadl_feature_helper`: helper function to manipulate features
 
