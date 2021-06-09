@@ -4,7 +4,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Coq.Lists.List.
 Import ListNotations.
 
-Require Import identifiers.
+Require Import Oqarina.core.identifiers.
 
 Open Scope Z_scope.
 Open Scope string_scope.

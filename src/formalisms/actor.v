@@ -9,10 +9,10 @@ Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Init.Datatypes.
 Require Import Coq.Program.Basics.
 
-Require Import time.
+Require Import Oqarina.core.time.
 Import NaturalTime.
-Require Import lts.
-Require Import utils.
+Require Import Oqarina.formalisms.lts.
+Require Import Oqarina.coq_utils.utils.
 
 Set Implicit Arguments.
 

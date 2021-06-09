@@ -5,10 +5,10 @@
 Require Import List.
 Import ListNotations. (* from List *)
 
-(** AADL library *)
-Require Import identifiers.
-Require Import aadl.
-Require Import aadl_aadl_project.
+(** Oqarina library *)
+Require Import Oqarina.core.identifiers.
+Require Import Oqarina.aadl.
+Require Import Oqarina.aadl_aadl_project.
 (* end hide *)
 
 (** ** %\texttt{thread\_properties}% as Coq/AADL property_types

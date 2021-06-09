@@ -1,4 +1,4 @@
--R src "Oqarina"
+-Q src Oqarina
 
 src/coq_utils/utils.v
 

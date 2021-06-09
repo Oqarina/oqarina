@@ -9,9 +9,9 @@ Require Import Coq.Classes.Morphisms.
 
 From ReductionEffect Require Import PrintingEffect.
 
-Require Import identifiers.
-Require Import properties.
-Require Import typecheck.
+Require Import Oqarina.core.identifiers.
+Require Import Oqarina.properties.properties.
+Require Import Oqarina.properties.typecheck.
 
 (*! Tests for Type Checking *)
 

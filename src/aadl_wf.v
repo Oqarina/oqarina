@@ -9,11 +9,10 @@ Import ListNotations. (* from List *)
 Require Import Coq.Logic.Decidable.
 Require Import Coq.Lists.ListDec.
 
-(** AADL library *)
-
-Require Import aadl.
-Require Import identifiers.
-Require Import utils.
+(** Oqarina library *)
+Require Import Oqarina.aadl.
+Require Import Oqarina.core.identifiers.
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 (**

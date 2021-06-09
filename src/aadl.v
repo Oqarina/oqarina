@@ -19,9 +19,9 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
 
-(** AADL library *)
-Require Import identifiers.
-Require Import utils.
+(** Oqarina library *)
+Require Import Oqarina.core.identifiers.
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 (**

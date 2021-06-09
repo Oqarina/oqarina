@@ -10,19 +10,19 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Bool.Bool.
 
-(** AADL library *)
-Require Import utils.
-(*Require Import hlist. *)
-Require Import identifiers.
-Require Import aadl.
-Require Import time.
-Require Import queue.
-Require Import aadl_declarative.
-Require Import aadl_thread_properties.
-Require Import aadl_communication_properties.
-Require Import aadl_aadl_project.
-Require Import aadl_feature_helper.
+(** Oqarina library *)
+Require Import Oqarina.coq_utils.utils.
 
+Require Import Oqarina.core.identifiers.
+Require Import Oqarina.core.time.
+Require Import Oqarina.core.queue.
+
+Require Import Oqarina.aadl.
+Require Import Oqarina.aadl_declarative.
+Require Import Oqarina.aadl_thread_properties.
+Require Import Oqarina.aadl_communication_properties.
+Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.aadl_feature_helper.
 (* end hide *)
 
 (** ** Port Variable *)

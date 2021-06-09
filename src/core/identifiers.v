@@ -10,7 +10,8 @@ From Coq Require Import Logic.Decidable.
 From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
 
-Require Import utils.
+(** Oquarina *)
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 (** * Identifier type *)

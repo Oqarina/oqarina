@@ -6,7 +6,7 @@ Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.ListDec.
-Require Import utils.
+Require Import Oqarina.coq_utils.utils.
 
 Module Type Queue.
   Parameter V : Type.

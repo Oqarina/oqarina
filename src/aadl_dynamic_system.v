@@ -48,11 +48,11 @@
 (* begin hide *)
 Require Import Coq.Init.Datatypes.
 
-Require Import actor.
-Require Import time.
+Require Import Oqarina.formalisms.actor.
+Require Import Oqarina.core.time.
 Import NaturalTime.
-Require Import aadl_aadl_project.
-Require Import utils.
+Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.coq_utils.utils.
 Set Implicit Arguments.
 (* end hide *)
 

@@ -8,8 +8,8 @@ Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Bool.Bool.
 
-(** AADL library *)
-Require Import aadl.
+(** Oqarina library *)
+Require Import Oqarina.aadl.
 (* end hide *)
 
 Definition Is_Input_Port (f : feature) :=
@@ -38,4 +38,3 @@ Definition Get_Input_Features (l : list feature) :=
 
 Definition Get_Output_Features (l : list feature) :=
   filter Is_Output_Port l.
-  

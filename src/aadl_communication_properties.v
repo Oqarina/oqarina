@@ -6,9 +6,9 @@ Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 
-(** AADL library *)
-Require Import aadl_aadl_project.
-Require Import utils.
+(** Oqarina library *)
+Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 (** ** %\texttt{Communication\_Properties}% as Coq native types
