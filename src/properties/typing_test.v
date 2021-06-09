@@ -7,8 +7,6 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Setoids.Setoid.
 Require Import Coq.Classes.Morphisms.
 
-From ReductionEffect Require Import PrintingEffect.
-
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.properties.properties.
 Require Import Oqarina.properties.typecheck.

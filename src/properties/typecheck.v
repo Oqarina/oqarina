@@ -7,8 +7,6 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Setoids.Setoid.
 Require Import Coq.Classes.Morphisms.
 
-From ReductionEffect Require Import PrintingEffect.
-
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.properties.properties.
 
@@ -476,7 +474,7 @@ Fixpoint same_type' (fuel : nat) (m : aadl_model) (t t' : property_type) : bool 
 Definition same_type := same_type' 10.
 
 Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : property_value) : bool :=
-  match print_id fuel with
+  match fuel with
   | 0%nat => false
   | S n =>
   match resolve_type m t with
