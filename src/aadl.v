@@ -19,10 +19,13 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
 
+
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.properties.properties.
 (* end hide *)
+Open Scope list_scope.
 
 (**
 
@@ -122,44 +125,6 @@ Section AADL_Definitions.
   Inductive DirectionType : Type :=
     inF | outF | inoutF .
 
-  (** ** Property Types and values *)
-
-  (** AADL defines the concept of property definition and property value.
-      We replicated this separation so that we can typecheck that
-      a property value matches its definition.
-
-  *)
-
-  Inductive Property_Base_Type : Type :=
-    | aadlboolean_t
-    | aadlinteger_t
-    | aadlstring_t
-    | aadlreal_t
-    | aadlenum_t : list identifier -> Property_Base_Type.
-
-  Inductive property_base_value : Type :=
-    | aadlboolean : bool -> property_base_value
-    | aadlinteger : nat -> property_base_value
-    | aadlstring : identifier -> property_base_value
-    | aadlreal : decimal -> property_base_value
-    | aadllist : list property_base_value -> property_base_value
-    | aadlrecord : list property_base_value -> property_base_value
-    | aadlenum : identifier -> property_base_value
-    (* | aadlreference -> component -> property_base_value ...*)
-    (* XXX also missing: units, range, classifier *)
-    .
-
-  Inductive property_type : Type :=
-  | Property_Type : identifier ->             (* name of the property *)
-                    list ComponentCategory -> (* applies to categories *)
-                    Property_Base_Type ->     (* the type of the property *)
-                    property_type.
-
-  Inductive property_value : Type :=
-  | Property_Value : property_type -> (* property type *)
-                     property_base_value  -> (* actual value *)
-                     property_value.
-
   (** ** Definition of AADL Components
 
   An AADL component is made of an identifier, a category, a list of features, a list of properties, a list of subcomponents %\footnote{Flows and modes are subject to further discussions.}%.
@@ -219,7 +184,7 @@ Section AADL_Definitions.
                 identifier ->          (* classifier *)
                 list feature ->        (* features *)
                 list component ->      (* subcomponents *)
-                list property_value -> (* properties *)
+                list property_association -> (* properties *)
                 list connection ->
                 component
     with feature :=
@@ -227,7 +192,7 @@ Section AADL_Definitions.
                   DirectionType -> (* its direction *)
                   FeatureCategory -> (* category of the feature *)
                   component ->  (* corresponding component *)
-                  list property_value -> (* properties *)
+                  list property_association -> (* properties *)
                   feature
     with connection :=
     | Connection : identifier ->
@@ -253,14 +218,6 @@ End AADL_Definitions.
   component elements as intermediate variables.
 
 *)
-
-(** - Definition of the Priority property *)
-
-Definition Priority : property_type :=
-  Property_Type (Id "priority") [ thread ] aadlinteger_t.
-
-Definition A_Priority_Value :=
-  Property_Value Priority (aadlinteger 42).
 
 (** - Definition of a component *)
 
@@ -292,63 +249,18 @@ Section AADL_Component_Decidability.
 
   (** For other types, we manually define and prove decidability for equality *)
 
-  Lemma Property_Base_Type_eq_dec : eq_dec Property_Base_Type.
-  Proof.
-    unfold eq_dec.
-    decide equality.
-    apply list_eq_dec; apply identifier_eq_dec.
-  Qed.
-
   Lemma connection_eq_dec : eq_dec connection.
   Proof.
       unfold eq_dec.
       repeat decide equality.
   Qed.
 
-  Fixpoint property_base_value_eq_dec'
-    (a b : property_base_value) : {a=b}+{a<>b}.
-  Proof.
-    decide equality.
-    apply bool_dec.
-    apply PeanoNat.Nat.eq_dec.
-    apply identifier_eq_dec.
-    apply decimal_eq_dec .
-    - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
-      * left. f_equal. auto.
-      * right. apply neH.
-    - destruct (list_eq_dec property_base_value_eq_dec' l l0) as [ eqH | neH ].
-      * left. f_equal. auto.
-      * right. apply neH.
-    - apply identifier_eq_dec .
-  Defined.
-
-  Lemma property_base_value_eq_dec : eq_dec property_base_value.
-  Proof.
-    unfold eq_dec.
-    apply property_base_value_eq_dec'.
-  Qed.
-
-  Lemma property_type_eq_dec : eq_dec property_type.
-  Proof.
-      unfold eq_dec.
-      decide equality.
-      apply Property_Base_Type_eq_dec.
-      apply list_eq_dec; unfold eq_dec.
-      apply ComponentCategory_eq_dec.
-      apply identifier_eq_dec.
-  Qed.
-
-  Lemma property_value_eq_dec : eq_dec property_value.
-  Proof.
-      unfold eq_dec.
-      decide equality.
-      apply property_base_value_eq_dec.
-      apply property_type_eq_dec.
-  Qed.
-
   (* begin hide *)
-  Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
-      identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec: core.
+  Hint Resolve connection_eq_dec DirectionType_eq_dec
+      identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec
+      property_association_eq_dec
+
+      : core.
   (* end hide *)
 
   (** Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
@@ -398,7 +310,7 @@ Section AADL_Component_Decidability.
 (* begin hide *)
 End AADL_Component_Decidability.
 
-Global Hint Resolve connection_eq_dec property_value_eq_dec DirectionType_eq_dec
+Global Hint Resolve connection_eq_dec property_association_eq_dec DirectionType_eq_dec
   identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec component_eq_dec
   list_component_eq_dec list_connection_eq_dec : core.
 (* end hide *)
@@ -437,7 +349,7 @@ Section AADL_Accessors.
     | Component _ _ _ _ subComponents _ _ => subComponents
   end.
 
-  Definition projectionComponentProperties (c:component) : list property_value :=
+  Definition projectionComponentProperties (c:component) : list property_association :=
     match c with
     | Component _ _ _ _ _ properties _ => properties
   end.
@@ -468,35 +380,6 @@ Section AADL_Accessors.
     | Feature _ _ c _ _ => c
   end.
 
-  (** - Property type *)
-
-  Definition Property_Name (p : property_type) :=
-    match p with
-    | Property_Type  name _ _ => name
-    end.
-
-  Definition Base_Type (p : property_type) :=
-    match p with
-    | Property_Type  _ _ pbt => pbt
-    end.
-
-  Definition Applicable_ComponentCategory (p : property_type) :=
-    match p with
-    | Property_Type _ lcat _ => lcat
-    end.
-
-  (** - Property value *)
-
-  Definition Get_Property_Type (p : property_value) :=
-    match p with
-    | Property_Value pType _ => pType
-    end.
-
-  Definition Get_Base_Value (p : property_value) :=
-    match p with
-    | Property_Value _ pv => pv
-    end.
-
   (** ** Helper functions *)
 
   (** These helper functions extract informations from component subclauses. *)
@@ -512,16 +395,16 @@ Section AADL_Accessors.
     map (fun x => projectionComponentId x) l.
 
   (** [Is_Property_Name] return true if [v] has property name [s]. *)
-
+(* XXXX
   Definition Is_Property_Name (s : identifier) (v : property_value) : bool :=
     if identifier_eq_dec s (Property_Name (Get_Property_Type v)) then true else false.
-
+*)
   (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c (e.g. as subcomponents) %\textbf{XXX features ??}%
   *)
 
   Fixpoint Unfold (c : component) : list component :=
     c ::
-    ((fix Unfold_subcomponents (ls : list component) : list component:=
+    ((fix Unfold_subcomponents (ls : list component) : list component :=
       match ls with
       | nil => nil
       | c :: lc  => Unfold (c) ++ Unfold_subcomponents (lc)

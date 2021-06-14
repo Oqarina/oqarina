@@ -570,6 +570,9 @@ Definition typecheck_model (m: aadl_model) : bool :=
     fold_left (fun acc mu => acc && typecheck_model_unit m mu) mus true
   end.
 
+  Definition check_property_association (M : aadl_model) (pa: property_association) :=
+    M |= pa.(PV) ∈ pa.(PT).
+
 (* TODO :
    - check that the references are not cyclic
    - prove termination for resolution and typing fixpoints if there are no cycles

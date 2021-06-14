@@ -66,65 +66,8 @@ Section WellFormedness_Rules.
 
   (** ** Properties type checking rules *)
 
-  (** In the previous sectionm we have defined property types and property values.
-      The following illustrate how to use them.
-
-      First, we define the %\textsc{Source\_Language}% property, then a value and finallly a subprogram that uses it.
-
-      %\begin{lstlisting}
-      subprogram hello_world
-      properties
-        Source_Language => C;
-      end hello_world;
-      \end{lstlisting}%
-
-  This corresponds to the following Coq formalization:
-
-      *)
-
-  Definition Source_Language : property_type :=
-    Property_Type (Id "source_language") [ subprogram ] aadlstring_t.
-
-  Definition A_Source_Language :=
-    Property_Value Source_Language (aadlstring (Id "C")).
-
-  Definition A_Subprogram :=
-    Component (Id "Hello_World") (subprogram) (Id "spg") nil nil
-    [A_Source_Language] nil.
-
-  (** From this example, we can deduce the two rules to check:
-  - a property value is well-formed
-  - a property value is correctly applied. *)
-
-  (** A property value is well-formed iff the base type of its corresonding property type
-  matches the type of the value of the property. *)
-
-  Definition Well_Formed_Property_Value (p : property_value) : Prop :=
-  match Get_Base_Value p with
-  | aadlstring _ => Base_Type (Get_Property_Type p) = aadlstring_t
-  | aadlboolean _  => Base_Type (Get_Property_Type p) = aadlboolean_t
-  | aadlinteger _  => Base_Type (Get_Property_Type p) = aadlinteger_t
-  | aadlreal _  => Base_Type (Get_Property_Type p) = aadlreal_t
-  | aadllist _ => False (* TBD *)
-  | aadlrecord _ => False (* TBD *)
-  | aadlenum _ => False (* TBD *)
-  end.
-
-  Lemma Well_Formed_Property_Value_dec : forall p : property_value,
-    dec_sumbool (Well_Formed_Property_Value p).
-  Proof.
-    intros.
-    unfold dec_sumbool.
-    unfold Well_Formed_Property_Value.
-    destruct (Get_Property_Type p).
-
-    (* produce trivial goals for each possible value that are either an
-    equality or False, previous decidability results terminate those proofs.
-    *)
-    destruct (Get_Base_Value p);
-      unfold Base_Type; apply Property_Base_Type_eq_dec || auto.
-  Qed.
-
+  (** TBD*)
+(*
   Definition Property_Correctly_Applies_To (c : component) (p : property_value) :=
     In (c->category) (Applicable_ComponentCategory (Get_Property_Type p)).
 
@@ -138,41 +81,7 @@ Section WellFormedness_Rules.
     unfold eq_dec.
     apply ComponentCategory_eq_dec.
   Qed.
-
-  (** In pure functional language fashion, we introduce intermediate functions that operates
-    first on lists of %\coqdocvar{property\_value}%, then on the component itself.
-    Such modularity eases the construction of proofs.
-    *)
-
-  Definition List_Property_Correctly_Applies_To
-    (lp : list property_value) (c : component) :=
-      All (Property_Correctly_Applies_To c) lp.
-
-  Lemma List_Property_Correctly_Applies_To_dec :
-    forall (lp : list property_value) (c : component),
-      { List_Property_Correctly_Applies_To lp c } + { ~ List_Property_Correctly_Applies_To lp c }.
-  Proof.
-    unfold List_Property_Correctly_Applies_To.
-    intros.
-    apply sumbool_All_dec.
-    intros.
-    apply Property_Correctly_Applies_To_dec.
-  Qed.
-
-  Definition Well_Formed_Properties (c : component) : Prop :=
-    List_Property_Correctly_Applies_To (c->properties) c .
-
-  Lemma Well_Formed_Properties_dec :
-    forall (c:component), { Well_Formed_Properties c } + {~Well_Formed_Properties c}.
-  Proof.
-    unfold dec_sumbool.
-    unfold Well_Formed_Properties.
-    intros.
-    apply List_Property_Correctly_Applies_To_dec.
-  Qed.
-
-  Hint Resolve Well_Formed_Properties_dec : core.
-
+*)
   (** * AADL legality and consistency rules *)
 
   (** ** Naming rule 4.5 (N1) *)
@@ -249,7 +158,7 @@ Section WellFormedness_Rules.
 
   Definition Well_Formed_Component (c : component) : Prop :=
    Well_Formed_Component_Id (c) /\
-   Well_Formed_Properties (c) /\
+  (* Well_Formed_Properties (c) /\ *)
    Rule_4_5_N1 (c).
 
   Lemma Well_Formed_Component_dec :

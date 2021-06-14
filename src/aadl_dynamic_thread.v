@@ -9,6 +9,8 @@ Require Import Coq.Bool.Sumbool.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Bool.Bool.
+Require Import Coq.ZArith.ZArith.
+Require Import Coq.ZArith.BinInt.
 
 (** Oqarina library *)
 Require Import Oqarina.coq_utils.utils.
@@ -16,6 +18,7 @@ Require Import Oqarina.coq_utils.utils.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
 Require Import Oqarina.core.queue.
+Require Import Oqarina.properties.properties.
 
 Require Import Oqarina.aadl.
 Require Import Oqarina.aadl_declarative.
@@ -35,6 +38,8 @@ Port variable maps AADL features to runtime level entities. Since we use Coq to 
 A port variable is captured using a Coq record. We define the concept of invalid port variable and a constructor for this record, along with the well-formedness rule and decidability result.
 *)
 
+Open Scope Z_scope.
+
 (* begin hide *)
 Section Port_Variable.
 (* end hide *)
@@ -45,13 +50,13 @@ Section Port_Variable.
     port : feature;
     variable : Port_Queue;
     port_input_times : input_time;
-    urgency : nat;
+    urgency : Z;
   }.
 
   Lemma port_variable_eq_dec : forall x y : port_variable, {x=y}+{x<>y}.
   Proof.
     decide equality.
-    apply PeanoNat.Nat.eq_dec.
+    apply Z.eq_dec. (*PeanoNat.Nat.eq_dec.*)
     apply input_time_eq_dec.
     apply list_eq_dec; apply bool_dec.
     apply feature_eq_dec.
@@ -118,7 +123,7 @@ TBD
     period : AADL_Time;
   (*  deadline : AADL_Time;
     wcet : AADL_Time; *)
-    priority : nat;
+    priority : Z;
     clock : AADL_Time;
     input_ports : list port_variable;
     output_ports : list port_variable;
@@ -245,7 +250,7 @@ From the previous definitions, we can now define the [Enabled] function that ret
     unfold dec_sumbool.
     unfold Periodic_Enabled.
     intros.
-    apply PeanoNat.Nat.eq_dec.
+    apply Z.eq_dec.
   Defined.
 
   Definition Aperiodic_Enabled (th : thread_state_variable) :=
@@ -271,7 +276,7 @@ From the previous definitions, we can now define the [Enabled] function that ret
     unfold Sporadic_Enabled.
     intros.
     apply dec_sumbool_and.
-    apply le_dec. (* {period th <= clock th} + {~ period th <= clock th} *)
+    apply Z_le_dec. (* {period th <= clock th} + {~ period th <= clock th} *)
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
 
@@ -286,7 +291,7 @@ From the previous definitions, we can now define the [Enabled] function that ret
     unfold Timed_Enabled.
     intros.
     apply dec_sumbool_or.
-    apply PeanoNat.Nat.eq_dec.
+    apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
 
@@ -301,7 +306,7 @@ From the previous definitions, we can now define the [Enabled] function that ret
     unfold Hybrid_Enabled.
     intros.
     apply dec_sumbool_and.
-    apply PeanoNat.Nat.eq_dec.
+    apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
 
@@ -476,14 +481,20 @@ End Thread_RTS.
 
 (** *** A Periodic Thread *)
 
-Definition Periodic_Dispatch :=
-  Property_Value Scheduling_Protocol (aadlenum (Id "periodic")).
+Definition Periodic_Dispatch := {|
+  PT := PT_TypeRef (Dispatch_Protocol_Name);
+  PV := PV_Enum (Id "periodic");
+|}.
 
-Definition A_Priority_Value :=
-    Property_Value Priority (aadlinteger 42).
+Definition A_Priority_Value := {|
+  PT := PT_TypeRef (Priority_Name);
+  PV := PV_Int 42;
+|}.
 
-Definition A_Period :=
-    Property_Value Period (aadlinteger 3).
+Definition A_Period := {|
+  PT := PT_TypeRef (Period_Name);
+  PV := PV_Int 3;
+|}.
 
 Definition A_Periodic_Thread := Component
   (Id "a_periodic_thread")
@@ -509,8 +520,10 @@ Compute Enabled_oracle (A_Periodic_Thread_State').
 
 (** *** A Sporadic Thread*)
 
-Definition Sporadic_Dispatch :=
-  Property_Value Scheduling_Protocol (aadlenum (Id "sporadic")).
+Definition Sporadic_Dispatch  := {|
+  PT := PT_TypeRef (Dispatch_Protocol_Name);
+  PV := PV_Enum (Id "sporadic");
+|}.
 
 Definition An_Input_Feature :=
   Feature (Id "a_feature") inF eventPort nil_component nil.

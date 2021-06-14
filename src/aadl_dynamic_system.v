@@ -47,6 +47,7 @@
 
 (* begin hide *)
 Require Import Coq.Init.Datatypes.
+Require Import Coq.ZArith.ZArith.
 
 Require Import Oqarina.formalisms.actor.
 Require Import Oqarina.core.time.
@@ -54,6 +55,8 @@ Import NaturalTime.
 Require Import Oqarina.aadl_aadl_project.
 Require Import Oqarina.coq_utils.utils.
 Set Implicit Arguments.
+
+Open Scope Z_scope.
 (* end hide *)
 
 (** *** Coq mechanization
@@ -142,7 +145,7 @@ Definition system_Post_Fire
     (* any other configuration is invalid *)
     | _, _ => s
     end.
-
+(*
 Definition system_Deadline
     (s : system_states)  (i : system_actions) : Time :=
     0.
@@ -151,7 +154,7 @@ Definition system_Time_Update
     (s : system_states)  (i : system_actions) (t : Time) : system_states :=
     s.
 
-(*Definition System_Actor : Actor system_states system_actions unit := {|
+Definition System_Actor : Actor system_states system_actions unit := {|
     Initial_State := system_offline;
     Fire := system_Fire;
     Post_Fire := system_Post_Fire;

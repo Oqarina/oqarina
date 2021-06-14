@@ -1,10 +1,17 @@
+(* begin hide *)
+
+(** Coq Library *)
 Require Import Coq.Bool.Bool.
 Require Import Coq.Strings.String.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.Lists.List.
 Import ListNotations.
+Require Import Coq.Logic.Decidable.
 
+(** Oqarina library *)
 Require Import Oqarina.core.identifiers.
+Require Import Oqarina.coq_utils.utils.
+(* end hide *)
 
 Open Scope Z_scope.
 Open Scope string_scope.
@@ -30,8 +37,6 @@ Definition units_type :=
   list unit_literal.
 (* !!! unique identifiers, derived/base unit consistency, factor int or real *)
 
-(* add units to range constraints *)
-
 Inductive int_range_constraint :=
   IRC (min max : INT).
 
@@ -41,6 +46,14 @@ Inductive real_range_constraint :=
 Inductive range_constraint :=
 | C_IntRange (irc : int_range_constraint)
 | C_RealRange (rrc : real_range_constraint).
+
+(** XXX TODO
+- applies to ?
+- wellformedness of a property set, of a property type
+- property value correctly applies to a component
+- add units to range constraints
+- inherit?
+*)
 
 Inductive property_type :=
 (* Predeclared types are constructors for performance *)
@@ -58,6 +71,52 @@ Inductive property_type :=
 | PT_TypeRef (qname : ps_qname)
 with field_decl :=
 | FieldDecl (name: identifier) (type: property_type).
+
+Lemma unit_literal_eq_dec : eq_dec unit_literal.
+Proof.
+  unfold eq_dec.
+  decide equality ;
+   apply identifier_eq_dec ||
+   apply PeanoNat.Nat.eq_dec.
+Qed.
+
+Lemma units_type_eq_dec : eq_dec units_type.
+Proof.
+  unfold eq_dec.
+  apply list_eq_dec.
+  apply unit_literal_eq_dec.
+Qed.
+
+Lemma int_range_constraint_eq_dec (a b : int_range_constraint): {a=b}+{a<>b}.
+Proof.
+  decide equality;
+  apply Z.eq_dec.
+Qed.
+
+Lemma real_range_constraint_eq_dec (a b : real_range_constraint): {a=b}+{a<>b}.
+Proof.
+  decide equality;
+  apply Z.eq_dec.
+Qed.
+
+Lemma range_constraint_eq_dec (a b : range_constraint): {a=b}+{a<>b}.
+Proof.
+  decide equality.
+  apply int_range_constraint_eq_dec.
+  apply real_range_constraint_eq_dec.
+Qed.
+
+Local Hint Resolve units_type_eq_dec identifier_eq_dec range_constraint_eq_dec:core.
+
+Lemma property_type_eq_dec (a b : property_type) : {a=b}+{a<>b}
+  with field_decl_eq_dec (a b : field_decl): {a=b}+{a<>b}.
+Proof.
+  (* proof for property_type *)
+  repeat decide equality.
+
+  (* proof for field_decl_eq *)
+  decide equality.
+Qed.
 
 (*! Examples *)
 
@@ -109,6 +168,17 @@ Inductive property_value :=
 with field_value :=
 | FieldVal (name : identifier) (value : property_value).
 
+Local Hint Resolve bool_dec string_dec Z.eq_dec ps_qname_eq_dec: core.
+
+Lemma property_value_eq_dec (a b : property_value) : {a=b}+{a<>b}
+with field_value_eq_dec (a b : field_value) : {a=b}+{a<>b}.
+Proof.
+  decide equality;
+  apply list_eq_dec; auto || auto.
+
+  decide equality.
+Qed.
+
 (*+ Property Sets *)
 
 Inductive property_set_declaration :=
@@ -126,6 +196,33 @@ Notation "s ':prop' t '=>' d 'applies' a" :=
   (PropertyDecl (Id s) t d a)
     (at level 75, t at next level, d at next level, a at next level ).
 
+(** Property Association *)
+
+Record property_association := {
+    PT : property_type;
+    PV : property_value }.
+
+Lemma property_association_eq_dec (a b : property_association): {a=b}+{a<>b}.
+Proof.
+  decide equality.
+  apply property_value_eq_dec.
+  apply property_type_eq_dec.
+Qed.
+
+(** By convention, a property association binds a property type reference
+to a property value. Hence, we disallow anonymous property type *)
+
+Definition property_association_wf (pa : property_association) : Prop :=
+  match pa.(PT) with
+  | PT_TypeRef _ => True
+  | _ => False
+  end.
+
+Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
+  match pa.(PT) with
+  | PT_TypeRef id => ps_qname_beq id name
+  | _ => false
+  end.
 
 (*! AADL Model *)
 
@@ -135,3 +232,4 @@ Inductive model_unit :=
 Inductive aadl_model :=
 | Model (modelUnits : list model_unit).
 
+(* XXX ideally, this would also return a Prop rather than a bool ... *)
