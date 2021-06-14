@@ -28,6 +28,9 @@ install_deps:        ## Install dependencies
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
 
+generate_parser:
+	make -C src/parsers
+
 compile:            ## Compile Coq files
 	make -f coq_makefile
 
