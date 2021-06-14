@@ -13,6 +13,7 @@ Require Import Coq.Lists.ListDec.
 Require Import Oqarina.aadl.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.properties.properties.
 (* end hide *)
 
 (**
@@ -66,10 +67,9 @@ Section WellFormedness_Rules.
 
   (** ** Properties type checking rules *)
 
-  (** TBD*)
-(*
-  Definition Property_Correctly_Applies_To (c : component) (p : property_value) :=
-    In (c->category) (Applicable_ComponentCategory (Get_Property_Type p)).
+  (*
+  Definition Property_Correctly_Applies_To (c : component) (p : property_association) :=
+    In (c->category) (Applicable_ComponentCategory (p.(PT))).
 
   Lemma Property_Correctly_Applies_To_dec :
     forall (p : property_value) (c : component),

@@ -9,6 +9,7 @@ Import ListNotations. (* from List *)
 Require Import Coq.Bool.Bool.
 
 (** Oqarina library *)
+Require Import Oqarina.aadl_categories.
 Require Import Oqarina.aadl.
 (* end hide *)
 

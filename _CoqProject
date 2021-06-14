@@ -9,6 +9,8 @@ src/core/queue.v
 src/formalisms/lts.v
 src/formalisms/actor.v
 
+src/aadl_categories.v
+
 src/properties/properties.v
 src/properties/typecheck.v
 src/properties/typing_test.v

@@ -20,6 +20,7 @@ Require Import Oqarina.core.time.
 Require Import Oqarina.core.queue.
 Require Import Oqarina.properties.properties.
 
+Require Import Oqarina.aadl_categories.
 Require Import Oqarina.aadl.
 Require Import Oqarina.aadl_declarative.
 Require Import Oqarina.aadl_thread_properties.

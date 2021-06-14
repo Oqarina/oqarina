@@ -9,6 +9,7 @@ Import ListNotations.
 Require Import Coq.Logic.Decidable.
 
 (** Oqarina library *)
+Require Import Oqarina.aadl_categories.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
@@ -48,7 +49,6 @@ Inductive range_constraint :=
 | C_RealRange (rrc : real_range_constraint).
 
 (** XXX TODO
-- applies to ?
 - wellformedness of a property set, of a property type
 - property value correctly applies to a component
 - add units to range constraints
@@ -187,7 +187,7 @@ Inductive property_set_declaration :=
                        (value: property_value)
 | PropertyDecl (name : identifier) (type: property_type)
                (default: option property_value)
-               (appliesTo : list identifier).
+               (appliesTo : list ComponentCategory).
 
 Notation "s ':type' t" := (PropertyTypeDecl (Id s) t) (at level 75).
 Notation "s ':const' t '=>' v" := (PropertyConstantDecl (Id s) t v)
@@ -195,6 +195,12 @@ Notation "s ':const' t '=>' v" := (PropertyConstantDecl (Id s) t v)
 Notation "s ':prop' t '=>' d 'applies' a" :=
   (PropertyDecl (Id s) t d a)
     (at level 75, t at next level, d at next level, a at next level ).
+
+Definition Applicable_ComponentCategory (p : property_set_declaration) :=
+  match p with
+  | PropertyDecl _ _ _ lcat => lcat
+  | _ => nil
+  end.
 
 (** Property Association *)
 

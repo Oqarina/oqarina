@@ -5,7 +5,7 @@ Set Warnings "-parsing".
 (** printing abstract %\coqdocvar{abstract}% *)
 
 (* begin hide *)
-(* XXX abstract is recoginized as a tactic keyword by coqdoc .. this does not fully address the issue *)
+(* XXX abstract is recognized as a tactic keyword by coqdoc .. this does not fully address the issue *)
 
 (** Coq Library *)
 Require Import Bool.
@@ -19,13 +19,13 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
 
-
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.aadl_categories.
 Require Import Oqarina.properties.properties.
-(* end hide *)
 Open Scope list_scope.
+(* end hide *)
 
 (**
 
@@ -47,85 +47,11 @@ This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DB
 
  *)
 
- (* begin hide *)
+(* begin hide *)
 Section AADL_Definitions.
 (* end hide *)
 
-  (** ** Component Categories
-
-    The %\coqdocvar{Component\_Category}% type denotes AADL component categories.
-
-    _Note: we need to diverge from the AADL standard and add an explicit null component category for the rare situations where we need to define the absence of a component attach to a model element such as an event port_.
-
-  *)
-
-  (* begin hide *)
-  (* From OSATE
-
-  ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'|'data'
-    | 'device' | 'memory' | 'process' | 'processor' | 'subprogram'
-    | 'subprogram' 'group' | 'system' | 'thread' 'group'
-    | 'thread' | 'virtual' 'bus' | 'virtual' 'processor';
-
-  *)
-  (* end hide *)
-
-  Inductive ComponentCategory : Type :=
-  (* Hybrid categories *)
-  | system | abstract
-  (* Software categories *)
-  | process | thread | threadGroup | subprogram | subprogramGroup | data
-  (* Hardware categories *)
-  | processor| virtualProcessor | memory | device | bus | virtualBus
-  (* Mechanization addition -- not part of AADL standard *)
-  | null (* denote an explicitely null or invalid component *)
-  .
-
-  (** ** Feature Categories
-
-    The %\coqdocvar{FeatureCategory}% type denotes AADL feature categories.
-    The [invalid] category is an addition used to denote an invalid feature.
-
-  *)
-
-  (* begin hide *)
-  (* From OSATE:
-
-  FeatureCategory returns instance::FeatureCategory:
-    'dataPort' | 'eventPort' | 'eventDataPort' | 'parameter' |
-    'busAccess' | 'dataAccess'| 'subprogramAccess' | 'subprogramGroupAccess' |
-    'featureGroup' | 'abstractFeature'
-  ;
-  *)
-  (* end hide *)
-
-  Inductive FeatureCategory : Type :=
-    dataPort | eventPort | eventDataPort | parameter |
-	  busAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
-	  featureGroup | abstractFeature | invalid.
-
-  (** ** Feature Directions
-
-    The %\coqdocvar{Feature\_Direction}% type denotes AADL feature direction.
-
-    _Note: we had to use the 'F' suffix to avoid conflict with Coq concept %\coqdocvar{in}%_.
-
-  *)
-
-  (* begin hide *)
-  (* From OSATE
-
-  DirectionType returns aadl2::DirectionType:
-    'in' | 'out' | 'in' 'out'
-  ;
-
-  *)
-  (* end hide *)
-
-  Inductive DirectionType : Type :=
-    inF | outF | inoutF .
-
-  (** ** Definition of AADL Components
+ (** ** Definition of AADL Components
 
   An AADL component is made of an identifier, a category, a list of features, a list of properties, a list of subcomponents %\footnote{Flows and modes are subject to further discussions.}%.
 
@@ -145,38 +71,7 @@ Section AADL_Definitions.
     <list connection>
   end
 >>
-
-
   *)
-
-  (* begin hide *)
-  (* From OSATE
-
-    FeatureInstance returns instance::FeatureInstance:
-      direction=DirectionType category=FeatureCategory name=ID ('[' index=Long ']')? ':' feature=[aadl2::Feature|DeclarativeRef] ('{' (
-        featureInstance+=FeatureInstance |
-        ownedPropertyAssociation+=PropertyAssociationInstance
-      )* '}')?
-    ;
-
-    ComponentInstance returns instance::ComponentInstance:
-      category=ComponentCategory classifier=[aadl2::ComponentClassifier|ClassifierRef]? name=ID ('[' index+=Long ']')*
-      ('in' 'modes' '(' inMode+=[instance::ModeInstance] (',' inMode+=[instance::ModeInstance])*')')?
-      ':' subcomponent=[aadl2::Subcomponent|DeclarativeRef] ('{' (
-        featureInstance+=FeatureInstance |
-        componentInstance+=ComponentInstance |
-        connectionInstance+=ConnectionInstance |
-        flowSpecification+=FlowSpecificationInstance |
-        endToEndFlow+=EndToEndFlowInstance |
-        modeInstance+=ModeInstance |
-        modeTransitionInstance+=ModeTransitionInstance |
-        ownedPropertyAssociation+=PropertyAssociationInstance
-      )* '}')?
-    ;
-
-  *)
-  (* end hide *)
-
 
   Inductive component :=
   | Component : identifier ->          (* component identifier *)
@@ -241,13 +136,7 @@ Most of AADL model manipulations revolve around comparison of model subelements 
 Section AADL_Component_Decidability.
 (* end hide *)
 
-  (** First, we define decidability results for basic types, using Coq default equality schemes.*)
-
-  Scheme Equality for ComponentCategory.
-  Scheme Equality for FeatureCategory.
-  Scheme Equality for DirectionType.
-
-  (** For other types, we manually define and prove decidability for equality *)
+(** For other types, we manually define and prove decidability for equality *)
 
   Lemma connection_eq_dec : eq_dec connection.
   Proof.
