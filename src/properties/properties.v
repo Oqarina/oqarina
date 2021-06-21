@@ -53,6 +53,7 @@ Inductive range_constraint :=
 - property value correctly applies to a component
 - add units to range constraints
 - inherit?
+- reference to property constance in proprety type? see aadl_thread_properties, definition of urgency
 *)
 
 Inductive property_type :=
@@ -204,6 +205,13 @@ Definition Applicable_ComponentCategory (p : property_set_declaration) :=
 
 (** Property Association *)
 
+(** %\begin{definition}[Property association]
+A property association binds a property value to a property type.
+  \end{definition} %
+
+  XXX this seems incomplete, we need to fetch the corresponding PropertyDecl to get the appliesTo field. either resolve, or change the definition.
+  *)
+
 Record property_association := {
     PT : property_type;
     PV : property_value }.
@@ -215,8 +223,7 @@ Proof.
   apply property_type_eq_dec.
 Qed.
 
-(** By convention, a property association binds a property type reference
-to a property value. Hence, we disallow anonymous property type *)
+(** By convention, a property association binds a property type reference to a property value. Hence, we disallow anonymous property type. *)
 
 Definition property_association_wf (pa : property_association) : Prop :=
   match pa.(PT) with
@@ -224,11 +231,25 @@ Definition property_association_wf (pa : property_association) : Prop :=
   | _ => False
   end.
 
+(** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
 Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
   match pa.(PT) with
   | PT_TypeRef id => ps_qname_beq id name
   | _ => false
   end.
+
+Definition Map_PV_Int (pa : property_association) :=
+  match pa.(PV) with
+    | PV_Int i => i
+    | PV_IntU i _ => i (* XXX implement unit conversion *)
+    | _ => 0 (** XXX address default value *)
+  end.
+
+Definition Map_PV_Int_List (pa : list property_association) (name : property_association -> bool) :=
+  match filter name pa with
+    | nil => 0
+    | v :: _ => Map_PV_Int v
+    end.
 
 (*! AADL Model *)
 
