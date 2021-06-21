@@ -16,6 +16,7 @@ Module Type Queue.
   Parameter enq : queue -> V -> queue.
   Parameter deq : queue -> queue.
   Parameter peek : V -> queue -> V.
+  Parameter count: queue -> nat.
   Axiom is_empty_empty : is_empty empty = true.
   Axiom is_empty_nonempty : forall q v, is_empty (enq q v) = false.
   Axiom peek_empty : forall d, peek d empty = d.
@@ -24,8 +25,15 @@ Module Type Queue.
   Axiom deq_nonempty : forall q v, deq (enq q v) = q.
 End Queue.
 
-Module ListQueue <: Queue.
-  Definition V := bool. (* for simplicity *)
+Module Type ValType.
+  Parameter V : Type.
+End ValType.
+
+Module ListQueue (VT : ValType) <: Queue.
+
+  Definition V := VT.V. (*= bool. *)(* for simplicity *)
+  Definition key := nat.
+
   Definition queue := list V.
   Definition empty : queue := nil.
 
@@ -67,6 +75,9 @@ Module ListQueue <: Queue.
       | x :: q' => x
       | [ ] => default
       end.
+
+  Definition count (q: queue) : nat :=
+    length q.
 
   Theorem is_empty_empty : is_empty empty = true.
   Proof.
