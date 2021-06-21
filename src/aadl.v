@@ -254,10 +254,6 @@ Section AADL_Accessors.
   match f with
   | Feature id _ _ _ _ => id
   end.
-  Definition projectionFeatureComponent (f : feature) : component :=
-    match f with
-    | Feature _ _ _ comp _ => comp
-    end.
 
   Definition projectionFeatureDirection (f : feature) : DirectionType :=
     match f with
@@ -269,25 +265,30 @@ Section AADL_Accessors.
     | Feature _ _ c _ _ => c
   end.
 
+  Definition projectionFeatureComponent (f : feature) : component :=
+    match f with
+    | Feature _ _ _ comp _ => comp
+    end.
+
+  Definition projectionFeatureProperties (f : feature) : list property_association :=
+    match f with
+    | Feature _ _ _ _ lp => lp
+    end.
+
   (** ** Helper functions *)
 
   (** These helper functions extract informations from component subclauses. *)
 
-  (** %\coqdocdefinition{Features\_Components}% return the list of components in l.*)
+  (** [Features\_Components] return the list of components from the list of features [l].*)
 
   Definition Features_Components (l : list feature) : list component :=
     map (fun x => projectionFeatureComponent x) l.
 
-  (** %\coqdocdefinition{Components\_Identifiers}% return the list of identifiers in l. *)
+  (** [Components\_Identifiers] return the list of identifiers in l. *)
 
   Definition Components_Identifiers (l : list component) : list identifier :=
     map (fun x => projectionComponentId x) l.
 
-  (** [Is_Property_Name] return true if [v] has property name [s]. *)
-(* XXXX
-  Definition Is_Property_Name (s : identifier) (v : property_value) : bool :=
-    if identifier_eq_dec s (Property_Name (Get_Property_Type v)) then true else false.
-*)
   (** %\coqdocdefinition{Unfold}% returns the list of components that are parts of c (e.g. as subcomponents) %\textbf{XXX features ??}%
   *)
 

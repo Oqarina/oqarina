@@ -46,8 +46,8 @@ Definition projectionIO_Time_Spec (i : input_time) :=
   | Input_Time t => t
 end.
 
-(** %
-  \wfrule{IO\_Time\_Spec Well-formedness rule (Coq)}{}{An input time is well-formed iff. there is no duplicate in the list of IO\_Time\_Spec.} %
+(** %\define{IO\_Time\_Spec Well-formedness rule (Coq)}{}
+  {An input time is well-formed iff. there is no duplicate in the list of IO\_Time\_Spec.} %
 *)
 
 Definition input_time_wf  (i : input_time) :=

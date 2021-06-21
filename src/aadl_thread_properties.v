@@ -4,13 +4,14 @@
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
+Require Import Coq.ZArith.ZArith.
 
-(** AADL library *)
+(** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.properties.properties.
 Require Import Oqarina.properties.typecheck.
-Require Import Coq.ZArith.ZArith.
 Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.aadl_categories.
 (* end hide *)
 
 (** ** %\texttt{thread\_properties}% as Coq/AADL property_types *)
@@ -22,23 +23,21 @@ Definition Thread_Properties_PS :=
         applies to (thread, device, virtual processor); *)
 
     "Dispatch_Protocol" :prop PT_TypeRef (PSQN "AADL_Project" "Supported_Dispatch_Protocols")
-        => None applies [];
+        => None applies [ thread ; device ; virtualProcessor ];
 
     (* Priority: inherit aadlinteger
         applies to (thread, thread group, process, system, device, data); *)
 
-    "Priority" :prop aadlinteger => None applies []
-  ].
+    "Priority" :prop aadlinteger
+      => None
+      applies [ thread ; threadGroup ; process ; system ; device ; data];
 
-(*
-%\paragraph{} \begin{definition}[Period (\S XXX]
- TBD
-  \end{definition}% *)
+    (* Urgency: aadlinteger 0 .. Max_Urgency
+      applies to (port, subprogram); *)
 
-Definition Period_Name := PSQN "timing_properties" "period".
+    "Urgency" :prop PT_Number aadlinteger (Some (C_IntRange (IRC 0 42))) None => None applies []
 
-Definition Is_Period (pa : property_association) :=
-  Is_Property_Name Period_Name pa.
+].
 
 (** %
   \begin{definition}[Priority (AADLv2.2 \S XXX]
@@ -50,6 +49,18 @@ Definition Priority_Name := PSQN "thread_properties" "priority".
 
 Definition Is_Priority (pa : property_association) :=
   Is_Property_Name Priority_Name pa.
+
+(** %
+  \begin{definition}[Urgency (AADLv2.2 \S XXX]
+ TBD
+  \end{definition}
+% *)
+
+Definition Urgency_Name := PSQN "thread_properties" "urgency".
+
+Definition Is_Urgency (pa : property_association) :=
+  Is_Property_Name Urgency_Name pa.
+
 
 (**
 %
@@ -97,26 +108,6 @@ Definition Map_Scheduling_Protocol (pa : list property_association) : Dispatch_P
 (**
 
 %
-  \begin{definition}[Period (Coq)]
-  TBD
-  \end{definition}
-% *)
-
-Definition Map_Period_pv (pa : property_association) : Z :=
-  match pa.(PV) with
-    | PV_Int i => i
-    | _ => 0
-  end.
-
-Definition Map_Period (pa : list property_association) : Z :=
-    match filter Is_Period pa with
-    | nil => 0
-    | v :: _ => Map_Period_pv v
-    end.
-
-(**
-
-%
   \begin{definition}[Priority (Coq)]
   TBD
   \end{definition}
@@ -124,14 +115,18 @@ Definition Map_Period (pa : list property_association) : Z :=
 
 *)
 
-Definition Map_Priority_pv (pa : property_association) : Z :=
-  match pa.(PV) with
-    | PV_Int i => i
-    | _ => 0
-  end.
-
 Definition Map_Priority (pa : list property_association) : Z :=
-    match filter Is_Priority pa with
-    | nil => 0
-    | v :: _ => Map_Priority_pv v
-    end.
+  Map_PV_Int_List pa Is_Priority.
+
+(**
+
+%
+  \begin{definition}[Urgency(Coq)]
+  TBD
+  \end{definition}
+%
+
+*)
+
+Definition Map_Urgency (pa : list property_association) : Z :=
+  Map_PV_Int_List pa Is_Urgency.
