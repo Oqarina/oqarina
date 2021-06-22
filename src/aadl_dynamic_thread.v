@@ -24,10 +24,7 @@ Require Import Oqarina.aadl_categories.
 Require Import Oqarina.aadl.
 Require Import Oqarina.aadl_declarative.
 
-Require Import Oqarina.property_sets.aadl_communication_properties.
-Require Import Oqarina.property_sets.aadl_thread_properties.
-Require Import Oqarina.property_sets.aadl_timing_properties.
-Require Import Oqarina.property_sets.aadl_aadl_project.
+Require Import Oqarina.property_sets.all.
 
 Require Import Oqarina.aadl_feature_helper.
 
