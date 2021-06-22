@@ -53,7 +53,7 @@ Inductive range_constraint :=
 - property value correctly applies to a component
 - add units to range constraints
 - inherit?
-- reference to property constance in proprety type? see aadl_thread_properties, definition of urgency
+- reference to property constant in proprety type? see aadl_thread_properties, definition of urgency
 *)
 
 Inductive property_type :=

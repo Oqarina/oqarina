@@ -576,7 +576,7 @@ Definition A_Periodic_Thread := Component
 Definition A_Periodic_Thread_State := mk_thread_state_variable (A_Periodic_Thread).
 
 (** At t = 0, the periodic thread is enabled *)
-Lemma Periodic_t0_enabled :  Enabled_oracle (A_Periodic_Thread_State) = true.
+Lemma Periodic_t0_enabled : Enabled_oracle (A_Periodic_Thread_State) = true.
 Proof.
   trivial.
 Qed.
