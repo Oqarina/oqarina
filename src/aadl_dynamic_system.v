@@ -52,7 +52,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Oqarina.formalisms.actor.
 Require Import Oqarina.core.time.
 Import NaturalTime.
-Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.coq_utils.utils.
 Set Implicit Arguments.
 

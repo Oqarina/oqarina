@@ -10,7 +10,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.properties.properties.
 Require Import Oqarina.properties.typecheck.
-Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.aadl_categories.
 (* end hide *)
 

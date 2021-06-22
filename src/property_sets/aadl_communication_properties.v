@@ -7,7 +7,7 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 
 (** Oqarina library *)
-Require Import Oqarina.aadl_aadl_project.
+Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
