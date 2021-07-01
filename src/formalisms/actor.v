@@ -283,18 +283,3 @@ Print Actor_Diagram_Step.
 
 Definition prodcons_Diagram_step4 := coin2 prodcons_Diagram_step3bis 1 1.
 Compute Get_States prodcons_Diagram_step4.
-
-Require Import Ascii String.
-Require Import Program.
-
-Definition debug {T} (_: string) (v:T) : T := v.
-
-Open Scope string_scope.
-
-Fixpoint double (n : nat) : nat :=
-match n with
-| 0 => debug "hi" 0
-| S n => S (S (double n))
-end.
-
-Compute double 3.
