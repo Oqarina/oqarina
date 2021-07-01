@@ -209,7 +209,7 @@ Definition Applicable_ComponentCategory (p : property_set_declaration) :=
 A property association binds a property value to a property type.
   \end{definition} %
 
-  XXX this seems incomplete, we need to fetch the corresponding PropertyDecl to get the appliesTo field. either resolve, or change the definition.
+  XXX this seems incomplete, we need to fetch the corresponding PropertyDecl to get default and appliesTo field. either resolve, or change the definition.
   *)
 
 Record property_association := {
@@ -230,26 +230,6 @@ Definition property_association_wf (pa : property_association) : Prop :=
   | PT_TypeRef _ => True
   | _ => False
   end.
-
-(** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
-Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
-  match pa.(PT) with
-  | PT_TypeRef id => ps_qname_beq id name
-  | _ => false
-  end.
-
-Definition Map_PV_Int (pa : property_association) :=
-  match pa.(PV) with
-    | PV_Int i => i
-    | PV_IntU i _ => i (* XXX implement unit conversion *)
-    | _ => 0 (** XXX address default value *)
-  end.
-
-Definition Map_PV_Int_List (pa : list property_association) (name : property_association -> bool) :=
-  match filter name pa with
-    | nil => 0
-    | v :: _ => Map_PV_Int v
-    end.
 
 (*! AADL Model *)
 
