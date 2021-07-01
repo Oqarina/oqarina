@@ -13,7 +13,9 @@ src/aadl_categories.v
 
 src/properties/properties.v
 src/properties/typecheck.v
+src/properties/properties_helper.v
 src/properties/typing_test.v
+src/properties/all.v
 
 src/property_sets/aadl_aadl_project.v
 src/property_sets/aadl_timing_properties.v
@@ -28,9 +30,11 @@ src/aadl_wf.v
 src/aadl_declarative.v
 src/aadl_instance.v
 
+src/aadl_port_variable.v
+
 src/aadl_static_thread.v
 src/aadl_dynamic_thread.v
-#src/threadMonad.v
+src/threadMonad.v
 
 src/aadl_dynamic_system.v
 
