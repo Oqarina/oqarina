@@ -5,11 +5,75 @@
 Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
+Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
-Require Import Oqarina.property_sets.aadl_aadl_project.
+Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.properties.all.
+Require Import Oqarina.property_sets.aadl_aadl_project.
+Require Import Oqarina.aadl_categories.
 (* end hide *)
+
+Definition Communication_Properties_PS :=
+    PropertySet (Id "Communication_Properties") [
+
+    (* Overflow_Handling_Protocol: enumeration (DropOldest, DropNewest, Error)
+      => DropOldest applies to (event port, event data port, subprogram access); *)
+
+      "Overflow_Handling_Protocol" :prop PT_Enumeration [
+        Id "DropOldest"; Id "DropNewest"; Id "Error" ]
+        => (Some (PV_Enum (Id "DropOldest"))) applies [];
+
+    (* Queue_Size: aadlinteger 0 .. Max_Queue_Size => 1
+          applies to (event port, event data port, subprogram access); *)
+
+    "Queue_Size" :prop aadlinteger
+          => (Some (PV_Int 1%Z)) applies [  ]
+    ].
+
+(** %
+  \begin{definition}[Queue\_Size (AADLv2.2 \S XXX]
+ TBD
+  \end{definition}
+% *)
+
+Definition Queue_Size_Name := PSQN "communication_properties" "queue_size".
+
+Definition Is_Queue_Size (pa : property_association) :=
+  Is_Property_Name Queue_Size_Name pa.
+
+Definition Map_Queue_Size (pa : list property_association) : Z :=
+    Map_PV_Int_List pa 1%Z Is_Queue_Size.
+
+(** %
+  \begin{definition}[Overflow\_Handling\_Protocol (AADLv2.2 \S XXX]
+ TBD
+  \end{definition}
+% *)
+
+Definition Overflow_Handling_Protocol_Name := PSQN "communication_properties" "overflow_handling_protocol".
+
+Definition Is_Overflow_Handling_Protocol(pa : property_association) :=
+  Is_Property_Name Overflow_Handling_Protocol_Name pa.
+
+Inductive Overflow_Handling_Protocol :=
+Overflow_Handling_Protocol_Unspecified | DropOldest | DropNewest | Error.
+Scheme Equality for Overflow_Handling_Protocol.
+
+Definition Map_Overflow_Handling_Protocol_pv (pa : property_association) : Overflow_Handling_Protocol :=
+  match pa.(PV) with
+    | (PV_Enum (Id "dropoldest")) => DropOldest
+    | (PV_Enum (Id "dropnewest")) => DropNewest
+    | (PV_Enum (Id "error")) => Error
+    | _ => DropOldest
+  end.
+
+Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
+  match filter Is_Overflow_Handling_Protocol pa with
+  | nil => DropOldest
+  | v :: _ => Map_Overflow_Handling_Protocol_pv v
+  end.
 
 (** ** %\texttt{Communication\_Properties}% as Coq native types
 

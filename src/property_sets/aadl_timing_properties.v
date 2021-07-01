@@ -11,7 +11,7 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
-Require Import Oqarina.properties.properties.
+Require Import Oqarina.properties.all.
 Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.aadl_categories.
 (* end hide *)
@@ -69,8 +69,8 @@ Definition Is_Period (pa : property_association) :=
   \end{definition}
 % *)
 
-Definition Map_Period (pa : list property_association) : Z :=
-  Map_PV_Int_List pa Is_Period.
+Definition Map_Period (pa : list property_association) :=
+  Map_PV_Int_List pa 0%Z Is_Period.
 
 (**
 
@@ -81,4 +81,4 @@ Definition Map_Period (pa : list property_association) : Z :=
 % *)
 
 Definition Map_Deadline (pa : list property_association) : Z :=
-  Map_PV_Int_List pa Is_Deadline.
+  Map_PV_Int_List pa 0%Z Is_Deadline.
