@@ -10,7 +10,6 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Bool.Bool.
 Require Import Coq.ZArith.ZArith.
-Require Import Coq.ZArith.BinInt.
 
 (** Oqarina library *)
 Require Import Oqarina.coq_utils.utils.
@@ -26,100 +25,10 @@ Require Import Oqarina.aadl_declarative.
 
 Require Import Oqarina.property_sets.all.
 
+Require Import Oqarina.aadl_port_variable.
 Require Import Oqarina.aadl_feature_helper.
 
 Open Scope Z_scope.
-(* end hide *)
-
-(** ** Port Variable *)
-
-(**
-Port variable maps AADL features to runtime level entities. Since we use Coq to define the dynamic semantics of AADL, it is also reasonnable to define the concept of port variable and use it to capture further the dynamic semantics of AADL threads.
-
- %\paragraph{}\define{Port Variable (AADLv2.2 \S 8.2)}{Port Variable (AADL)}{A port variable captures the feature of a component as a runtime entity. Port variables are accessed through runtime services.}%
-
-A port variable is modeled by a Coq record. We define the concept of invalid port variable and a constructor for this record, along withe well-formedness rule and decidability result.
-*)
-
-Module PortVal.
-  Definition V := prod AADL_Time bool.
-End PortVal.
-Module PortQueue := ListQueue PortVal.
-
-(* begin hide *)
-Section Port_Variable.
-(* end hide *)
-
-  Definition Port_Queue : Type := PortQueue.queue.
-  Lemma Port_Queue_dec : forall x y : Port_Queue, {x=y}+{x<>y}.
-  Proof.
-    repeat decide equality.
-  Qed.
-
-  (** A [port_variable] has a reference to an AADL feature, a queue that stores incoming events or calls. A port variable also has a [port_input_times] that indicates when a feature can be frozen, and an urgency value to discriminate among activated triggering features. *)
-
-  Record port_variable : Type := {
-    port : feature;
-    variable : Port_Queue;
-    port_input_times : input_time;
-    urgency : Z;
-  }.
-
-  (* begin hide *)
-  Lemma port_variable_eq_dec : forall x y : port_variable, {x=y}+{x<>y}.
-  Proof.
-    decide equality.
-    apply Z.eq_dec. (*PeanoNat.Nat.eq_dec.*)
-    apply input_time_eq_dec.
-    apply Port_Queue_dec.
-    apply feature_eq_dec.
-  Defined.
-  (* end hide *)
-
-  (** [mkPortVariable] maps an AADL feature to a [port_variable]. The port variable is initialized with an empty queue. XXX default for port_input_time to be adjusted *)
-
-  Definition mkPortVariable (f : feature) := {|
-    port := f;
-    variable := [];
-    port_input_times := Input_Time [ Default_IO_Time_Spec ];
-    urgency := Map_Urgency (projectionFeatureProperties f);
-  |}.
-
-  (** A port variable is well-formed iff its configuration parameters are well-formed. This property is decidable. *)
-
-  Definition port_variable_wf (p : port_variable) :=
-    input_time_wf p.(port_input_times).
-
-  (* begin hide *)
-  Definition port_variable_wf_dec : forall p : port_variable,
-    dec_sumbool (port_variable_wf p).
-  Proof.
-    intros.
-    unfold port_variable_wf.
-    destruct port_input_times.
-    apply input_time_wf_dec.
-  Defined.
-  (* end hide *)
-
-  Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
-
-  Definition Update_Variable (p : port_variable) (v : Port_Queue): port_variable := {|
-    port := p.(port);
-    variable := v;
-    port_input_times := p.(port_input_times);
-    urgency := p.(urgency);
-  |}.
-
-  (** [Build_Input_Port_Variables] (resp. [Build_Output_Port_Variables]) is a utility function that builds port variables from input (resp. output) features. AADL inout features are also considered. *)
-
-  Definition Build_Input_Port_Variables (l : list feature) :=
-    map mkPortVariable (Get_Input_Features l).
-
-  Definition Build_Output_Port_Variables (l : list feature) :=
-    map mkPortVariable (Get_Output_Features l).
-
-(* begin hide *)
-End Port_Variable.
 (* end hide *)
 
 (** ** Thread State Variable *)
@@ -148,6 +57,7 @@ TBD
     clock : AADL_Time;
     input_ports : list port_variable;
     output_ports : list port_variable;
+
     dispatch_trigger : list feature;
   }.
 
@@ -157,8 +67,10 @@ TBD
     priority := Map_Priority (t->properties);
     deadline := Map_Deadline (t->properties);
     clock := 0;
+
     input_ports := Build_Input_Port_Variables (t->features);
     output_ports := Build_Output_Port_Variables (t->features);
+
     dispatch_trigger := Build_Dispatch_Trigger (t->features);
   |}.
 
@@ -168,7 +80,7 @@ End Thread_State_Variable.
 
 (** ** Thread Dispatching
 
-This section captures the content of %\S 5.4.2 of  \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define the [Enabled] function. *)
+This section captures the content of %\S 5.4.2 of \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define the [Enabled] function. *)
 
 (* begin hide *)
 Section AADL_Dispatching.
@@ -181,7 +93,7 @@ All AADL dispatch protocols review the state of triggering features and the curr
 First, we check whether the feature is activated, [Is_Feature_Activated], then whether it is in the dispatch trigger, in [Feature_In_Dispatch_Trigger]. *)
 
   Definition Is_Feature_Activated (p : port_variable) :=
-    ~ PortQueue.Is_Empty p.(variable).
+    ~ PortQueue.Is_Empty p.(outer_variable).
 
   (* begin hide *)
   Lemma Is_Feature_Activated_dec :
@@ -481,63 +393,126 @@ Section Thread_RTS.
    %*)
 
   Definition advance_time (th : thread_state_variable) (t : AADL_Time) := {|
+      (* Generic part *)
       dispatch_protocol := th.(dispatch_protocol);
       period := th.(period);
       deadline := th.(deadline);
       priority := th.(priority);
-      clock := th.(clock) + t;
+
       input_ports := th.(input_ports);
       output_ports := th.(output_ports);
       dispatch_trigger := th.(dispatch_trigger);
+
+      (* advance_time *)
+      clock := th.(clock) + t;
     |}.
 
 (** %\begin{definition}[store\_in (Coq)]
-TBD
+This private API function stores a value in an outer\_port of an AADL thread.
   \end{definition} %*)
 
-  Definition Store_In_ (p : port_variable) (name : identifier) (value : PortVal.V) :=
-    if identifier_beq (projectionFeatureIdentifier p.(port)) name then
-      Update_Variable p (PortQueue.enq p.(variable) value)
-    else
-      p.
-
-  Fixpoint Store_In (l : list port_variable) (name : identifier) (value : PortVal.V) :=
-    match l with
-    | nil => l
-    | h :: t => Store_In_ h name value :: Store_In t name value
-    end.
-
   Definition store_in (t : thread_state_variable) (name : identifier) (value : bool) := {|
+    (* Generic part *)
     dispatch_protocol := t.(dispatch_protocol);
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
     clock := t.(clock);
-    input_ports := Store_In t.(input_ports) name (t.(clock), value);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
+
+    (* store_in *)
+    input_ports := Store t.(input_ports) name (t.(clock), value);
+
   |}.
 
 (** %\begin{definition}[Get\_Count (Coq)]
-TBD
+    subprogram Get\_Count
+    features
+      Portvariable: requires data access; -- reference to port variable
+      CountValue: out parameter Base\_Types::Integer; -- content count of port variable
+    end Get\_Count;
+
   \end{definition} %*)
-
-  Definition Get_Count_ (p : port_variable) (name : identifier) :=
-    if identifier_beq (projectionFeatureIdentifier p.(port)) name then
-      PortQueue.count p.(variable)
-    else
-      0%nat.
-
-  (** XXX Ugly implementaiton, should probably filter and then count. It basically works because there is unicity of port variable names *)
-
-  Fixpoint Get_Count (l : list port_variable) (name : identifier) : nat :=
-    match l with
-    | nil => 0%nat
-    | h :: t => Get_Count_ h name + Get_Count t name
-    end.
 
   Definition get_count (t : thread_state_variable) (name : identifier) :=
     Get_Count t.(input_ports) name.
+
+(** %\begin{definition}[Put\_Value (Coq)]
+    subprogram Put\_Value
+    features
+      Portvariable: requires data access; -- reference to port variable
+      DataValue: in parameter; -- value to be stored
+      DataSize: in parameter;  - size in bytes (optional)
+    end Put\_Value;
+  \end{definition} %*)
+
+  Definition put_value (t : thread_state_variable) (name : identifier) (value : bool) := {|
+    (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    input_ports := t.(input_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+
+    (* put_value *)
+    output_ports := Store t.(output_ports) name (t.(clock), value);
+
+  |}.
+
+(** %\begin{definition}[Get\_Value (Coq)]
+  subprogram Get\_Value
+  features
+    Portvariable: requires data access; -- reference to port variable
+    DataValue: out parameter; -- value being retrieved
+       -- Error code
+      ErrorCode: out parameter <implementation-defined error code>;
+  end Get\_Value;
+  \end{definition} %*)
+
+  Definition get_value (t : thread_state_variable) (name : identifier) :=
+    Get_Value t.(input_ports) name.
+
+  (** %\begin{definition}[Next\_Value (Coq)]
+  subprogram Next\_Value
+  features
+    Portvariable: requires data access; -- reference to port variable
+       -- Error code
+      ErrorCode: out parameter <implementation-defined error code>;
+  end Next\_Value;
+  \end{definition} %*)
+
+  Definition next_value (t : thread_state_variable) (name : identifier) (value : bool) := {|
+    (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    output_ports := t.(output_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+
+    (* next_value *)
+    input_ports := Next_Value t.(input_ports) name;
+
+  |}.
+
+  Definition receive_input (t : thread_state_variable) (name : identifier) := {|
+    (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    output_ports := t.(output_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+
+    (* next_value *)
+    input_ports := Receive_Input t.(input_ports) name;
+
+  |}.
 
 (* begin hide *)
 End Thread_RTS.
@@ -616,7 +591,11 @@ Proof.
 Qed.
 
 (** inject en event *)
-Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Id "a_feature") true.
+Definition A_Sporadic_Thread_State_ := store_in A_Sporadic_Thread_State (Id "a_feature") false.
+Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State_ (Id "a_feature") true.
+
+Compute A_Sporadic_Thread_State_.
+Compute A_Sporadic_Thread_State'.
 
 (** the thread is not enabled yet *)
 Lemma Sporatic_tO_not_enabled' : Enabled_oracle (A_Sporadic_Thread_State') = false.
@@ -633,11 +612,28 @@ Proof.
   trivial.
 Qed.
 
-Compute Get_Elected_Triggering_Feature (th).
+Lemma ETF: Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_feature".
+Proof.
+  trivial.
+Qed.
 
 Compute Frozen_Ports' (th).
 
-Lemma get_count_1 : get_count th (Id "a_feature") = 1%nat.
+(* at this stage, we have not called receive_input, no event available *)
+Lemma get_count_1 : get_count th (Id "a_feature") = 0%nat.
+Proof.
+  trivial.
+Qed.
+
+(* calling receive input *)
+Definition th_rec := receive_input th (Id "a_feature").
+
+Lemma get_count_2 : get_count th_rec (Id "a_feature") = 1%nat.
+Proof.
+  trivial.
+Qed.
+
+Lemma get_value_1 : get_value th_rec (Id "a_feature") = (0,true).
 Proof.
   trivial.
 Qed.

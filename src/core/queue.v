@@ -10,28 +10,29 @@ Require Import Oqarina.coq_utils.utils.
 
 Module Type Queue.
   Parameter V : Type.
+  Parameter Invalid_Value : V.
   Parameter queue : Type.
   Parameter empty: queue.
   Parameter is_empty : queue -> bool.
   Parameter enq : queue -> V -> queue.
   Parameter deq : queue -> queue.
-  Parameter peek : V -> queue -> V.
+  Parameter peek : queue -> V.
   Parameter count: queue -> nat.
   Axiom is_empty_empty : is_empty empty = true.
   Axiom is_empty_nonempty : forall q v, is_empty (enq q v) = false.
-  Axiom peek_empty : forall d, peek d empty = d.
-  Axiom peek_nonempty : forall d q v, peek d (enq q v) = v.
+  Axiom peek_empty : peek empty = Invalid_Value.
   Axiom deq_empty : deq empty = empty.
-  Axiom deq_nonempty : forall q v, deq (enq q v) = q.
 End Queue.
 
 Module Type ValType.
   Parameter V : Type.
+  Parameter Invalid_Value : V.
 End ValType.
 
 Module ListQueue (VT : ValType) <: Queue.
 
-  Definition V := VT.V. (*= bool. *)(* for simplicity *)
+  Definition V := VT.V.
+  Definition Invalid_Value := VT.Invalid_Value.
   Definition key := nat.
 
   Definition queue := list V.
@@ -62,7 +63,7 @@ Module ListQueue (VT : ValType) <: Queue.
     induction q; auto.
   Defined.
 
-  Definition enq (q : queue) (v : V) : queue :=  v :: q.
+  Definition enq (q : queue) (v : V) : queue :=  q ++ [v].
 
   Definition deq (q : queue) : queue :=
     match q with
@@ -70,10 +71,10 @@ Module ListQueue (VT : ValType) <: Queue.
     | [] => []
     end.
 
-  Definition peek (default : V) (q : queue) : V :=
+  Definition peek (q : queue) : V :=
       match q with
       | x :: q' => x
-      | [ ] => default
+      | [ ] => Invalid_Value
       end.
 
   Definition count (q: queue) : nat :=
@@ -89,34 +90,21 @@ Module ListQueue (VT : ValType) <: Queue.
   Theorem is_empty_nonempty : forall q v,
       is_empty (enq q v) = false.
   Proof.
-    unfold enq.
     intros.
+    unfold enq.
     unfold is_empty.
-    auto.
+    induction q ; auto.
   Qed.
 
-  Theorem peek_empty : forall d,
-      peek d empty = d.
+  Theorem peek_empty : peek empty = Invalid_Value.
   Proof.
     auto.
-  Qed.
-
-  Theorem peek_nonempty : forall d q v,
-      peek d (enq q v) = v.
-  Proof.
-      intros. simpl. auto.
   Qed.
 
  Theorem deq_empty :
     deq empty = empty.
   Proof.
       auto.
-  Qed.
-
-  Theorem deq_nonempty : forall q v,
-      deq (enq q v) = q.
-  Proof.
-    intros. simpl. auto.
   Qed.
 
 End ListQueue.

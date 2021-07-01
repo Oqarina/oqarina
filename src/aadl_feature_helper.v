@@ -11,6 +11,7 @@ Require Import Coq.Bool.Bool.
 (** Oqarina library *)
 Require Import Oqarina.aadl_categories.
 Require Import Oqarina.aadl.
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 Definition Is_Input_Port (f : feature) :=
@@ -33,6 +34,9 @@ Definition Is_Triggering_Feature_p (f : feature) :=
 
 Definition Is_Data_Port (f : feature) :=
   (projectionFeatureCategory f) = dataPort.
+
+Definition Is_Data_Portb (f : feature) : bool :=
+  FeatureCategory_beq(projectionFeatureCategory f) dataPort.
 
 Definition Get_Input_Features (l : list feature) :=
   filter Is_Input_Port l.
