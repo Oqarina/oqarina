@@ -574,17 +574,17 @@ End Thread_RTS.
 (** *** A Periodic Thread *)
 
 Definition Periodic_Dispatch := {|
-  PT := PT_TypeRef (Dispatch_Protocol_Name);
+  P := Dispatch_Protocol_Name;
   PV := PV_Enum (Id "periodic");
 |}.
 
 Definition A_Priority_Value := {|
-  PT := PT_TypeRef (Priority_Name);
+  P := Priority_Name;
   PV := PV_Int 42;
 |}.
 
 Definition A_Period := {|
-  PT := PT_TypeRef (Period_Name);
+  P := Period_Name;
   PV := PV_IntU 3 (PV_Unit (Id "ms"));
 |}.
 
@@ -611,7 +611,7 @@ Qed.
 Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 2.
 Definition A_Periodic_Thread_State'' := await_dispatch A_Periodic_Thread_State'.
 
-(** At t = 4, the periodic thread is not enabled *)
+(** At t = 2, the periodic thread is not enabled *)
 
 Lemma Periodic_t2_not_enabled : A_Periodic_Thread_State''.(current_state) = Idle.
 Proof.
@@ -621,7 +621,7 @@ Qed.
 (** *** A Sporadic Thread*)
 
 Definition Sporadic_Dispatch  := {|
-  PT := PT_TypeRef (Dispatch_Protocol_Name);
+  P := Dispatch_Protocol_Name;
   PV := PV_Enum (Id "sporadic");
 |}.
 

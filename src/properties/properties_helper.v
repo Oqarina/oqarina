@@ -12,10 +12,7 @@ Require Import Oqarina.properties.properties.
 
 (** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
 Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
-  match pa.(PT) with
-  | PT_TypeRef id => ps_qname_beq id name
-  | _ => false
-  end.
+  ps_qname_beq pa.(P) name.
 
 (** [Map_PV_Int] maps a property value to an integer. *)
 

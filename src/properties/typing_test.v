@@ -150,5 +150,6 @@ Proof. auto. Qed.
 
 Compute typecheck_model M.
 
-
+(*
 Goal check_property_association M {| P := PSQN "PS1" "Time"; PV := PV_IntU 1 |}.
+*)
