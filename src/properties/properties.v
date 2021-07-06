@@ -213,23 +213,14 @@ A property association binds a property value to a property type.
   *)
 
 Record property_association := {
-    PT : property_type;
+    P : ps_qname;
     PV : property_value }.
 
 Lemma property_association_eq_dec (a b : property_association): {a=b}+{a<>b}.
 Proof.
   decide equality.
   apply property_value_eq_dec.
-  apply property_type_eq_dec.
 Qed.
-
-(** By convention, a property association binds a property type reference to a property value. Hence, we disallow anonymous property type. *)
-
-Definition property_association_wf (pa : property_association) : Prop :=
-  match pa.(PT) with
-  | PT_TypeRef _ => True
-  | _ => False
-  end.
 
 (*! AADL Model *)
 

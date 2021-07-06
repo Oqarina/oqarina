@@ -290,6 +290,11 @@ Definition is_resolved_valueR (m : aadl_model) (qname : ps_qname) (t : property_
             (exists def app, decl = PropertyDecl (Id name) t def app)
           ).
 
+Definition is_resolved_propertyR (m : aadl_model) (qname : ps_qname) (t : property_type) : Prop :=
+  let 'PSQN setname name := qname in
+  exists decl, in_modelR (Id setname) (Id name) decl m /\ 
+          exists def app, decl = PropertyDecl (Id name) t def app.
+
 Fixpoint resolve_type' (fuel : nat) (m : aadl_model) (t : property_type) : option property_type :=
   match fuel with
   | 0%nat => None
@@ -313,6 +318,16 @@ Definition resolve_value (m : aadl_model) (qname : ps_qname) : option property_t
   match in_model m (Id setname) (Id name) with
   | Some decl => match decl with
                 | PropertyConstantDecl _ r _
+                | PropertyDecl _ r _ _ => resolve_type m r
+                | _ => None
+                end
+  | _ => None
+  end.
+
+Definition resolve_property (m : aadl_model) (qname : ps_qname) : option property_type :=
+  let 'PSQN setname name := qname in
+  match in_model m (Id setname) (Id name) with
+  | Some decl => match decl with
                 | PropertyDecl _ r _ _ => resolve_type m r
                 | _ => None
                 end
@@ -570,8 +585,11 @@ Definition typecheck_model (m: aadl_model) : bool :=
     fold_left (fun acc mu => acc && typecheck_model_unit m mu) mus true
   end.
 
-  Definition check_property_association (M : aadl_model) (pa: property_association) :=
-    M |= pa.(PV) ∈ pa.(PT).
+Definition check_property_association (m : aadl_model) (pa: property_association) :=
+  match resolve_property m pa.(P) with
+  | Some pt => m |= pa.(PV) ∈ pt
+  | _ => false
+  end.
 
 (* TODO :
    - check that the references are not cyclic
