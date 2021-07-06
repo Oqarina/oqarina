@@ -1,15 +1,19 @@
-(** %\chapter{\texttt{AADL\_Project}} %*)
+(** %\section{\texttt{AADL\_Project}} %*)
 
 (** Loose mapping of aadl_project.aadl to define common types, units, etc. *)
 
+(* begin hide *)
+(** Coq Library *)
 Require Import Coq.Lists.List.
 Import ListNotations.
 Require Import Coq.ZArith.ZArith.
 
+(** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
 Require Import Oqarina.properties.properties.
 Require Import Oqarina.properties.typecheck.
+(* end hide *)
 
 Definition AADL_Time : Type := Z.
 
@@ -17,7 +21,8 @@ Definition AADL_Project_PS :=
     PropertySet (Id "AADL_Project") [
 
     (* Supported_Dispatch_Protocols:
-       type enumeration (Periodic, Sporadic, Aperiodic, Timed, Hybrid, Background, Interrupt);
+       type enumeration (Periodic, Sporadic, Aperiodic, Timed,
+                         Hybrid, Background, Interrupt);
      *)
 
     "Supported_Dispatch_Protocols" :type PT_Enumeration [

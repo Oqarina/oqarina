@@ -1,4 +1,4 @@
-(** %\chapter{\texttt{Timing\_Properties}} %*)
+(** %\section{\texttt{Timing\_Properties}} %*)
 
 (** Loose mapping of aadl_project.aadl to define common types, units, etc. *)
 
@@ -23,25 +23,26 @@ Definition Timing_Properties_PS :=
 
     (* Time: type aadlinteger 0 ps .. Max_Time units Time_Units; *)
 
-    "Time" :prop PT_Number aadlinteger None (Some (PT_TypeRef (PSQN "AADL_Project_PS" "Time_Units")))
+    "Time" :prop PT_Number aadlinteger None
+      (Some (PT_TypeRef (PSQN "AADL_Project_PS" "Time_Units")))
       => None applies [];
 
     (* Deadline: inherit Time => Period
-		   applies to (thread, thread group, process, system, device, virtual processor);
-    *)
+		   applies to (thread, thread group, process, system, device,
+                   virtual processor); *)
 
     "Deadline" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
         => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor];
 
     (* Period: inherit Time
-       applies to (thread, thread group, process, system, device, virtual processor);
-    *)
+       applies to (thread, thread group, process, system, device,
+                   virtual processor); *)
 
     "Period" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
         => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor]
   ].
 
-(*
+(**
 %\paragraph{} \begin{definition}[Period (\S XXX]
  TBD
   \end{definition}% *)
@@ -51,7 +52,7 @@ Definition Period_Name := PSQN "timing_properties" "period".
 Definition Is_Period (pa : property_association) :=
   Is_Property_Name Period_Name pa.
 
-(*
+(**
 %\paragraph{} \begin{definition}[Deadline (\S XXX]
  TBD
   \end{definition}% *)

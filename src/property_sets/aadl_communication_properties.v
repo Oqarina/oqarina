@@ -19,7 +19,8 @@ Definition Communication_Properties_PS :=
     PropertySet (Id "Communication_Properties") [
 
     (* Overflow_Handling_Protocol: enumeration (DropOldest, DropNewest, Error)
-      => DropOldest applies to (event port, event data port, subprogram access); *)
+       => DropOldest applies to (event port, event data port,
+                                 subprogram access); *)
 
       "Overflow_Handling_Protocol" :prop PT_Enumeration [
         Id "DropOldest"; Id "DropNewest"; Id "Error" ]

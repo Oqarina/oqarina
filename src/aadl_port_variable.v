@@ -1,3 +1,5 @@
+(** %\chapter{AADL Port variables} %*)
+
 (* begin hide *)
 (** Coq Library *)
 Require Import List.
@@ -184,8 +186,8 @@ TBD
     Definition Store (l : list port_variable) (name : identifier) (value : PortVal.V) :=
       map (fun x => Store_ x name value) l.
 
-(** %\begin{definition}[get_count [port variable](Coq)]
-TBD XXX this is wrong, get_count is changed when we do a next_value
+(** %\begin{definition}[get\_count [port variable](Coq)]
+TBD XXX this is wrong, get\_count is changed when we do a next\_value
   \end{definition} %*)
 
     Definition Get_Count_ (p : port_variable) :=
@@ -198,7 +200,7 @@ TBD XXX this is wrong, get_count is changed when we do a next_value
           | Some p => Get_Count_ p
         end.
 
-(** %\begin{definition}[get_value [port variable](Coq)]
+(** %\begin{definition}[get\_value [port variable](Coq)]
 TBD
   \end{definition} %*)
 
@@ -212,7 +214,7 @@ TBD
         | Some p => Get_Value_ p
       end.
 
-(** %\begin{definition}[next_value [port variable](Coq)]
+(** %\begin{definition}[next\_value [port variable](Coq)]
 TBD
   \end{definition} %*)
 
@@ -227,11 +229,11 @@ TBD
   Definition Next_Value (l : list port_variable) (name : identifier) :=
     map (fun x => Next_Value_ x name) l.
 
-(** %\begin{definition}[receive_input [port variable](Coq)]
+(** %\begin{definition}[receive\_input [port variable](Coq)]
 TBD
   \end{definition} %*)
 
-(* XXX add timestamp*)
+(* XXX add timestamp *)
 
   Definition Receive_Input_OneItem (p : port_variable) :=
     let v := PortQueue.peek p.(outer_variable) in
@@ -273,5 +275,29 @@ TBD
 
   Definition Receive_Input (l : list port_variable) (name : identifier) :=
     map (fun x => Receive_Input_ x name) l.
+
+(** %\begin{definition}[send\_output [port variable](Coq)]
+TBD
+  \end{definition} %*)
+
+  Definition Send_Output_ (p : port_variable) (name : identifier) :=
+    if identifier_beq (projectionFeatureIdentifier p.(port)) name
+    then {|
+      port := p.(port);
+      is_data := p.(is_data);
+      inner_variable := [];
+      outer_variable := p.(inner_variable);
+      port_input_times := p.(port_input_times);
+      urgency := p.(urgency);
+      size := p.(size);
+      overflow_handling_protocol := p.(overflow_handling_protocol);
+      dequeue_protocol := p.(dequeue_protocol);
+      dequeued_items := p.(dequeued_items);
+    |}
+    else
+      p.
+
+  Definition Send_Output (l : list port_variable) (name : identifier) :=
+    map (fun x => Send_Output_ x name) l.
 
 End Port_Variable_RTS.

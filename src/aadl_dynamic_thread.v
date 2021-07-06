@@ -1,4 +1,4 @@
-(** %\section{Threads} %*)
+(** %\chapter{AADL Threads} %*)
 
 (* begin hide *)
 (** Coq Library *)
@@ -506,8 +506,30 @@ This private API function stores a value in an outer\_port of an AADL thread.
     dispatch_trigger := t.(dispatch_trigger);
     current_state := t.(current_state);
     dispatch_time := t.(dispatch_time);
+
     (* put_value *)
     output_ports := Store t.(output_ports) name (t.(clock), value);
+
+  |}.
+
+(** %\begin{definition}[Send\_Output (Coq)]
+
+  \end{definition} %*)
+
+  Definition send_output (t : thread_state_variable) (name : identifier) := {|
+    (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    input_ports := t.(input_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+    current_state := t.(current_state);
+    dispatch_time := t.(dispatch_time);
+
+    (* put_value *)
+    output_ports := Send_Output t.(output_ports) name;
 
   |}.
 
