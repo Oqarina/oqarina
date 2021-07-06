@@ -47,17 +47,22 @@ Section Thread_State_Variable.
 (** %\begin{definition}[Thread State (Coq)]
 TBD
   \end{definition} %*)
+  Inductive thread_state := Idle | Ready | Running.
 
   Record thread_state_variable : Type := {
+    (* static configuration parameters derived from AADL thread component *)
     dispatch_protocol : Dispatch_Protocol;
     period : AADL_Time;
     deadline : AADL_Time;
-   (* wcet : AADL_Time; *)
     priority : Z;
-    clock : AADL_Time;
+    (* wcet : AADL_Time; *)
+
+    (* dynamic status *)
+    clock : AADL_Time;                      (* current clock *)
+    current_state : thread_state;
+    dispatch_time : AADL_Time;
     input_ports : list port_variable;
     output_ports : list port_variable;
-
     dispatch_trigger : list feature;
   }.
 
@@ -66,11 +71,12 @@ TBD
     period := Map_Period (t->properties);
     priority := Map_Priority (t->properties);
     deadline := Map_Deadline (t->properties);
-    clock := 0;
 
+    clock := 0;
+    dispatch_time := 0;
+    current_state := Idle;
     input_ports := Build_Input_Port_Variables (t->features);
     output_ports := Build_Output_Port_Variables (t->features);
-
     dispatch_trigger := Build_Dispatch_Trigger (t->features);
   |}.
 
@@ -402,6 +408,8 @@ Section Thread_RTS.
       input_ports := th.(input_ports);
       output_ports := th.(output_ports);
       dispatch_trigger := th.(dispatch_trigger);
+      current_state := th.(current_state);
+      dispatch_time := th.(dispatch_time);
 
       (* advance_time *)
       clock := th.(clock) + t;
@@ -412,7 +420,7 @@ This private API function stores a value in an outer\_port of an AADL thread.
   \end{definition} %*)
 
   Definition store_in (t : thread_state_variable) (name : identifier) (value : bool) := {|
-    (* Generic part *)
+  (* Generic part *)
     dispatch_protocol := t.(dispatch_protocol);
     period := t.(period);
     deadline := t.(deadline);
@@ -420,10 +428,50 @@ This private API function stores a value in an outer\_port of an AADL thread.
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
+    current_state := t.(current_state);
+    dispatch_time := t.(dispatch_time);
 
     (* store_in *)
     input_ports := Store t.(input_ports) name (t.(clock), value);
 
+  |}.
+
+  Definition update_thread_state (t : thread_state_variable) :=
+  let is_enabled := Enabled_oracle t in {|
+  (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    output_ports := t.(output_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+    input_ports := t.(input_ports);
+
+    (* update_thread_state *)
+    current_state := if is_enabled then Ready else t.(current_state);
+    dispatch_time := if is_enabled then t.(clock) else t.(dispatch_time);
+  |}.
+
+
+(** %\begin{definition}[Await\_Dispatch (Coq)]
+
+  \end{definition} %*)
+
+  Definition await_dispatch (t : thread_state_variable) := {|
+  (* Generic part *)
+    dispatch_protocol := t.(dispatch_protocol);
+    period := t.(period);
+    deadline := t.(deadline);
+    priority := t.(priority);
+    clock := t.(clock);
+    output_ports := t.(output_ports);
+    dispatch_trigger := t.(dispatch_trigger);
+    input_ports := t.(input_ports);
+
+    (* await_dispatch *)
+    current_state := Idle;
+    dispatch_time := 0;
   |}.
 
 (** %\begin{definition}[Get\_Count (Coq)]
@@ -456,7 +504,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     clock := t.(clock);
     input_ports := t.(input_ports);
     dispatch_trigger := t.(dispatch_trigger);
-
+    current_state := t.(current_state);
+    dispatch_time := t.(dispatch_time);
     (* put_value *)
     output_ports := Store t.(output_ports) name (t.(clock), value);
 
@@ -493,7 +542,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
-
+    current_state := t.(current_state);
+    dispatch_time := t.(dispatch_time);
     (* next_value *)
     input_ports := Next_Value t.(input_ports) name;
 
@@ -508,8 +558,9 @@ This private API function stores a value in an outer\_port of an AADL thread.
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
-
-    (* next_value *)
+    current_state := t.(current_state);
+    dispatch_time := t.(dispatch_time);
+    (* receive_input *)
     input_ports := Receive_Input t.(input_ports) name;
 
   |}.
@@ -545,18 +596,24 @@ Definition A_Periodic_Thread := Component
   nil
   [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
 
-Definition A_Periodic_Thread_State := mk_thread_state_variable (A_Periodic_Thread).
+Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 
+(** "activate" the thread *)
+
+Definition A_Periodic_Thread_State := update_thread_state A_Periodic_Thread_State_.
 (** At t = 0, the periodic thread is enabled *)
-Lemma Periodic_t0_enabled : Enabled_oracle (A_Periodic_Thread_State) = true.
+Lemma Periodic_t0_enabled : A_Periodic_Thread_State.(current_state) = Ready.
 Proof.
   trivial.
 Qed.
 
-Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 4.
+(** "do something" *)
+Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 2.
+Definition A_Periodic_Thread_State'' := await_dispatch A_Periodic_Thread_State'.
 
 (** At t = 4, the periodic thread is not enabled *)
-Lemma Periodic_t4_not_enabled : Enabled_oracle (A_Periodic_Thread_State') = false.
+
+Lemma Periodic_t2_not_enabled : A_Periodic_Thread_State''.(current_state) = Idle.
 Proof.
   trivial.
 Qed.
@@ -582,36 +639,36 @@ Definition A_Sporadic_Thread := Component
 
 (** We can continue ant build a sporadic thread, add an event, avancd time and check if it is enabled *)
 
-Definition A_Sporadic_Thread_State := mk_thread_state_variable (A_Sporadic_Thread).
-
+Definition A_Sporadic_Thread_State_ := mk_thread_state_variable (A_Sporadic_Thread).
+Definition A_Sporadic_Thread_State := update_thread_state A_Sporadic_Thread_State_.
 (** initially, the sporadic thread is not enabled *)
 Lemma Sporatic_tO_not_enabled : Enabled_oracle (A_Sporadic_Thread_State) = false.
 Proof.
   trivial.
 Qed.
 
-(** inject en event *)
-Definition A_Sporadic_Thread_State_ := store_in A_Sporadic_Thread_State (Id "a_feature") false.
-Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State_ (Id "a_feature") true.
+(** inject two events, because of the DropOldest policy used, with a queue size of 1, we loose the first evemt *)
+Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Id "a_feature") false.
+Definition A_Sporadic_Thread_State'' := store_in A_Sporadic_Thread_State' (Id "a_feature") true.
 
-Compute A_Sporadic_Thread_State_.
 Compute A_Sporadic_Thread_State'.
+Compute A_Sporadic_Thread_State''.
 
 (** the thread is not enabled yet *)
-Lemma Sporatic_tO_not_enabled' : Enabled_oracle (A_Sporadic_Thread_State') = false.
+Lemma Sporatic_tO_not_enabled' : A_Sporadic_Thread_State''.(current_state) = Idle.
 Proof.
   trivial.
 Qed.
 
 (** we advance time *)
-Definition th := advance_time A_Sporadic_Thread_State' 32.
-
+Definition th_ := advance_time A_Sporadic_Thread_State'' 4.
+Definition th := update_thread_state th_.
 (** the thread is enabled, and we can check frozen port *)
-Lemma Sporadic_t42_enabled : Enabled_oracle th = true.
+Lemma Sporadic_t42_enabled : th.(current_state) = Ready.
 Proof.
   trivial.
 Qed.
-
+Compute th.
 Lemma ETF: Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_feature".
 Proof.
   trivial.
