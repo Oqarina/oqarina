@@ -89,16 +89,16 @@ Definition system_Post_Fire
     (s : system_states)
     (a : system_actions) : system_states :=
     match s, a with
-    (* capture the transitions of the automata *)
-    | system_offline, start_system => system_starting
-    | system_starting, started_system => system_operational
-    | system_operational, stop_system => system_stoping
-    | system_stoping, stopped_system=> system_offline
-    | system_starting, abort_system => system_offline
-    | system_operational, abort_system => system_offline
-    (* any other configuration is invalid *)
-    | _, _ => s
-    end.
+        (* capture the transitions of the automata *)
+        | system_offline, start_system => system_starting
+        | system_starting, started_system => system_operational
+        | system_operational, stop_system => system_stoping
+        | system_stoping, stopped_system => system_offline
+        | system_starting, abort_system => system_offline
+        | system_operational, abort_system => system_offline
+        (* any other configuration is invalid *)
+        | _, _ => s
+        end.
 
 Definition system_Deadline (s : system_states)  (i : system_actions) : Time :=
     0%nat.

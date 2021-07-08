@@ -2,6 +2,8 @@
 
 The following captures the Actor component model as described in the Ptolemy toolset and presented in %\cite{tripakisModularFormalSemantics2013,leeHeterogeneousActorModeling2011}%. *)
 
+(* begin hide *)
+(** Coq Library *)
 Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
 Require Import Coq.Arith.PeanoNat.
@@ -9,6 +11,7 @@ Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Init.Datatypes.
 Require Import Coq.Program.Basics.
 
+(** Oqarina library *)
 Require Import Oqarina.core.time.
 Import NaturalTime.
 Require Import Oqarina.formalisms.lts.
@@ -16,15 +19,18 @@ Require Import Oqarina.coq_utils.utils.
 
 Set Implicit Arguments.
 
-(** % \begin{definition}[Actor (Ptolemy)]
-An Actor is a tuple $A = (I,O,S,s_0,F,P,D,T)$ where $I$ is a set of input variables, $O$ is a set of output variables, $S$ is a set of state variables, $s_0 \in S$ is the initial state, and $F$, $P$, $D$, $T$ are total functions with the following types: TBD
-
-\end{definition}% *)
-
 Section Actor_Definition.
+(* end hide *)
+
+    (** * Definition of an actor
+
+    % \begin{definition}[Actor (Ptolemy)]
+    An Actor is a tuple $A = (I,O,S,s_0,F,P,D,T)$ where $I$ is a set of input variables, $O$ is a set of output variables, $S$ is a set of state variables, $s_0 \in S$ is the initial state, and $Fire$, $Post\_Fire$, $Deadline$, and $Time_Update$ are total functions with the following types that controls the execution of an actor.
+
+    \end{definition}% *)
 
     Variable St : Type. (* States *)
-    Variable V : Type. (* Values *)
+    Variable V : Type.  (* Values *)
 
     Record Actor: Type := {
         (* Immutable state variable *)
@@ -44,28 +50,40 @@ Section Actor_Definition.
         Outputs : list V;
     }.
 
-    Definition Fetch_Output (ast : Actor_State) :=
-        {|
-            Current_State := ast.(Current_State);
-            Clock_Variable := ast.(Clock_Variable);
-            Inputs := ast.(Inputs);
-            Outputs := tail ast.(Outputs);
-        |}.
+    (** * Operations on an actor.
 
-    Definition Set_Input (ast : Actor_State) (i : list V) :=
-        {|
-            Current_State := ast.(Current_State);
-            Clock_Variable := ast.(Clock_Variable);
-            Inputs := concat [ast.(Inputs) ; i] ;
-            Outputs := ast.(Outputs);
-        |}.
+    We provide three accessors for manipulating inputs, outpurs and setting the initial state of an actor. *)
 
-    Definition Initial_Actor_State (A : Actor) : Actor_State := {|
+    (** - [Fetch_Output] removes one output from an Actor. *)
+
+    Definition Fetch_Output (ast : Actor_State) := {|
+        Current_State := ast.(Current_State);
+        Clock_Variable := ast.(Clock_Variable);
+        Inputs := ast.(Inputs);
+        Outputs := tl ast.(Outputs);
+    |}.
+
+    (** - [Set_Input] adds one input to an Actor. *)
+
+    Definition Set_Input (ast : Actor_State) (i : list V) := {|
+        Current_State := ast.(Current_State);
+        Clock_Variable := ast.(Clock_Variable);
+        Inputs := concat [ast.(Inputs) ; i] ;
+        Outputs := ast.(Outputs);
+    |}.
+
+    (** - [Set_Initial_Actor_State] configures the initial state of an actor. *)
+
+    Definition Set_Initial_Actor_State (A : Actor) : Actor_State := {|
         Current_State := Initial_State A;
         Clock_Variable := 0;
         Inputs := nil;
         Outputs := nil;
     |}.
+
+    (** * Actions on an actor. *)
+
+    (** An actor my perform untimed or timed action. we first define each concept separately, then we build a common action type: [Actor_Action]. Each action runs the actors functions defined in [a] on [ast] and returns an updated actor state. *)
 
     Definition Untimed_Action (a : Actor) (ast : Actor_State) (i : V) : Actor_State := {|
         Current_State := (Post_Fire a) (Current_State ast) i;
@@ -92,6 +110,8 @@ Section Actor_Definition.
         | Dis : list V -> Actor_Action
         | Temp : V -> Time -> Actor_Action.
 
+(** - [Actor_Step] executes one step, executing the action [act]. This function returns an updated [Actor_State].*)
+
     Set Asymmetric Patterns.
     Definition Actor_Step (a : Actor) (ast : Actor_State) (act: Actor_Action) :
         Actor_State :=
@@ -101,41 +121,42 @@ Section Actor_Definition.
                 end.
     Unset Asymmetric Patterns.
 
+(** - [LTS_Of] builds a labelled transition system (LTS) out of an actor. *)
+
     Definition LTS_Of (a : Actor) : LTS_struct := {|
         States := Actor_State;
-        Init := Initial_Actor_State a;
+        Init := Set_Initial_Actor_State a;
         Actions := Actor_Action;
         Steps := fun ast act => Actor_Step a ast act;
     |}.
 
+(** * Definition of an actor diagram *)
+
     Definition Connection := list nat.
+
+    (** An [Actor_Diagram] is a graph of connected actors. An actor diagram has a step function, and additional helper functions to set inputs, fetch outputs and transfer data between actors. *)
 
     Record Actor_Diagram := mkActor_Diagram {
         Actors : list (Actor * Actor_State);
         Connections : list Connection;
     }.
 
-    Definition Initial_States (l : list Actor) : list (Actor_State) :=
-        map Initial_Actor_State l.
-    Fixpoint seq_nat (n : nat) : list nat :=
-        match n with
-        | 0 => nil
-        | S n0 => seq_nat n0 ++ [n0]
-        end.
+    Definition Set_Initial_States (l : list Actor) : list (Actor_State) :=
+        map Set_Initial_Actor_State l.
 
     Definition Build_Actor_Diagram
         (actors : list Actor)
         (cnx : list Connection) := {|
-            Actors := combine actors (Initial_States actors);
+            Actors := combine actors (Set_Initial_States actors);
             Connections := cnx;
         |}.
 
     Definition Actor_Diagram_Step
         (diag : Actor_Diagram)
         (action : Actor_Action)
-        (id : nat)
-        := {|
-            Actors := list_alter id diag.(Actors) (fun x => pair (fst x) (Actor_Step (fst x) (snd x) action));
+        (id : nat) := {|
+            Actors := list_alter id diag.(Actors)
+                (fun x => pair (fst x) (Actor_Step (fst x) (snd x) action));
             Connections := diag.(Connections);
         |}.
 
@@ -146,7 +167,8 @@ Section Actor_Definition.
         (diag : Actor_Diagram)
         (id : nat)
         := {|
-            Actors := list_alter id diag.(Actors) (fun x => pair (fst x) (Fetch_Output (snd x)));
+            Actors := list_alter id diag.(Actors)
+                (fun x => pair (fst x) (Fetch_Output (snd x)));
             Connections := diag.(Connections);
         |}.
 
@@ -155,7 +177,8 @@ Section Actor_Definition.
         (i : list V)
         (id : nat)
         := {|
-            Actors := list_alter id diag.(Actors) (fun x => pair (fst x) (Set_Input (snd x) i));
+            Actors := list_alter id diag.(Actors)
+                (fun x => pair (fst x) (Set_Input (snd x) i));
             Connections := diag.(Connections);
         |}.
 
@@ -163,10 +186,10 @@ Section Actor_Definition.
         (diag : Actor_Diagram)
         (i : list V)
         (ids : list nat) :=
-    match ids with
-        | nil => diag
-        | h :: t => Actor_Diagram_Set_Input_list
-                (Actor_Diagram_Set_Input diag i h) i t
+        match ids with
+            | nil => diag
+            | h :: t => Actor_Diagram_Set_Input_list
+                    (Actor_Diagram_Set_Input diag i h) i t
         end.
 
     Definition Get_Outputs (diag : Actor_Diagram) (id : nat) :=
@@ -174,8 +197,8 @@ Section Actor_Definition.
 
     Definition Propagate_Outputs (diag : Actor_Diagram) (id : nat) : Actor_Diagram :=
         let value := Get_Outputs diag id in
-            let destinations := nth id diag.(Connections) (nil) in
-                Actor_Diagram_Set_Input_list diag value destinations.
+        let destinations := nth id diag.(Connections) (nil) in
+            Actor_Diagram_Set_Input_list diag value destinations.
 
 End Actor_Definition.
 
@@ -194,7 +217,6 @@ Definition producer_outputs  := some_types.
 
 Definition producer_Fire
     (s : producer_states) (i : producer_inputs) : list producer_outputs := [ a_value ].
-Print producer_Fire.
 
 Definition producer_Post_Fire
     (s : producer_states)  (i : producer_inputs) : producer_states := dummy.

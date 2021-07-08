@@ -52,34 +52,18 @@ Definition Period_Name := PSQN "timing_properties" "period".
 Definition Is_Period (pa : property_association) :=
   Is_Property_Name Period_Name pa.
 
+Definition Map_Period (pa : list property_association) :=
+  Map_PV_Int_List pa 0%Z Is_Period.
+
 (**
 %\paragraph{} \begin{definition}[Deadline (\S XXX]
  TBD
   \end{definition}% *)
 
-  Definition Deadline_Name := PSQN "timing_properties" "deadline".
+Definition Deadline_Name := PSQN "timing_properties" "deadline".
 
-  Definition Is_Deadline (pa : property_association) :=
-    Is_Property_Name Deadline_Name pa.
-
-(**
-
-%
-  \begin{definition}[Period (Coq)]
-  TBD
-  \end{definition}
-% *)
-
-Definition Map_Period (pa : list property_association) :=
-  Map_PV_Int_List pa 0%Z Is_Period.
-
-(**
-
-%
-  \begin{definition}[Deadline (Coq)]
-  TBD
-  \end{definition}
-% *)
+Definition Is_Deadline (pa : property_association) :=
+  Is_Property_Name Deadline_Name pa.
 
 Definition Map_Deadline (pa : list property_association) : Z :=
   Map_PV_Int_List pa 0%Z Is_Deadline.

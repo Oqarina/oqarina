@@ -31,9 +31,9 @@ Require Import Oqarina.aadl_feature_helper.
 Open Scope Z_scope.
 (* end hide *)
 
-(** ** Thread State Variable *)
+(** * Thread State Variable *)
 
-(** Each AADL thread is associated to a state variable that stores the relevant parameters relative to is dispatch and scheduling by the underlying executive. *)
+(** %\N% Each AADL thread is associated to a state variable that stores the relevant parameters relative to is dispatch and scheduling by the underlying executive. *)
 
 (* begin hide*)
 Section Thread_State_Variable.
@@ -84,19 +84,19 @@ TBD
 End Thread_State_Variable.
 (* end hide*)
 
-(** ** Thread Dispatching
+(** * Thread Dispatching
 
-This section captures the content of %\S 5.4.2 of \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define the [Enabled] function. *)
+%\N% This section captures the content of %\S 5.4.2 of \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define the [Enabled] function. *)
 
 (* begin hide *)
 Section AADL_Dispatching.
 (* end hide *)
 
-(** *** Intermediate Predicates
+(** ** Intermediate Predicates
 
-All AADL dispatch protocols review the state of triggering features and the current clock. We build the [Thread_Has_Activated_Triggering_Feature] predicate as a conjunction of more basic predicates, in [Prop], and demonstrate their decidability.
+%\N% All AADL dispatch protocols review the state of triggering features and the current clock. We build the [Thread_Has_Activated_Triggering_Feature] predicate as a conjunction of more basic predicates, in [Prop], and demonstrate their decidability.
 
-First, we check whether the feature is activated, [Is_Feature_Activated], then whether it is in the dispatch trigger, in [Feature_In_Dispatch_Trigger]. *)
+%\N% First, we check whether the feature is activated, [Is_Feature_Activated], then whether it is in the dispatch trigger, in [Feature_In_Dispatch_Trigger]. *)
 
   Definition Is_Feature_Activated (p : port_variable) :=
     ~ PortQueue.Is_Empty p.(outer_variable).
@@ -129,7 +129,7 @@ First, we check whether the feature is activated, [Is_Feature_Activated], then w
   Defined.
   (* end hide *)
 
-  (** From that point, we can build [Thread_Has_Activated_Triggering_Feature] that is true iff. the thread has at least one activated triggering feature that is also in the dispatch trigger. *)
+  (** %\N% From that point, we can build [Thread_Has_Activated_Triggering_Feature] that is true iff. the thread has at least one activated triggering feature that is also in the dispatch trigger. *)
 
   Definition Is_Activated_Triggering_Feature (p : port_variable)  (d : list feature) :=
     Is_Feature_Activated p /\ Feature_In_Dispatch_Trigger p d.
@@ -183,9 +183,9 @@ First, we check whether the feature is activated, [Is_Feature_Activated], then w
   Defined.
 (* end hide *)
 
-(** *** Definition of [Enabled]
+(** ** Definition of [Enabled]
 
-From the previous definitions, we can now define the [Enabled] function that returns [true] when a thread is dispatched. First, we define basic predicates for each dispatch protocol.*)
+%\N% From the previous definitions, we can now define the [Enabled] function that returns [true] when a thread is dispatched. First, we define basic predicates for each dispatch protocol.*)
 
   Definition Periodic_Enabled (th : thread_state_variable) :=
     th.(clock) mod th.(period) = 0.
@@ -279,7 +279,7 @@ From the previous definitions, we can now define the [Enabled] function that ret
   Defined.
   (* end hide *)
 
-  (** Then we define the [Enabled] predicate *)
+  (** %\N% Then we define the [Enabled] predicate *)
 
   Definition Enabled (th : thread_state_variable) :=
     match th.(dispatch_protocol) with
@@ -320,9 +320,9 @@ End AADL_Dispatching.
 
 (** ** Ports Queue Processing *)
 
-(**  The following is a first cut at formalizing ports from %\S 8.3%. We capture the definition of [Frozen] for ports. First, we build ATF, the list of Activated Triggering Features. *)
+(**  %\N% The following is a first cut at formalizing ports from %\S 8.3%. We capture the definition of [Frozen] for ports. First, we build ATF, the list of Activated Triggering Features. *)
 
-(** [Activated_Triggering_Features] returns the list of Activated Triggering Features. *)
+(** - [Activated_Triggering_Features] returns the list of Activated Triggering Features. *)
 
 Definition Activated_Triggering_Features'  (l : list port_variable) (d : list feature) :=
   filter (fun x => Oracle (Is_Activated_Triggering_Feature_dec x d) ) l.
@@ -330,7 +330,7 @@ Definition Activated_Triggering_Features'  (l : list port_variable) (d : list fe
 Definition Activated_Triggering_Features (th : thread_state_variable) :=
   Activated_Triggering_Features' th.(input_ports) th.(dispatch_trigger).
 
-(** [Get_Port_Variable_With_Max_Urgency] returns the port variable with the maximum urgency, see %\S 8.3 (32) \change{We should also address the FIFO for ports with same urgency .. }% *)
+(** - [Get_Port_Variable_With_Max_Urgency] returns the port variable with the maximum urgency, see %\S 8.3 (32) \change{We should also address the FIFO for ports with same urgency .. }% *)
 
 Fixpoint Get_Port_Variable_With_Max_Urgency
   (p : port_variable) (l : list port_variable) : port_variable :=
@@ -343,18 +343,18 @@ Fixpoint Get_Port_Variable_With_Max_Urgency
         first argument is [Invalid_Port_Variable] *)
     end.
 
-(** Then, we can define the [Get_Elected_Triggering_Feature] that returns the elected features among Activated Triggering Features. XXX must define this concept in the standard. *)
+(** %\N% Then, we can define the [Get_Elected_Triggering_Feature] that returns the elected features among Activated Triggering Features. *)
 
 Definition Get_Elected_Triggering_Feature (th : thread_state_variable) : port_variable :=
   Get_Port_Variable_With_Max_Urgency Invalid_Port_Variable
       (Activated_Triggering_Features th).
 
-(** [Current_Valid_IO_Time_Spec] returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}% *)
+(** %\N% [Current_Valid_IO_Time_Spec] returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}% *)
 
 Definition Current_Valid_IO_Time_Spec (p : port_variable) (th : thread_state_variable) :=
   hd Default_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times)).
 
-(** The definition of the [Frozen] predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc.*)
+(** %\N% The definition of the [Frozen] predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc.*)
 
 Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
    (p = Get_Elected_Triggering_Feature  th) \/
@@ -390,7 +390,7 @@ Definition Frozen_Ports' (th : thread_state_variable): list port_variable :=
 Section Thread_RTS.
 (* end hide *)
 
-(** A collection of runtime services is provided. A runtime service manipulates the thread state and its assocoated port variable *)
+(** %\N% A collection of runtime services is provided. A runtime service manipulates the thread state and its port variables. *)
 
 (** %\define{advance\_time (Coq)}{advance\_time (Coq)}
 {$advance\_time(th, t)$ increments the clock of the thread state variable:\\
@@ -420,7 +420,7 @@ This private API function stores a value in an outer\_port of an AADL thread.
   \end{definition} %*)
 
   Definition store_in (t : thread_state_variable) (name : identifier) (value : bool) := {|
-  (* Generic part *)
+    (* Generic part *)
     dispatch_protocol := t.(dispatch_protocol);
     period := t.(period);
     deadline := t.(deadline);
@@ -459,7 +459,7 @@ This private API function stores a value in an outer\_port of an AADL thread.
   \end{definition} %*)
 
   Definition await_dispatch (t : thread_state_variable) := {|
-  (* Generic part *)
+    (* Generic part *)
     dispatch_protocol := t.(dispatch_protocol);
     period := t.(period);
     deadline := t.(deadline);
@@ -528,7 +528,7 @@ This private API function stores a value in an outer\_port of an AADL thread.
     current_state := t.(current_state);
     dispatch_time := t.(dispatch_time);
 
-    (* put_value *)
+    (* send_output *)
     output_ports := Send_Output t.(output_ports) name;
 
   |}.
@@ -566,10 +566,13 @@ This private API function stores a value in an outer\_port of an AADL thread.
     dispatch_trigger := t.(dispatch_trigger);
     current_state := t.(current_state);
     dispatch_time := t.(dispatch_time);
+
     (* next_value *)
     input_ports := Next_Value t.(input_ports) name;
-
   |}.
+
+  (** %\begin{definition}[Receive\_Input (Coq)]
+  \end{definition} %*)
 
   Definition receive_input (t : thread_state_variable) (name : identifier) := {|
     (* Generic part *)
@@ -582,6 +585,7 @@ This private API function stores a value in an outer\_port of an AADL thread.
     dispatch_trigger := t.(dispatch_trigger);
     current_state := t.(current_state);
     dispatch_time := t.(dispatch_time);
+
     (* receive_input *)
     input_ports := Receive_Input t.(input_ports) name;
 
@@ -591,24 +595,20 @@ This private API function stores a value in an outer\_port of an AADL thread.
 End Thread_RTS.
 (* end hide *)
 
-(** ** Examples *)
+(** * Examples *)
 
-(** *** A Periodic Thread *)
+(** ** A Periodic Thread *)
+
+(** In this example, we first build a periodic AADL [Component], we then map it to a [thread_state_variable] and perform some steps on it. *)
 
 Definition Periodic_Dispatch := {|
-  P := Dispatch_Protocol_Name;
-  PV := PV_Enum (Id "periodic");
-|}.
+  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "periodic"); |}.
 
 Definition A_Priority_Value := {|
-  P := Priority_Name;
-  PV := PV_Int 42;
-|}.
+  P := Priority_Name; PV := PV_Int 42; |}.
 
 Definition A_Period := {|
-  P := Period_Name;
-  PV := PV_IntU 3 (PV_Unit (Id "ms"));
-|}.
+  P := Period_Name; PV := PV_IntU 3 (PV_Unit (Id "ms")); |}.
 
 Definition A_Periodic_Thread := Component
   (Id "a_periodic_thread")
@@ -620,32 +620,35 @@ Definition A_Periodic_Thread := Component
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 
-(** "activate" the thread *)
+(** - "activate" the thread *)
 
 Definition A_Periodic_Thread_State := update_thread_state A_Periodic_Thread_State_.
-(** At t = 0, the periodic thread is enabled *)
+
+(** - At t = 0, the periodic thread is enabled *)
+
 Lemma Periodic_t0_enabled : A_Periodic_Thread_State.(current_state) = Ready.
 Proof.
   trivial.
 Qed.
 
-(** "do something" *)
+(** - "do something" *)
+
 Definition A_Periodic_Thread_State' := advance_time A_Periodic_Thread_State 2.
 Definition A_Periodic_Thread_State'' := await_dispatch A_Periodic_Thread_State'.
 
-(** At t = 2, the periodic thread is not enabled *)
+(** - At t = 2, the periodic thread is not enabled *)
 
 Lemma Periodic_t2_not_enabled : A_Periodic_Thread_State''.(current_state) = Idle.
 Proof.
   trivial.
 Qed.
 
-(** *** A Sporadic Thread*)
+(** ** A Sporadic Thread *)
+
+(** In this example, we consider a sporadic thread with one input event port. *)
 
 Definition Sporadic_Dispatch  := {|
-  P := Dispatch_Protocol_Name;
-  PV := PV_Enum (Id "sporadic");
-|}.
+  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "sporadic"); |}.
 
 Definition An_Input_Feature :=
   Feature (Id "a_feature") inF eventPort nil_component nil.
@@ -659,38 +662,48 @@ Definition A_Sporadic_Thread := Component
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
   nil.
 
-(** We can continue ant build a sporadic thread, add an event, avancd time and check if it is enabled *)
+(** We can continue and build a corresponding thread state variable, add an event, avance time and check whether the thread is enabled. *)
 
 Definition A_Sporadic_Thread_State_ := mk_thread_state_variable (A_Sporadic_Thread).
 Definition A_Sporadic_Thread_State := update_thread_state A_Sporadic_Thread_State_.
-(** initially, the sporadic thread is not enabled *)
+
+(** - Initially, the sporadic thread is not enabled *)
+
 Lemma Sporatic_tO_not_enabled : Enabled_oracle (A_Sporadic_Thread_State) = false.
 Proof.
   trivial.
 Qed.
 
-(** inject two events, because of the DropOldest policy used, with a queue size of 1, we loose the first evemt *)
-Definition A_Sporadic_Thread_State' := store_in A_Sporadic_Thread_State (Id "a_feature") false.
-Definition A_Sporadic_Thread_State'' := store_in A_Sporadic_Thread_State' (Id "a_feature") true.
+(** - Inject two events. Because of the DropOldest policy used, with a queue size of 1, we loose the first event *)
+
+Definition A_Sporadic_Thread_State' :=
+  store_in A_Sporadic_Thread_State (Id "a_feature") false.
+Definition A_Sporadic_Thread_State'' :=
+  store_in A_Sporadic_Thread_State' (Id "a_feature") true.
 
 Compute A_Sporadic_Thread_State'.
 Compute A_Sporadic_Thread_State''.
 
-(** the thread is not enabled yet *)
+(** - The thread is not enabled yet *)
+
 Lemma Sporatic_tO_not_enabled' : A_Sporadic_Thread_State''.(current_state) = Idle.
 Proof.
   trivial.
 Qed.
 
-(** we advance time *)
+(** - We advance time *)
 Definition th_ := advance_time A_Sporadic_Thread_State'' 4.
 Definition th := update_thread_state th_.
-(** the thread is enabled, and we can check frozen port *)
+
+(** - The thread is enabled, and we can check frozen port *)
+
 Lemma Sporadic_t42_enabled : th.(current_state) = Ready.
 Proof.
   trivial.
 Qed.
+
 Compute th.
+
 Lemma ETF: Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_feature".
 Proof.
   trivial.
@@ -698,13 +711,15 @@ Qed.
 
 Compute Frozen_Ports' (th).
 
-(* at this stage, we have not called receive_input, no event available *)
+(* - At this stage, we have not called receive_input, no event available *)
+
 Lemma get_count_1 : get_count th (Id "a_feature") = 0%nat.
 Proof.
   trivial.
 Qed.
 
-(* calling receive input *)
+(* - Calling receive input *)
+
 Definition th_rec := receive_input th (Id "a_feature").
 
 Lemma get_count_2 : get_count th_rec (Id "a_feature") = 1%nat.
