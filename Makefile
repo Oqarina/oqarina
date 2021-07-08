@@ -1,5 +1,5 @@
 ## ------------------------------------------------------------------------
-## SAFIR Coq
+## Oqarina -- Coq mechanization of AADL
 ## ------------------------------------------------------------------------
 ##
 
@@ -20,7 +20,7 @@ help:               ## Show this help
 	    @sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
 
-install_deps:        ## Install dependencies
+install_deps:       ## Install dependencies
 	opam install coq-list-string menhir coq-menhirlib
 
 ##
@@ -28,6 +28,9 @@ install_deps:        ## Install dependencies
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
 	make generate_parser
+
+install:            ## Install Oqarina as a stand alone Coq library
+	make -f coq_makefile install
 
 generate_parser:
 	make -C src/parsers
