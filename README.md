@@ -1,6 +1,6 @@
-# AADL/Coq
+# Oqarina -- Coq mechanization of AADL
 
-This folder is a very preliminary attempt at formalizing some aspects of AADL using Coq.
+Oqarina provides elements of a formalization of AADL.
 
 ## Directory structure
 
@@ -11,7 +11,7 @@ This folder is a very preliminary attempt at formalizing some aspects of AADL us
 
 ## Required software
 
-This demo has been tested using Coq version 8.13.1 and VSCoq extension for Visual Code.
+Oqarina has been tested using Coq version 8.13.1 and VSCoq extension for Visual Code.
 
 ## Additional packages
 

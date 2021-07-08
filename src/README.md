@@ -6,15 +6,15 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 
 ## Library elements
 
-* `coq_utils.v`: additonal elements not found in the Coq standard library;
+* `coq_utils`: additonal elements not found in the Coq standard library;
 * `core`: reusable libraries for basic types, e.g. identifiers, queues, etc.;
 * `formalisms`: abstract types for expressing formalisms such as Labelled Transition Systems, timed automata. etc.
 * `extraction.v` is a "for fun" experiment at extracting OCaml code from some pieces, only exploratory at this stage.
 
-## AADL formalization
+## Organization of the code base
 
-* AADL generic AADL component
-    * `aadl.v`: definition of a generic AADL component
+* AADL generic AADL component definition
+    * `aadl_categories.v`, `aadl.v`: definition of a generic AADL component
     * `aadl_wf.v`; well-formedness rules of a generic AADL component
 
 * AADL declarative and instance model
@@ -30,13 +30,9 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 
     Similar to the static semantics, the dynamic semantics requires a partial definition of a component implementation reduced to the components and its direct subcomponents.
 
-    XXX TBH, it is only when we define the global semantics of an instanticated system as the combination of the semantics of its parts that we need the complete instance model. In this case, the instance model is equivalent to one generic component representing the full hierarchy.
+* `properties`: this directory provides a definition of constructs to support AADL property mechanisms.
 
-* Property sets
-    * `aadl_aadl_project.v`: accessors to manipulate some of the properties from AADL property set `aadl_project`.
-    * `aadl_communication_properties.v`: accessors to manipulate some of the properties from AADL property set `communication_properties`.
-    * `aadl_thread_properties.v`: accessors to manipulate some of the properties from AADL property set `thread_properties`.
-  XXX This package could be generated from AADL property sets.
+* `property sets`: this directory provides an implementation of AADL default property set. The names match the name of the corresponding AADL property set.
 
 * Helper packages
     * `aadl_feature_helper`: helper function to manipulate features
