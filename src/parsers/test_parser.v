@@ -12,6 +12,6 @@ Definition string2expr s :=
   end.
 
 
-Definition example := "system xx : aa::bb".
+Definition example := "system xx : aa::bb { system yy : zog::zog }".
 Compute (Lexer.lex_string example).
 Compute (string2expr example).

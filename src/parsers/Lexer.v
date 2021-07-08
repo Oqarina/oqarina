@@ -70,7 +70,8 @@ Fixpoint lex_string_cpt n s :=
       | "009" => lex_string_cpt n s' (* \t *)
       | "010" => lex_string_cpt n s' (* \n *)
       | "013" => lex_string_cpt n s' (* \r *)
-
+      | "{" => option_map (Buf_cons (LEFT_BRACE tt)) (lex_string_cpt n s')
+      | "}" => option_map (Buf_cons (RIGHT_BRACE tt)) (lex_string_cpt n s')
   (*    | "(" => option_map (Buf_cons (LPAREN tt)) (lex_string_cpt n s')
       | ")" => option_map (Buf_cons (RPAREN tt)) (lex_string_cpt n s')
       | "+" => option_map (Buf_cons (ADD tt)) (lex_string_cpt n s')
