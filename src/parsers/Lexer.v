@@ -77,10 +77,13 @@ Fixpoint lex_string_cpt n s :=
       | "-" => option_map (Buf_cons (SUB tt)) (lex_string_cpt n s')
       | "*" => option_map (Buf_cons (MUL tt)) (lex_string_cpt n s')
       | "/" => option_map (Buf_cons (DIV tt)) (lex_string_cpt n s')
-    *)  | _ =>
+    *)
+      | _ =>
         if is_digit c then
           let (m,s) := readnum 0 s in
           option_map (Buf_cons (NUM m)) (lex_string_cpt n s)
+        else if prefix "system" s then
+          option_map (Buf_cons (COMPONENT_CATEGORY s)) (lex_string_cpt n (ntail 6 s)) (* Warnning, 6 = system'length*)
         else if is_alpha c then
           let k := identsize s in
           let id := substring 0 k s in
@@ -88,6 +91,8 @@ Fixpoint lex_string_cpt n s :=
           option_map (Buf_cons (ID id)) (lex_string_cpt n s)
         else if prefix "::" s then
           option_map (Buf_cons (COLONx2 tt)) (lex_string_cpt n (ntail 2 s))
+        else if prefix ":" s then
+          option_map (Buf_cons (COLON tt)) (lex_string_cpt n (ntail 1 s))
         else None
       end
     end
