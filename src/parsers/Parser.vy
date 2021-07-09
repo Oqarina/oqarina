@@ -77,6 +77,35 @@ main: p_main EOF       { $1 }
 p_main :
 | p_SystemInstance { $1 }
 
+(* We introduced the concept of subclause to factor out the parsing of the following
+
+		'{' (
+			featureInstance+=FeatureInstance |
+			componentInstance+=ComponentInstance |
+			connectionInstance+=ConnectionInstance |
+			flowSpecification+=FlowSpecificationInstance |
+			endToEndFlow+=EndToEndFlowInstance |
+			modeInstance+=ModeInstance |
+			modeTransitionInstance+=ModeTransitionInstance |
+			systemOperationMode+=SystemOperationMode |
+			ownedPropertyAssociation+=PropertyAssociationInstance
+		)* '}'
+
+For the moment, we support only componentInstance and featureInstance.
+
+*)
+
+p_subclause_list:
+| LEFT_BRACE p_subclause_list_inner { $2 }
+
+p_subclause_list_inner:
+| RIGHT_BRACE { [ ] }
+| p_subclause_element p_subclause_list_inner { $1 :: $2 }
+
+p_subclause_element :
+| p_ComponentInstance { AST.COMPONENT $1 }
+| p_FeatureInstance { AST.FEATURE $1 }
+
 (*
 
 	SystemInstance returns instance::SystemInstance:
@@ -97,17 +126,6 @@ p_main :
 
 p_SystemInstance :
 | p_ComponentCategory p_id COLON p_idlist p_subclause_list { AST.ROOT_SYSTEM $1 $2 $4 $5 }
-
-p_subclause_list:
-| LEFT_BRACE p_subclause_list_inner { $2 }
-
-p_subclause_list_inner:
-| RIGHT_BRACE { [ ] }
-| p_subclause_element p_subclause_list_inner { $1 :: $2 }
-
-p_subclause_element :
-| p_ComponentInstance { AST.COMPONENT $1 }
-| p_FeatureInstance { AST.FEATURE $1 }
 
 (*
 
