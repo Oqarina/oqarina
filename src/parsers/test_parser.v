@@ -12,6 +12,14 @@ Definition string2expr s :=
   end.
 
 
-Definition example := "system xx : aa::bb { system yy : zog::zog }".
+Definition example := "system xx : aa::bb {  }".
 Compute (Lexer.lex_string example).
 Compute (string2expr example).
+
+Definition example2 :=
+  "system xx : aa::bb {
+    thread yy : zog::zog { }
+    bus zz : coin::coin { }
+  }".
+Compute (Lexer.lex_string example2).
+Compute (string2expr example2).
