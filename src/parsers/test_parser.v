@@ -20,6 +20,7 @@ Definition example2 :=
   "system xx : aa::bb {
     thread yy : zog::zog {
       bus dd : coin::coin { }
+      in eventPort p1 : portDef::a_port
     }
     bus zz : coin::coin { }
   }".

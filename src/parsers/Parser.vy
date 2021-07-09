@@ -14,14 +14,25 @@ Module AST.
     Inductive ComponentCategory_ast :=
         | COMPONENT_CATEGORY : identifier -> ComponentCategory_ast.
 
+    Inductive DirectionType_ast :=
+        | DIRECTION_TYPE : identifier -> DirectionType_ast.
+
+    Inductive FeatureCategory_ast :=
+        | FEATURE_CATEGORY : identifier -> FeatureCategory_ast.
+
     Inductive ID_ast :=
         | ID : list identifier -> ID_ast.
 
     Inductive ComponentInstance_ast :=
-        | COMPONENT_INSTANCE : ComponentCategory_ast -> ID_ast -> ID_ast -> list ComponentInstance_ast -> ComponentInstance_ast.
+        | COMPONENT_INSTANCE : ComponentCategory_ast -> ID_ast -> ID_ast -> list Subclause_ast -> ComponentInstance_ast
+	with FeatureInstance_ast :=
+		| FEATURE_INSTANCE : DirectionType_ast -> FeatureCategory_ast  -> ID_ast -> ID_ast -> FeatureInstance_ast
+	with Subclause_ast :=
+		| COMPONENT : ComponentInstance_ast -> Subclause_ast
+		| FEATURE : FeatureInstance_ast -> Subclause_ast.
 
     Inductive node :=
-        | ROOT_SYSTEM : ComponentCategory_ast -> ID_ast -> ID_ast -> list ComponentInstance_ast -> node.
+        | ROOT_SYSTEM : ComponentCategory_ast -> ID_ast -> ID_ast -> list Subclause_ast -> node.
 
 
 End AST.
@@ -37,15 +48,24 @@ End AST.
 %token<nat> NUM
 %token<string> ID
 %token<string> COMPONENT_CATEGORY
+%token<string> DIRECTION_TYPE
+%token<string> FEATURE_CATEGORY
 
 %start<AST.node> main
 %type<AST.node> p_main
 %type<AST.node> p_SystemInstance
-%type<list AST.ComponentInstance_ast> p_subclause_list
-%type<list AST.ComponentInstance_ast> p_subclause_list_inner
-%type<AST.ComponentInstance_ast> p_subclause_element
+
+%type<list AST.Subclause_ast> p_subclause_list
+%type<list AST.Subclause_ast> p_subclause_list_inner
+%type<AST.Subclause_ast> p_subclause_element
+
 %type<AST.ComponentInstance_ast> p_ComponentInstance
-%type<AST.ComponentCategory_ast> p_component_category
+%type<AST.FeatureInstance_ast> p_FeatureInstance
+
+%type<AST.ComponentCategory_ast> p_ComponentCategory
+%type<AST.DirectionType_ast> p_DirectionType
+%type<AST.FeatureCategory_ast> p_FeatureCategory
+
 %type<AST.ID_ast> p_id
 %type<AST.ID_ast> p_idlist
 %type<list identifier> p_idlist_inner
@@ -76,7 +96,7 @@ p_main :
 *)
 
 p_SystemInstance :
-| p_component_category p_id COLON p_idlist p_subclause_list { AST.ROOT_SYSTEM $1 $2 $4 $5 }
+| p_ComponentCategory p_id COLON p_idlist p_subclause_list { AST.ROOT_SYSTEM $1 $2 $4 $5 }
 
 p_subclause_list:
 | LEFT_BRACE p_subclause_list_inner { $2 }
@@ -86,7 +106,8 @@ p_subclause_list_inner:
 | p_subclause_element p_subclause_list_inner { $1 :: $2 }
 
 p_subclause_element :
-| p_ComponentInstance { $1 }
+| p_ComponentInstance { AST.COMPONENT $1 }
+| p_FeatureInstance { AST.FEATURE $1 }
 
 (*
 
@@ -108,7 +129,7 @@ p_subclause_element :
 *)
 
 p_ComponentInstance:
-| p_component_category p_id COLON p_idlist p_subclause_list  { AST.COMPONENT_INSTANCE $1 $2 $4 $5 }
+| p_ComponentCategory p_id COLON p_idlist p_subclause_list  { AST.COMPONENT_INSTANCE $1 $2 $4 $5 }
 
 (*
 
@@ -119,9 +140,8 @@ p_ComponentInstance:
 
 *)
 
-p_component_category:
+p_ComponentCategory:
 | COMPONENT_CATEGORY { AST.COMPONENT_CATEGORY (Id $1) }
-
 
 (*
 
@@ -134,6 +154,8 @@ p_component_category:
 
 *)
 
+p_FeatureInstance:
+| p_DirectionType p_FeatureCategory p_id COLON p_idlist { AST.FEATURE_INSTANCE $1 $2 $3 $5 }
 
 (*
 
@@ -142,6 +164,9 @@ p_component_category:
 	;
 *)
 
+p_DirectionType:
+| DIRECTION_TYPE { AST.DIRECTION_TYPE (Id $1) }
+
 (*
 	FeatureCategory returns instance::FeatureCategory:
 		'dataPort' | 'eventPort' | 'eventDataPort' | 'parameter' |
@@ -149,6 +174,9 @@ p_component_category:
 		'featureGroup' | 'abstractFeature'
 	;
 *)
+
+p_FeatureCategory:
+| FEATURE_CATEGORY { AST.FEATURE_CATEGORY(Id $1) }
 
 (* The following is largely incomplete *)
 

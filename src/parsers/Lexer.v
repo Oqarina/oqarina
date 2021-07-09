@@ -76,6 +76,16 @@ Definition AADL_Component_Category : list string := [
 	"thread"%string ; "virtual bus"%string ; "virtual processor"%string
 ].
 
+Definition AADL_Direction_Type : list string := [
+  "in"%string ; "out"%string ; "in out"%string
+].
+
+Definition AADL_Feature_Category : list string := [
+  "dataPort"%string ; "eventPort"%string ; "eventDataPort"%string ; "parameter"%string ;
+  "busAccess"%string ; "dataAccess"%string ; "subprogramAccess"%string ; "subprogramGroupAccess"%string ;
+  "featureGroup"%string ; "abstractFeature"%string
+].
+
 Fixpoint lex_string_cpt n s :=
   match n with
   | 0 => None
@@ -105,6 +115,14 @@ Fixpoint lex_string_cpt n s :=
         else if is_keyword s AADL_Component_Category then
           let (l, kw) := which_keyword s AADL_Component_Category in
             option_map (Buf_cons (COMPONENT_CATEGORY kw)) (lex_string_cpt n (ntail l s))
+
+        else if is_keyword s AADL_Direction_Type then
+          let (l, kw) := which_keyword s AADL_Direction_Type in
+              option_map (Buf_cons (DIRECTION_TYPE kw)) (lex_string_cpt n (ntail l s))
+
+        else if is_keyword s AADL_Feature_Category then
+          let (l, kw) := which_keyword s AADL_Feature_Category in
+            option_map (Buf_cons (FEATURE_CATEGORY kw)) (lex_string_cpt n (ntail l s))
 
         else if prefix "::" s then
           option_map (Buf_cons (COLONx2 tt)) (lex_string_cpt n (ntail 2 s))
