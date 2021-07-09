@@ -59,19 +59,19 @@ p_main :
 
 (*
 
-SystemInstance returns instance::SystemInstance:
-	category=ComponentCategory name=ID ':' componentImplementation=[aadl2::ComponentImplementation|ImplRef] '{' (
-		featureInstance+=FeatureInstance |
-		componentInstance+=ComponentInstance |
-		connectionInstance+=ConnectionInstance |
-		flowSpecification+=FlowSpecificationInstance |
-		endToEndFlow+=EndToEndFlowInstance |
-		modeInstance+=ModeInstance |
-		modeTransitionInstance+=ModeTransitionInstance |
-		systemOperationMode+=SystemOperationMode |
-		ownedPropertyAssociation+=PropertyAssociationInstance
-	)* '}'
-;
+	SystemInstance returns instance::SystemInstance:
+		category=ComponentCategory name=ID ':' componentImplementation=[aadl2::ComponentImplementation|ImplRef] '{' (
+			featureInstance+=FeatureInstance |
+			componentInstance+=ComponentInstance |
+			connectionInstance+=ConnectionInstance |
+			flowSpecification+=FlowSpecificationInstance |
+			endToEndFlow+=EndToEndFlowInstance |
+			modeInstance+=ModeInstance |
+			modeTransitionInstance+=ModeTransitionInstance |
+			systemOperationMode+=SystemOperationMode |
+			ownedPropertyAssociation+=PropertyAssociationInstance
+		)* '}'
+	;
 
 *)
 
@@ -90,20 +90,20 @@ p_subclause_element :
 
 (*
 
-ComponentInstance returns instance::ComponentInstance:
-	category=ComponentCategory classifier=[aadl2::ComponentClassifier|ClassifierRef]? name=ID ('[' index+=Long ']')*
-	('in' 'modes' '(' inMode+=[instance::ModeInstance] (',' inMode+=[instance::ModeInstance])*')')?
-	':' subcomponent=[aadl2::Subcomponent|DeclarativeRef] ('{' (
-		featureInstance+=FeatureInstance |
-		componentInstance+=ComponentInstance |
-		connectionInstance+=ConnectionInstance |
-		flowSpecification+=FlowSpecificationInstance |
-		endToEndFlow+=EndToEndFlowInstance |
-		modeInstance+=ModeInstance |
-		modeTransitionInstance+=ModeTransitionInstance |
-		ownedPropertyAssociation+=PropertyAssociationInstance
-	)* '}')?
-;
+	ComponentInstance returns instance::ComponentInstance:
+		category=ComponentCategory classifier=[aadl2::ComponentClassifier|ClassifierRef]? name=ID ('[' index+=Long ']')*
+		('in' 'modes' '(' inMode+=[instance::ModeInstance] (',' inMode+=[instance::ModeInstance])*')')?
+		':' subcomponent=[aadl2::Subcomponent|DeclarativeRef] ('{' (
+			featureInstance+=FeatureInstance |
+			componentInstance+=ComponentInstance |
+			connectionInstance+=ConnectionInstance |
+			flowSpecification+=FlowSpecificationInstance |
+			endToEndFlow+=EndToEndFlowInstance |
+			modeInstance+=ModeInstance |
+			modeTransitionInstance+=ModeTransitionInstance |
+			ownedPropertyAssociation+=PropertyAssociationInstance
+		)* '}')?
+	;
 
 *)
 
@@ -112,15 +112,43 @@ p_ComponentInstance:
 
 (*
 
-ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'| 'data'
-	| 'device' | 'memory' | 'process' | 'processor' | 'subprogram'
-	| 'subprogram' 'group' | 'system' | 'thread' 'group'
-	| 'thread' | 'virtual' 'bus' | 'virtual' 'processor';
+	ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'| 'data'
+		| 'device' | 'memory' | 'process' | 'processor' | 'subprogram'
+		| 'subprogram' 'group' | 'system' | 'thread' 'group'
+		| 'thread' | 'virtual' 'bus' | 'virtual' 'processor';
 
 *)
 
 p_component_category:
 | COMPONENT_CATEGORY { AST.COMPONENT_CATEGORY (Id $1) }
+
+
+(*
+
+	FeatureInstance returns instance::FeatureInstance:
+		direction=DirectionType category=FeatureCategory name=ID ('[' index=Long ']')? ':' feature=[aadl2::Feature|DeclarativeRef] ('{' (
+			featureInstance+=FeatureInstance |
+			ownedPropertyAssociation+=PropertyAssociationInstance
+		)* '}')?
+	;
+
+*)
+
+
+(*
+
+	DirectionType returns aadl2::DirectionType:
+		'in' | 'out' | 'in' 'out'
+	;
+*)
+
+(*
+	FeatureCategory returns instance::FeatureCategory:
+		'dataPort' | 'eventPort' | 'eventDataPort' | 'parameter' |
+		'busAccess' | 'dataAccess'| 'subprogramAccess' | 'subprogramGroupAccess' |
+		'featureGroup' | 'abstractFeature'
+	;
+*)
 
 (* The following is largely incomplete *)
 

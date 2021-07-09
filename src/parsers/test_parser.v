@@ -18,7 +18,9 @@ Compute (string2expr example).
 
 Definition example2 :=
   "system xx : aa::bb {
-    thread yy : zog::zog { }
+    thread yy : zog::zog {
+      bus dd : coin::coin { }
+    }
     bus zz : coin::coin { }
   }".
 Compute (Lexer.lex_string example2).

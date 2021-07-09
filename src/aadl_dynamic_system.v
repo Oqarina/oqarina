@@ -3,9 +3,9 @@
 
 %\N% The %\texttt{system}% component category denotes an assembly of interacting application software, execution platform, and sub-systems as sub-components. Systems may be hierarchically nested%\footnote{Note: the following is inspired from AADLv2.2 \S 13.3. We heavily simplified it to the bare minimal level of information. We also corrected some of this description to better reflect the modular nature of AADL instance hierarchy and remove redundant information that belongs to the description of other component categories.}%.
 
-** System behavioral semantics
+* System behavioral semantics
 
-*** Informal definition
+** Informal definition
 
 %\N% In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}%).
 
@@ -64,13 +64,13 @@ Open Scope Z_scope.
 
 (** *** Coq mechanization
 
-    The following provides a Coq mechanization of the previous automata using the actor formalism. *)
+%\N% The following provides a Coq mechanization of the previous automata using the actor formalism. *)
 
 (** We use Coq [unit] as a system has no variable. *)
 
 Definition system_var : Type := unit.
 
-(** The informal definition provides a direct path to the definition of states, actions and transitions.
+(** %\N% The informal definition provides a direct path to the definition of states, actions and transitions.
 *)
 
 Inductive system_states : Set :=
@@ -80,8 +80,6 @@ Scheme Equality for system_states.
 
 Inductive system_actions : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
-
-(************)
 
 Definition system_Fire (s : system_states) (a : system_actions) : list system_actions := nil.
 
@@ -115,9 +113,9 @@ Definition System_Actor : Actor system_states system_actions := {|
     Time_Update := system_Time_Update;
 |}.
 
-(** Example *)
+(** * Example *)
 
-(** From the previous elements, one can step a system *)
+(** %\N% From the previous elements, one can step a system *)
 
 Definition System_LTS := LTS_Of (System_Actor).
 
