@@ -2,7 +2,7 @@
 
 (* Code extraction towards OCaml.
 
-  Note: we rely on Coq.IO library to extract code. This library provides additional elements to read from files.
+  Note: we rely on Coq.IO library to extract code. This library provides additional elements to read from files, print strings etc.
 
 *)
 
@@ -20,19 +20,25 @@ Set Warnings "-extraction-opaque-accessed,-extraction".
 
 Require Import Oqarina.aadl_declarative.
 
-(* Move to "extraction" directory *)
+(* Move to "extraction/generated-src" directory *)
 Cd "extraction/generated-src".
 
 Separate Extraction aadl_declarative.
 
+Fixpoint parse_arguments (argv : list LString.t) : C.t System.effect unit :=
+  match argv with
+  | h :: t => do! System.log (h) in parse_arguments (t)
+  | _ => ret tt
+  end.
+
 (** The classic Hello World program. *)
 Definition hello_world (argv : list LString.t) : C.t System.effect unit :=
-  System.log (LString.s "Hello world!").
+  do! System.log (LString.s "Hello world!") in
+  parse_arguments (argv).
 
   (** Extract the Hello World program to `extraction/main.ml`. Run the `Makefile`
     in `extraction/` to compile it. *)
 Definition main := Extraction.launch hello_world.
 Extraction "main" main.
-Cd "../..". (* move back to original directory to avoid complaints in batch mode*)
 
-
+Cd "../..". (* move back to original directory, to avoid errors like "cannot generate extraction.vo" *)
