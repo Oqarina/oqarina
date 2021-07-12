@@ -61,7 +61,7 @@ Fixpoint show_help_ (cmd: list tool_cmd) :=
   end.
 
 Definition show_help (argv : list LString.t) : C.t System.effect unit :=
-  do! System.log (argv) in
+  do! System.log (LString.s "Usage: oqarina [switches] <files>") in
   do! show_help_ ([version_cmd]) in
   System.log (LString.s "--help show help").
 
