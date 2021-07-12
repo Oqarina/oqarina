@@ -11,7 +11,9 @@ Definition string2expr s :=
   | _ => None
   end.
 
-Definition example := "system PING_Native_Instance : PING_Package::PING.t { }".
+Definition example := "system s_impl_Instance : test_1::s.impl {
+	system test_1::sc sc1 : test_1::s.impl:sc1 {}
+}".
 Compute (Lexer.lex_string example).
 Compute (string2expr example).
 

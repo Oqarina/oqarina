@@ -1,5 +1,10 @@
 
-(** Hand-written lexer for AADL. This file is based on the `coq-minicalc` example from the Menhir distribution.  *)
+(** Hand-written lexer for AADL.
+
+Note: this file is based on the `coq-minicalc` example from the Menhir distribution.
+Original author is Pierre Letouzey, 2019. The code was released under the CC0 licence.
+
+*)
 
 Require Import BinNat Ascii String.
 Require Import Oqarina.parsers.Parser.
@@ -73,7 +78,7 @@ Fixpoint is_keyword (s : string) (kw : list string) :=
 (** As a general warning, the lexer relies on the order of declaration and will return the first entity that matches.
 Double check the order below to avoid ambiguity.
 
-Also, ids with a space, e.g. virtual bus, won't be lex'd correctly.
+Also, ids with a space, e.g. "virtual bus", won't be lex'd correctly.
 *)
 
 Definition AADL_Component_Category : list string := [
