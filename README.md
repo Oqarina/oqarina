@@ -19,6 +19,7 @@ The following packages should be installed separately using opam:
 
 * `https://github.com/clarus/coq-list-string`: some string manipulation functions
 * `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
+* `http://coq.io/`: additional elements to read from files, helper for code extractions
 
 Use `make install_deps` to install these packages.
 

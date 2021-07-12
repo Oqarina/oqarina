@@ -21,13 +21,14 @@ help:               ## Show this help
 
 
 install_deps:       ## Install dependencies
-	opam install coq-list-string menhir coq-menhirlib
+	opam install coq-list-string menhir coq-menhirlib coq-io-system
 
 ##
 
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
 	make generate_parser
+	mkdir -p extraction/generated-src
 
 install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
@@ -76,4 +77,4 @@ clean:              ## Clean generated files
 
 distclean:
 	-rm -rf html
-	-rm *.ml *.mli
+	-rm extraction/*.ml extraction/*.mli

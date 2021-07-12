@@ -9,7 +9,6 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 * `coq_utils`: additonal elements not found in the Coq standard library;
 * `core`: reusable libraries for basic types, e.g. identifiers, queues, etc.;
 * `formalisms`: abstract types for expressing formalisms such as Labelled Transition Systems, timed automata. etc.
-* `extraction.v` is a "for fun" experiment at extracting OCaml code from some pieces, only exploratory at this stage.
 
 ## Organization of the code base
 
