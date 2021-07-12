@@ -226,7 +226,7 @@ Definition producer_Deadline (s : producer_states)  (i : producer_inputs) : Time
 Definition producer_Time_Update
     (s : producer_states)  (i : producer_inputs) (t : Time) : producer_states := s.
 
-Definition producer_Actor : Actor producer_states producer_inputs  := {|
+Definition producer_Actor : Actor producer_states producer_inputs := {|
     (* Immutable state variable *)
     Initial_State := dummy;
 
