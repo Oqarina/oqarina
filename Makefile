@@ -39,6 +39,9 @@ generate_parser:
 compile:            ## Compile Coq files
 	make -f coq_makefile
 
+build_bin:          ## Build Oqarina binary
+	make -C extraction
+
 validate:           ## Validate proofs in Coq
 	make -f coq_makefile validate
 

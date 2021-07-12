@@ -6,39 +6,104 @@
 
 *)
 
+(* Coq library *)
 Require Import Coq.Lists.List.
 Require Import Coq.Strings.String.
+Import ListNotations.
+
+(* Coq.IO and Coq.ListString libraries *)
 Require Import Io.All.
 Require Import Io.System.All.
 Require Import ListString.All.
-
-Import ListNotations.
 Import C.Notations.
 
 (* Suppress warnings on accessing opaque elements*)
 Set Warnings "-extraction-opaque-accessed,-extraction".
 
-Require Import Oqarina.aadl_declarative.
-
 (* Move to "extraction/generated-src" directory *)
 Cd "extraction/generated-src".
 
+(* List of modules we want to generate *)
+Require Import Oqarina.aadl_declarative.
 Separate Extraction aadl_declarative.
 
-Fixpoint parse_arguments (argv : list LString.t) : C.t System.effect unit :=
-  match argv with
-  | h :: t => do! System.log (h) in parse_arguments (t)
+(** * Default tool commands *)
+
+(** In the following, we bind tool commands to actual Coq definition. We first define a generic [tool_cmd] record that binds a command line flag to a help string and function to be executed.
+
+Then, we provide various basic utility functions.
+
+*)
+
+Record tool_cmd : Type := {
+  flag : string ;
+  help_string : string ;
+  cmd : list LString.t ->  C.t System.effect unit ;
+}.
+
+(** - [show_version] display version information *)
+
+Definition show_version (argv : list LString.t) : C.t System.effect unit :=
+  System.log (LString.s "Oqarina version 0.1").
+
+Definition version_cmd := {|
+  flag := "--version" ;
+  help_string := "display version" ;
+  cmd := show_version ;
+|}.
+
+(** - [show_help] display help information *)
+
+Fixpoint show_help_ (cmd: list tool_cmd) :=
+  match cmd with
+  | h :: t => do! System.log (LString.s (h.(flag) ++ " " ++ h.(help_string))) in show_help_ (t)
   | _ => ret tt
   end.
 
-(** The classic Hello World program. *)
-Definition hello_world (argv : list LString.t) : C.t System.effect unit :=
-  do! System.log (LString.s "Hello world!") in
-  parse_arguments (argv).
+Definition show_help (argv : list LString.t) : C.t System.effect unit :=
+  do! System.log (argv) in
+  do! show_help_ ([version_cmd]) in
+  System.log (LString.s "--help show help").
 
-  (** Extract the Hello World program to `extraction/main.ml`. Run the `Makefile`
-    in `extraction/` to compile it. *)
-Definition main := Extraction.launch hello_world.
+Definition help_cmd := {|
+  flag := "--help" ;
+  help_string := "display help" ;
+  cmd := show_help ;
+|}.
+
+Definition Oqarina_Cmd : list tool_cmd := [ version_cmd ; help_cmd ].
+
+(** * Argument processing *)
+
+Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) :=
+  match cmd with
+    | h :: t =>
+      if LString.eqb arg (LString.s h.(flag))
+        then [ h ] else parse_argument arg t
+    | nil => nil
+   end.
+
+Fixpoint parse_arguments (argv : list LString.t) :=
+  match argv with
+  | h :: t => (parse_argument h Oqarina_Cmd) ++ (parse_arguments t )
+  | _ => nil
+  end.
+
+Fixpoint process_arguments
+  (argv : list LString.t) (l : list tool_cmd) : C.t System.effect unit :=
+    match l with
+    | h :: t => do! (h.(cmd) argv) in process_arguments argv t
+    | nil => ret tt
+    end.
+
+(** * Main entrypoint for Oqarina *)
+
+Definition Oqarina_main (argv : list LString.t) : C.t System.effect unit :=
+  let action_todo := parse_arguments (argv) in
+  process_arguments argv action_todo.
+
+(** Extract the program to `extraction/main.ml`. *)
+Definition main := Extraction.launch Oqarina_main.
 Extraction "main" main.
 
 Cd "../..". (* move back to original directory, to avoid errors like "cannot generate extraction.vo" *)
