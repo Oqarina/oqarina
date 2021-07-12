@@ -23,30 +23,41 @@ Module AST.
     Inductive ID_ast :=
         | ID : list identifier -> ID_ast.
 
+	Inductive ClassifierRef_ast :=
+		| CLASSIFIER_REF : ID_ast -> identifier -> ClassifierRef_ast.
+
+	Inductive DeclarativeRef_ast :=
+		| DECLARATIVE_REF : ID_ast -> identifier -> identifier -> DeclarativeRef_ast.
+
+	Inductive ImplRef_ast :=
+		| IMPL_REF : ID_ast -> identifier -> identifier -> ImplRef_ast.
+
     Inductive ComponentInstance_ast :=
-        | COMPONENT_INSTANCE : ComponentCategory_ast -> ID_ast -> ID_ast -> list Subclause_ast -> ComponentInstance_ast
+        | COMPONENT_INSTANCE : ComponentCategory_ast -> ClassifierRef_ast -> ID_ast -> DeclarativeRef_ast -> list Subclause_ast -> ComponentInstance_ast
 	with FeatureInstance_ast :=
-		| FEATURE_INSTANCE : DirectionType_ast -> FeatureCategory_ast  -> ID_ast -> ID_ast -> FeatureInstance_ast
+		| FEATURE_INSTANCE : DirectionType_ast -> FeatureCategory_ast  -> ID_ast -> DeclarativeRef_ast -> FeatureInstance_ast
 	with Subclause_ast :=
 		| COMPONENT : ComponentInstance_ast -> Subclause_ast
 		| FEATURE : FeatureInstance_ast -> Subclause_ast.
 
     Inductive node :=
-        | ROOT_SYSTEM : ComponentCategory_ast -> ID_ast -> ID_ast -> list Subclause_ast -> node.
+        | ROOT_SYSTEM : ComponentCategory_ast -> ID_ast -> ImplRef_ast  -> list Subclause_ast -> node.
 
 
 End AST.
 
 %}
 
-%token EOF         (* EOF *)
-%token COLON       (* ':' *)
+%token EOF         (* EOF  *)
+%token COLON       (* ':'  *)
 %token COLONx2     (* '::' *)
-%token LEFT_BRACE  (* { *)
-%token RIGHT_BRACE (* } *)
+%token DOT         (* '.'  *)
+%token LEFT_BRACE  (* '{'  *)
+%token RIGHT_BRACE (* '}'  *)
 
 %token<nat> NUM
 %token<string> ID
+
 %token<string> COMPONENT_CATEGORY
 %token<string> DIRECTION_TYPE
 %token<string> FEATURE_CATEGORY
@@ -69,6 +80,10 @@ End AST.
 %type<AST.ID_ast> p_id
 %type<AST.ID_ast> p_idlist
 %type<list identifier> p_idlist_inner
+
+%type<AST.ImplRef_ast> p_ImplRef
+%type<AST.DeclarativeRef_ast> p_DeclarativeRef
+%type<AST.ClassifierRef_ast> p_ClassifierRef
 
 %%
 
@@ -104,11 +119,9 @@ p_subclause_list_inner:
 
 p_subclause_element :
 | p_ComponentInstance { AST.COMPONENT $1 }
-| p_FeatureInstance { AST.FEATURE $1 }
+| p_FeatureInstance   { AST.FEATURE $1 }
 
-(*
-
-	SystemInstance returns instance::SystemInstance:
+(*  SystemInstance returns instance::SystemInstance:
 		category=ComponentCategory name=ID ':' componentImplementation=[aadl2::ComponentImplementation|ImplRef] '{' (
 			featureInstance+=FeatureInstance |
 			componentInstance+=ComponentInstance |
@@ -119,17 +132,12 @@ p_subclause_element :
 			modeTransitionInstance+=ModeTransitionInstance |
 			systemOperationMode+=SystemOperationMode |
 			ownedPropertyAssociation+=PropertyAssociationInstance
-		)* '}'
-	;
-
-*)
+		)* '}' ; *)
 
 p_SystemInstance :
-| p_ComponentCategory p_id COLON p_idlist p_subclause_list { AST.ROOT_SYSTEM $1 $2 $4 $5 }
+| p_ComponentCategory p_id COLON p_ImplRef p_subclause_list { AST.ROOT_SYSTEM $1 $2 $4 $5 }
 
-(*
-
-	ComponentInstance returns instance::ComponentInstance:
+(*	ComponentInstance returns instance::ComponentInstance:
 		category=ComponentCategory classifier=[aadl2::ComponentClassifier|ClassifierRef]? name=ID ('[' index+=Long ']')*
 		('in' 'modes' '(' inMode+=[instance::ModeInstance] (',' inMode+=[instance::ModeInstance])*')')?
 		':' subcomponent=[aadl2::Subcomponent|DeclarativeRef] ('{' (
@@ -141,69 +149,69 @@ p_SystemInstance :
 			modeInstance+=ModeInstance |
 			modeTransitionInstance+=ModeTransitionInstance |
 			ownedPropertyAssociation+=PropertyAssociationInstance
-		)* '}')?
-	;
-
-*)
+		)* '}')? ; *)
 
 p_ComponentInstance:
-| p_ComponentCategory p_id COLON p_idlist p_subclause_list  { AST.COMPONENT_INSTANCE $1 $2 $4 $5 }
+| p_ComponentCategory p_ClassifierRef p_id COLON p_DeclarativeRef p_subclause_list  { AST.COMPONENT_INSTANCE $1 $2 $3 $5 $6 }
 
-(*
-
-	ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'| 'data'
+(*	ComponentCategory returns aadl2::ComponentCategory: 'abstract' | 'bus'| 'data'
 		| 'device' | 'memory' | 'process' | 'processor' | 'subprogram'
 		| 'subprogram' 'group' | 'system' | 'thread' 'group'
-		| 'thread' | 'virtual' 'bus' | 'virtual' 'processor';
-
-*)
+		| 'thread' | 'virtual' 'bus' | 'virtual' 'processor' ; *)
 
 p_ComponentCategory:
 | COMPONENT_CATEGORY { AST.COMPONENT_CATEGORY (Id $1) }
 
-(*
-
-	FeatureInstance returns instance::FeatureInstance:
+(*	FeatureInstance returns instance::FeatureInstance:
 		direction=DirectionType category=FeatureCategory name=ID ('[' index=Long ']')? ':' feature=[aadl2::Feature|DeclarativeRef] ('{' (
 			featureInstance+=FeatureInstance |
 			ownedPropertyAssociation+=PropertyAssociationInstance
-		)* '}')?
-	;
-
-*)
+		)* '}')? ; *)
 
 p_FeatureInstance:
-| p_DirectionType p_FeatureCategory p_id COLON p_idlist { AST.FEATURE_INSTANCE $1 $2 $3 $5 }
+| p_DirectionType p_FeatureCategory p_id COLON p_DeclarativeRef { AST.FEATURE_INSTANCE $1 $2 $3 $5 }
 
-(*
-
-	DirectionType returns aadl2::DirectionType:
-		'in' | 'out' | 'in' 'out'
-	;
-*)
+(*	DirectionType returns aadl2::DirectionType:
+		'in' | 'out' | 'in' 'out' ; *)
 
 p_DirectionType:
 | DIRECTION_TYPE { AST.DIRECTION_TYPE (Id $1) }
 
-(*
-	FeatureCategory returns instance::FeatureCategory:
+(*	FeatureCategory returns instance::FeatureCategory:
 		'dataPort' | 'eventPort' | 'eventDataPort' | 'parameter' |
 		'busAccess' | 'dataAccess'| 'subprogramAccess' | 'subprogramGroupAccess' |
-		'featureGroup' | 'abstractFeature'
-	;
-*)
+		'featureGroup' | 'abstractFeature' ; *)
 
 p_FeatureCategory:
 | FEATURE_CATEGORY { AST.FEATURE_CATEGORY(Id $1) }
 
-(* The following is largely incomplete *)
-
 p_id:
 | ID { AST.ID [ Id $1 ] }
+
+(* ClassifierRef:
+	(ID '::')+ ID ('.' ID)? ; *)
+
+p_ClassifierRef:
+| p_idlist DOT ID { AST.CLASSIFIER_REF $1 (Id $3) }
+| p_idlist        { AST.CLASSIFIER_REF $1 empty_identifier }
+
+(* DeclarativeRef:
+	(ID '::')+ ID ('.' ID)? ':' ('transition' '#' INTEGER_LIT | ID); *)
+
+p_DeclarativeRef:
+| p_idlist DOT ID COLON ID { AST.DECLARATIVE_REF $1 (Id $3) (Id $5) }
+| p_idlist COLON ID        { AST.DECLARATIVE_REF $1 (Id $3) empty_identifier }
+
+(* ImplRef:	(ID '::')+ ID '.' ID ; *)
+
+p_ImplRef:
+| p_idlist DOT ID { AST.IMPL_REF $1 (Id $3) empty_identifier }
+
+(* XX p_idlist matches "(ID COLONx2)+ ID"  I am not sure there is much to do with a LR(1) parser ... *)
 
 p_idlist:
 | ID p_idlist_inner { AST.ID ([ Id $1 ] ++ $2) }
 
 p_idlist_inner:
-| COLONx2 ID { [Id $2] }
-| COLONx2 ID  p_idlist_inner { [ Id $2 ] ++ $3}
+| COLONx2 ID                { [Id $2] }
+| COLONx2 ID p_idlist_inner { [ Id $2 ] ++ $3}

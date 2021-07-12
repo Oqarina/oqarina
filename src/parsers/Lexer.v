@@ -1,5 +1,5 @@
 
-(** Hand-written lexer for natural numbers, idents, parens and + - * / *)
+(** Hand-written lexer for AADL. This file is based on the `coq-minicalc` example from the Menhir distribution.  *)
 
 Require Import BinNat Ascii String.
 Require Import Oqarina.parsers.Parser.
@@ -8,6 +8,7 @@ Open Scope char_scope.
 Open Scope bool_scope.
 Require Import List.
 Import ListNotations. (* from List *)
+
 (** No such thing as an empty buffer, instead we use
     an infinite stream of EOF *)
 
@@ -69,9 +70,15 @@ Fixpoint is_keyword (s : string) (kw : list string) :=
   | h :: t => if prefix h s then true else is_keyword s t
   end.
 
+(** As a general warning, the lexer relies on the order of declaration and will return the first entity that matches.
+Double check the order below to avoid ambiguity.
+
+Also, ids with a space, e.g. virtual bus, won't be lex'd correctly.
+*)
+
 Definition AADL_Component_Category : list string := [
   "abstract"%string ; "bus"%string ; "data"%string ;
-	"device"%string ; "memory"%string ; "process"%string ; "processor"%string ; "subprogram"%string ;
+	"device"%string ; "memory"%string ; "processor"%string ; "process"%string ; "subprogram"%string ;
 	"subprogram group"%string ; "system"%string ; "thread group"%string ;
 	"thread"%string ; "virtual bus"%string ; "virtual processor"%string
 ].
@@ -112,10 +119,6 @@ Fixpoint lex_string_cpt n s :=
           let (m,s) := readnum 0 s in
           option_map (Buf_cons (NUM m)) (lex_string_cpt n s)
 
-        else if is_keyword s AADL_Component_Category then
-          let (l, kw) := which_keyword s AADL_Component_Category in
-            option_map (Buf_cons (COMPONENT_CATEGORY kw)) (lex_string_cpt n (ntail l s))
-
         else if is_keyword s AADL_Direction_Type then
           let (l, kw) := which_keyword s AADL_Direction_Type in
               option_map (Buf_cons (DIRECTION_TYPE kw)) (lex_string_cpt n (ntail l s))
@@ -124,11 +127,18 @@ Fixpoint lex_string_cpt n s :=
           let (l, kw) := which_keyword s AADL_Feature_Category in
             option_map (Buf_cons (FEATURE_CATEGORY kw)) (lex_string_cpt n (ntail l s))
 
+        else if is_keyword s AADL_Component_Category then
+          let (l, kw) := which_keyword s AADL_Component_Category in
+            option_map (Buf_cons (COMPONENT_CATEGORY kw)) (lex_string_cpt n (ntail l s))
+
         else if prefix "::" s then
           option_map (Buf_cons (COLONx2 tt)) (lex_string_cpt n (ntail 2 s))
 
         else if prefix ":" s then
           option_map (Buf_cons (COLON tt)) (lex_string_cpt n (ntail 1 s))
+
+        else if prefix "." s then
+          option_map (Buf_cons (DOT tt)) (lex_string_cpt n (ntail 1 s))
 
         else if is_alpha c then
           let k := identsize s in
