@@ -71,7 +71,7 @@ Definition parse_aadl_instance_file (argv : list LString.t) : C.t System.effect 
   end.
 
 Definition parse_cmd := {|
-  flag := "--parse <file>" ;
+  flag := "--parse" ;
   help_string := "parse file" ;
   cmd := parse_aadl_instance_file ;
 |}.
