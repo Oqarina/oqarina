@@ -180,12 +180,12 @@ Proof.
     + simpl. destruct H. apply identifier_beq_eq in H. rewrite H, H0. reflexivity.
 Qed.
 
-Definition in_propertysetR (id : identifier) (d : property_set_declaration) (mu : model_unit) : Prop :=
-  let 'PropertySet id' decls := mu in
+Definition in_propertysetR (id : identifier) (d : property_set_declaration) (ps : property_set) : Prop :=
+  let 'PropertySet id' decls := ps in
   Exists (is_declR id d) decls.
 
-Definition in_propertyset (id : identifier) (mu : model_unit) : option property_set_declaration :=
-  let 'PropertySet _ decls := mu in
+Definition in_propertyset (id : identifier) (ps : property_set) : option property_set_declaration :=
+  let 'PropertySet _ decls := ps in
   fold_left (fun (o : option property_set_declaration) d => if o then o else is_decl id d)
             decls None.
 
@@ -208,11 +208,11 @@ Axiom exists_unique : forall id t d ds,
   Exists (is_declR id t) ds ->
   is_decl id d = None.
 
-Lemma in_propertyset_iff : forall id t mu,
-    in_propertyset id mu = Some t <-> in_propertysetR id t mu.
+Lemma in_propertyset_iff : forall id t ps,
+    in_propertyset id ps = Some t <-> in_propertysetR id t ps.
 Proof.
   split.
-  - destruct mu.
+  - destruct ps.
     generalize dependent t.
     induction declarations as [| decl decls' IHd'].
     + simpl. discriminate.
@@ -229,7 +229,7 @@ Proof.
         unfold in_propertyset in H. simpl in H.
         rewrite Ed in H.
         apply IHd' in H. apply H.
-  - destruct mu.
+  - destruct ps.
     generalize dependent t.
     induction declarations as [| decl decls' IHd'].
     + simpl. intros. inversion H.
@@ -246,63 +246,61 @@ Proof.
            apply H2.
 Qed.
 
-Definition is_psR (setid : identifier) (mu : model_unit) : Prop :=
-  let 'PropertySet id _ := mu in
+Definition is_psR (setid : identifier) (ps : property_set) : Prop :=
+  let 'PropertySet id _ := ps in
   id = setid.
 
-Definition is_ps (setid : identifier) (mu : model_unit) : bool :=
-  let 'PropertySet id _ := mu in
+Definition is_ps (setid : identifier) (ps : property_set) : bool :=
+  let 'PropertySet id _ := ps in
   identifier_beq id setid.
 
-Lemma is_ps_iff : forall id mu,
-    is_ps id mu = true <-> is_psR id mu.
+Lemma is_ps_iff : forall id ps,
+    is_ps id ps = true <-> is_psR id ps.
 Proof.
   split; intros.
-  - destruct mu.
+  - destruct ps.
     simpl in H |- *.
     apply identifier_beq_eq. assumption.
-  - destruct mu.
+  - destruct ps.
     simpl in H |- *.
     apply identifier_beq_eq. assumption.
 Qed.
 
-Definition in_modelR (setid id : identifier) (d : property_set_declaration) (m : aadl_model) : Prop :=
-  let 'Model model_units := m in
-  Exists (fun mu => is_psR setid mu /\ in_propertysetR id d mu)
-         model_units.
+Definition in_modelR (setid id : identifier) (d : property_set_declaration) (ps : property_sets) : Prop :=
+  Exists (fun p => is_psR setid p /\ in_propertysetR id d p)
+         ps.
 
-Definition in_model (m : aadl_model) (setid id: identifier) : option property_set_declaration :=
-  let 'Model model_units := m in
-  fold_left (fun (o : option property_set_declaration) mu =>
-               if o then o else in_propertyset id mu)
-            (filter (is_ps setid) model_units) None.
+Definition in_model (ps : property_sets) (setid id: identifier) : option property_set_declaration :=
+  fold_left (fun (o : option property_set_declaration) p =>
+               if o then o else in_propertyset id p)
+            (filter (is_ps setid) ps) None.
 
 (* Check that a type reference is resolved to a type *)
-Definition is_resolved_typeR (m : aadl_model) (qname : ps_qname) (t: property_type) : Prop :=
+Definition is_resolved_typeR (ps : property_sets) (qname : ps_qname) (t: property_type) : Prop :=
   let 'PSQN setname name := qname in
-  exists d, in_modelR (Id setname) (Id name) d m /\ d = PropertyTypeDecl (Id name) t.
+  exists d, in_modelR (Id setname) (Id name) d ps /\ d = PropertyTypeDecl (Id name) t.
 
 (* Check that a reference to a property or constant is resolved to one of these *)
-Definition is_resolved_valueR (m : aadl_model) (qname : ps_qname) (t : property_type) : Prop :=
+Definition is_resolved_valueR (ps : property_sets) (qname : ps_qname) (t : property_type) : Prop :=
   let 'PSQN setname name := qname in
-  exists decl, in_modelR (Id setname) (Id name) decl m /\ (
+  exists decl, in_modelR (Id setname) (Id name) decl ps /\ (
             (exists val, decl = PropertyConstantDecl (Id name) t val) \/
             (exists def app, decl = PropertyDecl (Id name) t def app)
           ).
 
-Definition is_resolved_propertyR (m : aadl_model) (qname : ps_qname) (t : property_type) : Prop :=
+Definition is_resolved_propertyR (ps : property_sets) (qname : ps_qname) (t : property_type) : Prop :=
   let 'PSQN setname name := qname in
-  exists decl, in_modelR (Id setname) (Id name) decl m /\ 
+  exists decl, in_modelR (Id setname) (Id name) decl ps /\
           exists def app, decl = PropertyDecl (Id name) t def app.
 
-Fixpoint resolve_type' (fuel : nat) (m : aadl_model) (t : property_type) : option property_type :=
+Fixpoint resolve_type' (fuel : nat) (ps : property_sets) (t : property_type) : option property_type :=
   match fuel with
   | 0%nat => None
   | S n => match t with
           | PT_TypeRef (PSQN setname name) =>
-            match in_model m (Id setname) (Id name) with
+            match in_model ps (Id setname) (Id name) with
             | Some decl => match decl with
-                          | PropertyTypeDecl _ r => resolve_type' n m r
+                          | PropertyTypeDecl _ r => resolve_type' n ps r
                           | _ => None
                           end
             | _ => None
@@ -313,22 +311,22 @@ Fixpoint resolve_type' (fuel : nat) (m : aadl_model) (t : property_type) : optio
 
 Definition resolve_type := resolve_type' 10.
 
-Definition resolve_value (m : aadl_model) (qname : ps_qname) : option property_type :=
+Definition resolve_value (ps : property_sets) (qname : ps_qname) : option property_type :=
   let 'PSQN setname name := qname in
-  match in_model m (Id setname) (Id name) with
+  match in_model ps (Id setname) (Id name) with
   | Some decl => match decl with
                 | PropertyConstantDecl _ r _
-                | PropertyDecl _ r _ _ => resolve_type m r
+                | PropertyDecl _ r _ _ => resolve_type ps r
                 | _ => None
                 end
   | _ => None
   end.
 
-Definition resolve_property (m : aadl_model) (qname : ps_qname) : option property_type :=
+Definition resolve_property (ps : property_sets) (qname : ps_qname) : option property_type :=
   let 'PSQN setname name := qname in
-  match in_model m (Id setname) (Id name) with
+  match in_model ps (Id setname) (Id name) with
   | Some decl => match decl with
-                | PropertyDecl _ r _ _ => resolve_type m r
+                | PropertyDecl _ r _ _ => resolve_type ps r
                 | _ => None
                 end
   | _ => None
@@ -336,127 +334,127 @@ Definition resolve_property (m : aadl_model) (qname : ps_qname) : option propert
 
 Reserved Notation "m '|-' t1 '==' t2" (at level 60, t1, t2 at next level).
 
-Inductive same_typeR (m : aadl_model) (t t' : property_type) : Prop :=
+Inductive same_typeR (ps : property_sets) (t t' : property_type) : Prop :=
 | ST_TypeRef0 (qname1 qname2 : ps_qname) :
     t = PT_TypeRef qname1 ->
     t' = PT_TypeRef qname2 ->
-    qname1 = qname2 -> m |- t == t'
+    qname1 = qname2 -> ps |- t == t'
 | ST_TypeRef1 (qname : ps_qname) (r : property_type) :
     t = PT_TypeRef qname ->
-    is_resolved_typeR m qname r ->
-    same_typeR m r t' -> m |- t == t'
+    is_resolved_typeR ps qname r ->
+    same_typeR ps r t' -> ps |- t == t'
 | ST_TypeRef2 (qname : ps_qname) (r : property_type) :
     t' = PT_TypeRef qname ->
-    is_resolved_typeR m qname r ->
-    m |- t == r -> m |- t == t'
+    is_resolved_typeR ps qname r ->
+    ps |- t == r -> ps |- t == t'
 | ST_Bool :
     t = aadlboolean ->
-    t' = aadlboolean -> m |- t == t'
+    t' = aadlboolean -> ps |- t == t'
 | ST_String :
     t = aadlstring ->
-    t' = aadlstring -> m |- t == t'
+    t' = aadlstring -> ps |- t == t'
 | ST_Int :
     t = aadlinteger ->
-    t' = aadlinteger -> m |- t == t'
+    t' = aadlinteger -> ps |- t == t'
 | ST_Real :
     t = aadlreal ->
-    t' = aadlreal -> m |- t == t'
+    t' = aadlreal -> ps |- t == t'
 where "m '|-' t1 '==' t2" := (same_typeR m t1 t2).
 
 Reserved Notation "m '|-' v '∈' t" (at level 60, v at next level).
 
-Inductive has_typeR (m : aadl_model) (t : property_type) (v : property_value) : Prop :=
+Inductive has_typeR (ps : property_sets) (t : property_type) (v : property_value) : Prop :=
 | HT_PropertyRef (qname : ps_qname) (r : property_type) :
     v = PV_PropertyRef qname ->
-    is_resolved_valueR m qname r ->
-    m |- t == r -> m |- v ∈ t
+    is_resolved_valueR ps qname r ->
+    ps |- t == r -> ps |- v ∈ t
 | HT_TypeRef (qname : ps_qname) (r : property_type) :
     t = PT_TypeRef qname ->
-    is_resolved_typeR m qname r ->
-    m |- v ∈ r -> m |- v ∈ t
+    is_resolved_typeR ps qname r ->
+    ps |- v ∈ r -> ps |- v ∈ t
 | HT_Bool (b : bool) :
     t = aadlboolean ->
-    v = PV_Bool b -> m |- v ∈ t
+    v = PV_Bool b -> ps |- v ∈ t
 | HT_String (s : string) :
     t = aadlstring ->
-    v = PV_String s -> m |- v ∈ t
+    v = PV_String s -> ps |- v ∈ t
 | HT_Enum (i : identifier) :
     v = PV_Enum i ->
-    in_enumR i t -> m |- v ∈ t
+    in_enumR i t -> ps |- v ∈ t
 | HT_Unit (i : identifier) :
     v = PV_Unit i ->
-    in_unitsR i t -> m |- v ∈ t
+    in_unitsR i t -> ps |- v ∈ t
 | HT_Int (n : INT) :
     t = aadlinteger ->
-    v = PV_Int n -> m |- v ∈ t
+    v = PV_Int n -> ps |- v ∈ t
 | HT_Int' (n : INT) :
     t = PT_Number aadlinteger None None ->
-    v = PV_Int n -> m |- v ∈ t
+    v = PV_Int n -> ps |- v ∈ t
 | HT_Real (r : REAL) :
     t = aadlreal ->
-    v = PV_Real r -> m |- v ∈ t
+    v = PV_Real r -> ps |- v ∈ t
 | HT_Real' (r : REAL) :
     t = PT_Number aadlreal None None ->
-    v = PV_Real r -> m |- v ∈ t
+    v = PV_Real r -> ps |- v ∈ t
 | HT_IntU (n : INT) (rc : option range_constraint) (ut: property_type) (u : property_value) :
     t = PT_Number aadlinteger rc (Some ut) ->
     v = PV_IntU n u ->
-    m |- u ∈ ut -> m |- v ∈ t
+    ps |- u ∈ ut -> ps |- v ∈ t
 | HT_RealU (r : REAL) (rc : option range_constraint) (ut: property_type) (u : property_value) :
     t = PT_Number aadlreal rc (Some ut) ->
     v = PV_RealU r u ->
-    has_typeR m t u -> has_typeR m t v
+    has_typeR ps t u -> has_typeR ps t v
 | HT_IntRange (min max : property_value) :
     t = PT_Range aadlinteger ->
     v = PV_IntRange min max ->
-    m |- min ∈ aadlinteger ->
-    m |- max ∈ aadlinteger -> m |- v ∈ t
+    ps |- min ∈ aadlinteger ->
+    ps |- max ∈ aadlinteger -> ps |- v ∈ t
 | HT_RealRange (min max : property_value) :
     t = PT_Range aadlreal ->
     v = PV_RealRange min max ->
-    m |- min ∈ aadlreal ->
-    m |- max ∈ aadlreal -> m |- v ∈ t
+    ps |- min ∈ aadlreal ->
+    ps |- max ∈ aadlreal -> ps |- v ∈ t
 | HT_IntRangeD (bt : property_type) (min max Δ : property_value) :
     t = PT_Range aadlinteger ->
     v = PV_IntRangeD min max Δ ->
-    m |- min ∈ aadlinteger ->
-    m |- max ∈ aadlinteger ->
-    m |- Δ ∈ aadlinteger -> m |- v ∈ t
+    ps |- min ∈ aadlinteger ->
+    ps |- max ∈ aadlinteger ->
+    ps |- Δ ∈ aadlinteger -> ps |- v ∈ t
 | HT_RealRangeD (bt : property_type) (min max Δ : property_value) :
     t = PT_Range aadlreal ->
     v = PV_RealRangeD min max Δ ->
-    m |- min ∈ aadlreal ->
-    m |- max ∈ aadlreal ->
-    m |- Δ ∈ aadlreal -> m |- v ∈ t
+    ps |- min ∈ aadlreal ->
+    ps |- max ∈ aadlreal ->
+    ps |- Δ ∈ aadlreal -> ps |- v ∈ t
 | HT_Classifier :
     t = PT_Classifier ->
-    v = PV_Classifier -> m |- v ∈ t
+    v = PV_Classifier -> ps |- v ∈ t
 | HT_ModelRef (path : list identifier) :
     t = PT_Reference ->
-    v = PV_ModelRef path -> m |- v ∈ t
+    v = PV_ModelRef path -> ps |- v ∈ t
 | HT_Record_nil fdecls:
     t = PT_Record fdecls ->
-    v = PV_Record [] -> m |- v ∈ t
+    v = PV_Record [] -> ps |- v ∈ t
 | HT_Record_hd did ft fdecls vid fv fvals:
     t = PT_Record (FieldDecl did ft :: fdecls) ->
     v = PV_Record (FieldVal vid fv :: fvals) ->
     did = vid ->
-    m |- fv ∈ ft ->
-    m |- (PV_Record fvals) ∈ t -> m |- v ∈ t
+    ps |- fv ∈ ft ->
+    ps |- (PV_Record fvals) ∈ t -> ps |- v ∈ t
 | HT_Record_tl did ft fdecls fval fvals:
     t = PT_Record (FieldDecl did ft :: fdecls) ->
     v = PV_Record (fval :: fvals) ->
-    m |- (PV_Record [fval]) ∈ (PT_Record fdecls) ->
-    m |- (PV_Record fvals) ∈ t -> m |- v ∈ t
+    ps |- (PV_Record [fval]) ∈ (PT_Record fdecls) ->
+    ps |- (PV_Record fvals) ∈ t -> ps |- v ∈ t
 | HT_List (et : property_type) (elements : list property_value) :
     t = PT_List et ->
     v = PV_List elements ->
-    Forall (fun e => m |- e ∈ et) elements -> m |- v ∈ t
+    Forall (fun e => ps |- e ∈ et) elements -> ps |- v ∈ t
 | HT_Computed (s : string) :
-    v = PV_Computed s -> m |- v ∈ t
+    v = PV_Computed s -> ps |- v ∈ t
 where "m '|-' v '∈' t" := (has_typeR m t v).
 
-Fixpoint same_type' (fuel : nat) (m : aadl_model) (t t' : property_type) : bool :=
+Fixpoint same_type' (fuel : nat) (ps : property_sets) (t t' : property_type) : bool :=
   match fuel with
   | 0%nat => false
   | S n =>
@@ -468,18 +466,18 @@ Fixpoint same_type' (fuel : nat) (m : aadl_model) (t t' : property_type) : bool 
     | PT_TypeRef qname1 as t1, PT_TypeRef qname2 as t2 =>
       if ps_qname_beq qname1 qname2 then true
       else
-        match resolve_type m t1, resolve_type m t2 with
-        | Some t1', Some t2' => same_type' n m t1' t2'
+        match resolve_type ps t1, resolve_type ps t2 with
+        | Some t1', Some t2' => same_type' n ps t1' t2'
         | _, _ => false
         end
     | PT_TypeRef _ as t1, t2 =>
-      match resolve_type m t1 with
-      | Some t1' => same_type' n m t1' t2
+      match resolve_type ps t1 with
+      | Some t1' => same_type' n ps t1' t2
       | _ => false
       end
     | t1, PT_TypeRef _ as t2 =>
-      match resolve_type m t2 with
-      | Some t2' => same_type' n m t1 t2'
+      match resolve_type ps t2 with
+      | Some t2' => same_type' n ps t1 t2'
       | _ => false
       end
     | _, _ => false
@@ -488,15 +486,15 @@ Fixpoint same_type' (fuel : nat) (m : aadl_model) (t t' : property_type) : bool 
 
 Definition same_type := same_type' 10.
 
-Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : property_value) : bool :=
+Fixpoint has_type' (fuel : nat) (ps : property_sets) (t : property_type) (v : property_value) : bool :=
   match fuel with
   | 0%nat => false
   | S n =>
-  match resolve_type m t with
+  match resolve_type ps t with
   | Some t' =>
     match v with
-    | PV_PropertyRef qname => match resolve_value m qname with
-                             | Some t'' => same_type m t' t''
+    | PV_PropertyRef qname => match resolve_value ps qname with
+                             | Some t'' => same_type ps t' t''
                              | _ => false
                              end
     | PV_Bool b => match t' with aadlboolean => true | _ => false end
@@ -507,32 +505,32 @@ Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : proper
     | PV_Real _ => match t' with aadlreal | PT_Number aadlreal _ None => true | _ => false end
     | PV_IntU _ u =>
       match t' with
-      | PT_Number aadlinteger _ (Some ut) => has_type' n m ut u
+      | PT_Number aadlinteger _ (Some ut) => has_type' n ps ut u
       | _ => false end
     | PV_RealU _ u =>
       match t' with
-      | PT_Number aadlreal _ (Some ut) => has_type' n m ut u
+      | PT_Number aadlreal _ (Some ut) => has_type' n ps ut u
       | _ => false end
     | PV_IntRange min max =>
       match t' with
-      | PT_Range aadlinteger => has_type' n m aadlinteger min && has_type' n m aadlinteger max
+      | PT_Range aadlinteger => has_type' n ps aadlinteger min && has_type' n ps aadlinteger max
       | _ => false
       end
     | PV_RealRange min max =>
       match t' with
-      | PT_Range aadlreal => has_type' n m aadlreal min && has_type' n m aadlreal max
+      | PT_Range aadlreal => has_type' n ps aadlreal min && has_type' n ps aadlreal max
       | _ => false
       end
     | PV_IntRangeD min max Δ =>
       match t' with
-      | PT_Range aadlinteger => has_type' n m aadlinteger min && has_type' n m aadlinteger max
-                               && has_type' n m aadlinteger Δ
+      | PT_Range aadlinteger => has_type' n ps aadlinteger min && has_type' n ps aadlinteger max
+                               && has_type' n ps aadlinteger Δ
       | _ => false
       end
     | PV_RealRangeD min max Δ =>
       match t' with
-      | PT_Range aadlreal => has_type' n m aadlreal min && has_type' n m aadlreal max
-                            && has_type' n m aadlreal Δ
+      | PT_Range aadlreal => has_type' n ps aadlreal min && has_type' n ps aadlreal max
+                            && has_type' n ps aadlreal Δ
       | _ => false
       end
     | PV_Classifier => match t' with PT_Classifier => true | _ => false end
@@ -542,17 +540,17 @@ Fixpoint has_type' (fuel : nat) (m : aadl_model) (t : property_type) (v : proper
       match t' with
       | PT_Record (FieldDecl did ft :: fdecls) =>
         if identifier_beq did vid then
-          if has_type' n m ft fv then
-            has_type' n m t' (PV_Record fvals)
+          if has_type' n ps ft fv then
+            has_type' n ps t' (PV_Record fvals)
           else
             false
         else
-          has_type' n m (PT_Record fdecls) (PV_Record [fval])
+          has_type' n ps (PT_Record fdecls) (PV_Record [fval])
       | _ => false
-                                            end
+      end
     | PV_List elements => match t' with
                          | PT_List et => fold_left
-                                          (fun acc e => acc && (has_type' n m et e))
+                                          (fun acc e => acc && (has_type' n ps et e))
                                           elements true
                          | _ => false
                          end
@@ -566,28 +564,25 @@ Definition has_type := has_type' 20.
 
 Notation "m '|=' v '∈' t" := (has_type m t v) (at level 60, v at next level).
 
-Definition typecheck_ps_decl (m : aadl_model) (decl : property_set_declaration) : bool :=
+Definition typecheck_ps_decl (ps : property_sets) (decl : property_set_declaration) : bool :=
   match decl with
-  | PropertyConstantDecl _ t v => m |= v ∈ t
-  | PropertyDecl _ t (Some v) _ => m |= v ∈ t
+  | PropertyConstantDecl _ t v => ps |= v ∈ t
+  | PropertyDecl _ t (Some v) _ => ps |= v ∈ t
   | _ => true
   end.
 
-Definition typecheck_model_unit (m : aadl_model) (mu : model_unit) : bool :=
-  match mu with
+Definition typecheck_property_set (psl : property_sets) (ps : property_set) : bool :=
+  match ps with
   | PropertySet _ decls =>
-    fold_left (fun acc decl => acc && typecheck_ps_decl m decl) decls true
+    fold_left (fun acc decl => acc && typecheck_ps_decl psl decl) decls true
   end.
 
-Definition typecheck_model (m: aadl_model) : bool :=
-  match m with
-  | Model mus =>
-    fold_left (fun acc mu => acc && typecheck_model_unit m mu) mus true
-  end.
+Definition typecheck_property_sets (ps : property_sets) : bool :=
+  fold_left (fun acc mu => acc && typecheck_property_set ps mu) ps true.
 
-Definition check_property_association (m : aadl_model) (pa: property_association) :=
-  match resolve_property m pa.(P) with
-  | Some pt => m |= pa.(PV) ∈ pt
+Definition check_property_association (ps : property_sets) (pa: property_association) :=
+  match resolve_property ps pa.(P) with
+  | Some pt => ps |= pa.(PV) ∈ pt
   | _ => false
   end.
 

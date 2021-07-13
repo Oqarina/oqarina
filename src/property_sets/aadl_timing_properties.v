@@ -36,6 +36,13 @@ Definition Timing_Properties_PS :=
         => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor]
   ].
 
+Lemma Timing_Properties_PS_Valid :
+  typecheck_property_sets [AADL_Project_PS ; Timing_Properties_PS] = true.
+Proof.
+  trivial.
+Qed.
+
+
 (**
 %\paragraph{} \begin{definition}[Period (\S XXX]
  TBD

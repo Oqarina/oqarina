@@ -11,8 +11,7 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
-Require Import Oqarina.properties.properties.
-Require Import Oqarina.properties.typecheck.
+Require Import Oqarina.properties.all.
 (* end hide *)
 
 Definition AADL_Time : Type := Z.
@@ -61,25 +60,7 @@ Definition AADL_Project_PS :=
 
   ].
 
-(*
-Definition M : aadl_model :=
-    Model [ AADL_Project_PS ; Timing_Properties_PS ; Thread_Properties_PS ].
-
-Lemma M_valid : typecheck_model M= true.
+Lemma AADLProject_PS_Valid : typecheck_property_sets [AADL_Project_PS] = true.
 Proof.
     trivial.
 Qed.
-
-Definition a_property_association := {|
-    PT := PT_TypeRef (PSQN "AADL_Project" "Supported_Dispatch_Protocols");
-    PV := PV_Enum (Id "Sporadic");
-|}.
-
-
-
-Example dd : check_property_association M a_property_association = true.
-Proof.
-    trivial.
-Qed.
-
-*)

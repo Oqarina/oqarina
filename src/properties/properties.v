@@ -222,12 +222,9 @@ Proof.
   apply property_value_eq_dec.
 Qed.
 
-(*! AADL Model *)
+(*! AADL Property set *)
 
-Inductive model_unit :=
+Inductive property_set :=
 | PropertySet (name : identifier) (declarations : list property_set_declaration).
 
-Inductive aadl_model :=
-| Model (modelUnits : list model_unit).
-
-(* XXX ideally, this would also return a Prop rather than a bool ... *)
+Definition property_sets := list property_set.

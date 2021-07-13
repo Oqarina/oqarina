@@ -17,22 +17,22 @@ Check [Id "a"; Id "x"; Id "b"].
 
 Compute @existsb (identifier) (identifier_beq (Id "x")) [Id "a"; Id "x"; Id "b"].
 
-Example ehtR0: Model [] |- PV_Bool true ∈ aadlboolean.
+Example ehtR0: [] |- PV_Bool true ∈ aadlboolean.
 Proof.
   eapply HT_Bool; reflexivity.
 Qed.
 
-Example ehtR1: ~ (Model [] |- PV_Int 5 ∈ aadlstring).
+Example ehtR1: ~ ([] |- PV_Int 5 ∈ aadlstring).
 Proof.
   intros H. inversion H; discriminate.
 Qed.
 
-Example ehtR2: Model [] |- PV_Real 5 ∈ aadlreal.
+Example ehtR2: [] |- PV_Real 5 ∈ aadlreal.
 Proof.
   eapply HT_Real; reflexivity.
 Qed.
 
-Compute Model [] |= PV_Real 5 ∈ aadlreal.
+Compute [] |= PV_Real 5 ∈ aadlreal.
 
 Definition Supported_Dispatch_Protocols :=
   PT_Enumeration [
@@ -64,19 +64,19 @@ Definition PS1 :=
 
   ].
 
-Definition M := Model [PS1; PS0].
+Definition M := [PS1; PS0].
 
 Goal same_type M (PT_TypeRef (PSQN "PS0" "int00")) (PT_TypeRef (PSQN "PS0" "int10")) = true.
 Proof. simpl. reflexivity. Qed.
 
-Goal Model [] |- PV_Enum (Id "Sporadic") ∈ Supported_Dispatch_Protocols.
+Goal [] |- PV_Enum (Id "Sporadic") ∈ Supported_Dispatch_Protocols.
 Proof.
   eapply HT_Enum; try reflexivity.
   econstructor; try reflexivity.
   repeat (try (left; reflexivity); right).
 Qed.
 
-Example ehtR3: Model [PS0] |- PV_Enum (Id "Sporadic") ∈ PT_TypeRef (PSQN "PS0" "Supported_Dispatch_Protocols").
+Example ehtR3: [PS0] |- PV_Enum (Id "Sporadic") ∈ PT_TypeRef (PSQN "PS0" "Supported_Dispatch_Protocols").
 Proof.
   eapply HT_TypeRef.
   - reflexivity.
@@ -105,10 +105,10 @@ Example eht3 :
     PT_TypeRef (PSQN "PS0" "Supported_Dispatch_Protocols") = true.
 Proof. trivial. Qed.
 
-Compute resolve_type (Model [PS1])
+Compute resolve_type ([PS1])
         (PT_Number aadlreal None (Some (PT_TypeRef (PSQN "PS1" "Time_Units")))).
 
-Compute resolve_type (Model [PS1]) (PT_TypeRef (PSQN "PS1" "Time_Units")).
+Compute resolve_type ([PS1]) (PT_TypeRef (PSQN "PS1" "Time_Units")).
 
 Example eht4 :
   M |= PV_RealU 5 (PV_Unit (Id "s")) ∈
@@ -147,8 +147,7 @@ Compute (has_type' 10 M (PT_TypeRef (PSQN "PS1" "Rate_Spec")) MyRate).
 Goal M |= MyRate ∈ PT_TypeRef (PSQN "PS1" "Rate_Spec") = true.
 Proof. auto. Qed.
 
-
-Compute typecheck_model M.
+Compute typecheck_property_sets M.
 
 (*
 Goal check_property_association M {| P := PSQN "PS1" "Time"; PV := PV_IntU 1 |}.

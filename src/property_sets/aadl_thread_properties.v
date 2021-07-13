@@ -52,6 +52,12 @@ Definition Thread_Properties_PS :=
 
 ].
 
+Lemma Thread_Properties_PS_Valid :
+  typecheck_property_sets [AADL_Project_PS ; Thread_Properties_PS] = true.
+Proof.
+  trivial.
+Qed.
+
 (** %
   \begin{definition}[Priority (AADLv2.2 \S XXX]
  TBD
