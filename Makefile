@@ -60,7 +60,7 @@ pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
 
 sloc:               ## Get SLOCs
-	cloc src
+	cloc src extraction
 
 debug:
 	echo $(COQMF_VFILES)

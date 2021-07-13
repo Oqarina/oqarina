@@ -8,7 +8,6 @@ Oqarina provides elements of a formalization of AADLv2. It aligns with AADLv2.3.
 * `extraction` : wrapper to extract code and compile a binary
 * `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources for AADL mechanization
-* `parser`: prototype area for AADL parser for AADL textual notation
 
 ## Required software
 
