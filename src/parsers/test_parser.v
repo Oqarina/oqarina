@@ -1,21 +1,13 @@
-Require Import List String PeanoNat.
-
-Require Import Oqarina.parsers.Parser.
-Require Import Oqarina.parsers.Lexer.
-Import MenhirLibParser.Inter.
+Require Import List String.
+Require Import Oqarina.parsers.aadl_lexer.
+Require Import Oqarina.parsers.aadl_frontend.
 Open Scope string_scope.
-
-Definition string2expr s :=
-  match option_map (Parser.main 500) (Lexer.lex_string s) with
-  | Some (Parsed_pr f _) => Some f
-  | _ => None
-  end.
 
 Definition example := "system s_impl_Instance : test_1::s.impl {
 	system test_1::sc sc1 : test_1::s.impl:sc1 {}
 }".
-Compute (Lexer.lex_string example).
-Compute (string2expr example).
+Compute (aadl_lexer.lex_string example).
+Compute (string2aadl example).
 
 Definition example2 :=
   "system PING_Native_Instance : PING_Package::PING.Native {
@@ -45,5 +37,5 @@ Definition example2 :=
     }
   }".
 
-Compute (Lexer.lex_string example2).
-Compute (string2expr example2).
+Compute (aadl_lexer.lex_string example2).
+Compute (string2aadl example2).

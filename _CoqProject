@@ -38,8 +38,9 @@ src/threadMonad.v
 
 src/aadl_dynamic_system.v
 
-src/parsers/Parser.v
-src/parsers/Lexer.v
+src/parsers/aadl_parser.v
+src/parsers/aadl_lexer.v
+src/parsers/aadl_frontend.v
 src/parsers/test_parser.v
 
 extraction/extraction.v

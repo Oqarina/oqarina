@@ -1,17 +1,18 @@
 # Oqarina -- Coq mechanization of AADL
 
-Oqarina provides elements of a formalization of AADL.
+Oqarina provides elements of a formalization of AADLv2. It aligns with AADLv2.3.
 
 ## Directory structure
 
 * `extra` : additional material for producing HTML from coq
+* `extraction` : wrapper to extract code and compile a binary
 * `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources for AADL mechanization
 * `parser`: prototype area for AADL parser for AADL textual notation
 
 ## Required software
 
-Oqarina has been tested using Coq version 8.13.1 and VSCoq extension for Visual Code.
+Oqarina has been tested using Coq version 8.13.1 and either VSCoq extension for Visual Code or Proof General.
 
 ## Additional packages
 
@@ -29,7 +30,16 @@ You may either
 - just run from a makefile, type `make` for available targets or
 - play with the Coq files from VSCode. In this case, make sure the Coq directory is the only one in your workspace. Then from the terminal, run
 
-    ```make build_makefile ; make compile ```
+    ```make build_makefile compile ```
+
+or
+- extract code, e.g.
+
+  ```make build_makefile compile build_bin```
+
+- then, run
+
+  ```./extraction/main.native --parse testsuite/test01.instance```
 
 ## Suggested reading
 

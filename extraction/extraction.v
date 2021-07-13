@@ -25,6 +25,7 @@ Cd "extraction/generated-src".
 
 (* List of modules we want to generate *)
 Require Import Oqarina.aadl_declarative.
+Require Import Oqarina.parsers.aadl_frontend.
 Separate Extraction aadl_declarative.
 
 (** * Default tool commands *)
@@ -52,6 +53,29 @@ Definition version_cmd := {|
   cmd := show_version ;
 |}.
 
+(** * - [parse_aadl_instance_file] : parse an AADL instance file *)
+
+Definition parse_aadl_instance_file (argv : list LString.t) : C.t System.effect unit :=
+  match argv with
+  | [_; _; file_name] =>
+    let! content := System.read_file file_name in
+    match content with
+    | None => System.log (LString.s "Cannot read file")
+    | Some content => let foo := string2aadl (Conversion.to_string content) in
+      match foo with
+      | None => System.log (LString.s "parse error")
+      | _    => System.log (LString.s "parsing success")
+      end
+    end
+  | _ => System.log (LString.s "Expected one parameter.")
+  end.
+
+Definition parse_cmd := {|
+  flag := "--parse <file>" ;
+  help_string := "parse file" ;
+  cmd := parse_aadl_instance_file ;
+|}.
+
 (** - [show_help] display help information *)
 
 Fixpoint show_help_ (cmd: list tool_cmd) :=
@@ -62,7 +86,7 @@ Fixpoint show_help_ (cmd: list tool_cmd) :=
 
 Definition show_help (argv : list LString.t) : C.t System.effect unit :=
   do! System.log (LString.s "Usage: oqarina [switches] <files>") in
-  do! show_help_ ([version_cmd]) in
+  do! show_help_ ([version_cmd; parse_cmd]) in
   System.log (LString.s "--help show help").
 
 Definition help_cmd := {|
@@ -71,11 +95,11 @@ Definition help_cmd := {|
   cmd := show_help ;
 |}.
 
-Definition Oqarina_Cmd : list tool_cmd := [ version_cmd ; help_cmd ].
-
 (** * Argument processing *)
 
-Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) :=
+Definition Oqarina_Cmd : list tool_cmd := [ version_cmd ; help_cmd ; parse_cmd ].
+
+Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) : list tool_cmd:=
   match cmd with
     | h :: t =>
       if LString.eqb arg (LString.s h.(flag))
@@ -83,7 +107,7 @@ Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) :=
     | nil => nil
    end.
 
-Fixpoint parse_arguments (argv : list LString.t) :=
+Fixpoint parse_arguments (argv : list LString.t) : list tool_cmd :=
   match argv with
   | h :: t => (parse_argument h Oqarina_Cmd) ++ (parse_arguments t )
   | _ => nil

@@ -7,12 +7,14 @@ Original author is Pierre Letouzey, 2019. The code was released under the CC0 li
 *)
 
 Require Import BinNat Ascii String.
-Require Import Oqarina.parsers.Parser.
-Import MenhirLibParser.Inter.
-Open Scope char_scope.
-Open Scope bool_scope.
 Require Import List.
 Import ListNotations. (* from List *)
+
+Require Import Oqarina.parsers.aadl_parser.
+Import MenhirLibParser.Inter.
+
+Open Scope char_scope.
+Open Scope bool_scope.
 
 (** No such thing as an empty buffer, instead we use
     an infinite stream of EOF *)

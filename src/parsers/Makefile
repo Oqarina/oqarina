@@ -1,5 +1,5 @@
 MENHIR            := menhir
 MENHIRFLAGS       := --coq --coq-no-complete
 
-all: Parser.vy
+all: aadl_parser.vy
 	$(MENHIR) $(MENHIRFLAGS) $<
