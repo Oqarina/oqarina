@@ -47,7 +47,17 @@ Definition AADL_Project_PS :=
        DerivedUnit (Id "sec") (Id "ms") 1000 ;
        DerivedUnit (Id "min") (Id "sec") 60 ;
        DerivedUnit (Id "hr") (Id "min") 60
-       ]
+    ];
+
+    (* Time: type aadlinteger units Time_Units; *)
+
+    "Time" :type PT_Number aadlinteger None
+      (Some (PT_TypeRef (PSQN "AADL_Project_PS" "Time_Units")));
+
+    (* Time_Range: type range of Time; *)
+
+    "Time_Range" :type PT_Range
+        (PT_TypeRef (PSQN "AADL_Project_PS" "Time_Units"))
 
   ].
 

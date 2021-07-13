@@ -21,12 +21,6 @@ Require Import Oqarina.aadl_categories.
 Definition Timing_Properties_PS :=
     PropertySet (Id "Timing_Properties") [
 
-    (* Time: type aadlinteger 0 ps .. Max_Time units Time_Units; *)
-
-    "Time" :prop PT_Number aadlinteger None
-      (Some (PT_TypeRef (PSQN "AADL_Project_PS" "Time_Units")))
-      => None applies [];
-
     (* Deadline: inherit Time => Period
 		   applies to (thread, thread group, process, system, device,
                    virtual processor); *)

@@ -30,8 +30,36 @@ Definition Communication_Properties_PS :=
           applies to (event port, event data port, subprogram access); *)
 
     "Queue_Size" :prop aadlinteger
-          => (Some (PV_Int 1%Z)) applies [  ]
-    ].
+          => (Some (PV_Int 1%Z)) applies [] ;
+
+    (* IO_Reference_Time: type enumeration
+        (Dispatch, Start, Completion, Deadline, NoIO, Dynamic); *)
+
+    "IO_Reference_Time" :type PT_Enumeration [
+      Id "Dispatch" ; Id "Start" ;  Id "Completion" ; Id "Deadline" ;
+      Id "NoIO" ; Id "Dynamic" ];
+
+    (* 	IO_Time_Spec: type record (
+        Offset: Time_Range;
+        Time: IO_Reference_Time; ); *)
+
+    "IO_Time_Spec" :type PT_Record [
+      FieldDecl (Id "Offset") (PT_TypeRef (PSQN "AADL_Project" "Time_Range")) ;
+      FieldDecl (Id "Time") (PT_TypeRef (PSQN "Communication_Properties" "IO_Reference_Time")) ];
+
+    (* Input_Time: list of IO_Time_Spec =>
+        ([Time => Dispatch; Offset => 0 ns .. 0 ns;])
+		    applies to (feature); *)
+
+    "Input_Time" :prop PT_List (PT_TypeRef (PSQN "Communication_Properties" "IO_Time_Spec"))
+      => (Some (PV_Record
+          [ FieldVal (Id "Time") (PV_Enum (Id "Dispatch")) ;
+            FieldVal (Id "Offset")
+              (PV_IntRange (PV_IntU 0 (PV_Unit (Id "ns")))
+                           (PV_IntU 0 (PV_Unit (Id "ns"))))]))
+        applies []
+
+  ].
 
 (** %
   \begin{definition}[Queue\_Size (AADLv2.2 \S XXX]
