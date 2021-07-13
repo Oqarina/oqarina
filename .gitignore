@@ -8,6 +8,8 @@ coq_makefile
 coq_makefile.conf
 .coq_makefile.d
 .lia.cache
+extraction/_build
+extraction/generated-src
 
 # LaTeX temporary files
 latex-src/coqdoc.sty
