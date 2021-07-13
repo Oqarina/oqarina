@@ -39,7 +39,7 @@ Then, we provide various basic utility functions.
 Record tool_cmd : Type := {
   flag : string ;
   help_string : string ;
-  cmd : list LString.t ->  C.t System.effect unit ;
+  cmd : list LString.t -> C.t System.effect unit ;
 }.
 
 (** - [show_version] display version information *)
@@ -99,7 +99,7 @@ Definition help_cmd := {|
 
 Definition Oqarina_Cmd : list tool_cmd := [ version_cmd ; help_cmd ; parse_cmd ].
 
-Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) : list tool_cmd:=
+Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) : list tool_cmd :=
   match cmd with
     | h :: t =>
       if LString.eqb arg (LString.s h.(flag))
