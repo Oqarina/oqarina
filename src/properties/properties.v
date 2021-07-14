@@ -48,14 +48,6 @@ Inductive range_constraint :=
 | C_IntRange (irc : int_range_constraint)
 | C_RealRange (rrc : real_range_constraint).
 
-(** XXX TODO
-- wellformedness of a property set, of a property type
-- property value correctly applies to a component
-- add units to range constraints
-- inherit?
-- reference to property constant in proprety type? see aadl_thread_properties, definition of urgency
-*)
-
 Inductive property_type :=
 (* Predeclared types are constructors for performance *)
 | aadlboolean | aadlstring | aadlinteger | aadlreal
@@ -209,8 +201,7 @@ Definition Applicable_ComponentCategory (p : property_set_declaration) :=
 A property association binds a property value to a property type.
   \end{definition} %
 
-  XXX this seems incomplete, we need to fetch the corresponding PropertyDecl to get default and appliesTo field. either resolve, or change the definition.
-  *)
+*)
 
 Record property_association := {
     P : ps_qname;
