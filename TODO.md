@@ -16,3 +16,8 @@
 - [ ] inherit?
 - [ ] reference to property constant in proprety type? see aadl_thread_properties
 - [ ] definition and validation of applies to
+
+## Property Sets
+
+- [ ] investigate type checking of Communication_Properties_PS
+
