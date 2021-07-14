@@ -322,6 +322,17 @@ Definition resolve_value (ps : property_sets) (qname : ps_qname) : option proper
   | _ => None
   end.
 
+Definition resolve_default_value (ps : property_sets) (qname : ps_qname) : option property_value :=
+    let 'PSQN setname name := qname in
+    match in_model ps (Id setname) (Id name) with
+    | Some decl => match decl with
+                  | PropertyConstantDecl _ r _ => None
+                  | PropertyDecl _ _ d _ => d
+                  | _ => None
+                  end
+    | _ => None
+    end.
+
 Definition resolve_property (ps : property_sets) (qname : ps_qname) : option property_type :=
   let 'PSQN setname name := qname in
   match in_model ps (Id setname) (Id name) with

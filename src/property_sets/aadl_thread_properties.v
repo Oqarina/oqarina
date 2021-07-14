@@ -70,7 +70,7 @@ Definition Is_Priority (pa : property_association) :=
   Is_Property_Name Priority_Name pa.
 
 Definition Map_Priority (pa : list property_association) : Z :=
-  Map_PV_Int_List pa 0%Z Is_Priority.
+  Map_PV_Int_List pa (PV_Int 0%Z) Is_Priority.
 
 (** %
   \begin{definition}[Urgency (AADLv2.2 \S XXX]
@@ -84,7 +84,7 @@ Definition Is_Urgency (pa : property_association) :=
   Is_Property_Name Urgency_Name pa.
 
 Definition Map_Urgency (pa : list property_association) : Z :=
-  Map_PV_Int_List pa 0%Z Is_Urgency.
+  Map_PV_Int_List pa (PV_Int 0%Z) Is_Urgency.
 
 (**
 %
@@ -169,4 +169,4 @@ Definition Is_Dequeued_Items (pa : property_association) :=
   Is_Property_Name Dequeued_Items_Name pa.
 
 Definition Map_Dequeued_Items (pa : list property_association) : Z :=
-  Map_PV_Int_List pa 0%Z Is_Dequeued_Items.
+  Map_PV_Int_List pa (PV_Int 0%Z) Is_Dequeued_Items.

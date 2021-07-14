@@ -74,13 +74,17 @@ Definition Communication_Properties_PS :=
   \end{definition}
 % *)
 
-Definition Queue_Size_Name := PSQN "communication_properties" "queue_size".
+Definition Queue_Size_Name := PSQN "Communication_Properties" "Queue_Size".
 
 Definition Is_Queue_Size (pa : property_association) :=
   Is_Property_Name Queue_Size_Name pa.
 
 Definition Map_Queue_Size (pa : list property_association) : Z :=
-    Map_PV_Int_List pa 1%Z Is_Queue_Size.
+    let pv := resolve_default_value [Communication_Properties_PS] Queue_Size_Name in
+      match pv with
+      | None => 0%Z
+      | Some pv_ => Map_PV_Int_List pa pv_ Is_Queue_Size
+      end.
 
 (** %
   \begin{definition}[Overflow\_Handling\_Protocol (AADLv2.2 \S XXX]
@@ -88,7 +92,7 @@ Definition Map_Queue_Size (pa : list property_association) : Z :=
   \end{definition}
 % *)
 
-Definition Overflow_Handling_Protocol_Name := PSQN "communication_properties" "overflow_handling_protocol".
+Definition Overflow_Handling_Protocol_Name := PSQN "Communication_Properties" "Overflow_Handling_Protocol".
 
 Definition Is_Overflow_Handling_Protocol(pa : property_association) :=
   Is_Property_Name Overflow_Handling_Protocol_Name pa.
@@ -97,18 +101,23 @@ Inductive Overflow_Handling_Protocol :=
 Overflow_Handling_Protocol_Unspecified | DropOldest | DropNewest | Error.
 Scheme Equality for Overflow_Handling_Protocol.
 
-Definition Map_Overflow_Handling_Protocol_pv (pa : property_association) : Overflow_Handling_Protocol :=
-  match pa.(PV) with
-    | (PV_Enum (Id "dropoldest")) => DropOldest
-    | (PV_Enum (Id "dropnewest")) => DropNewest
-    | (PV_Enum (Id "error")) => Error
-    | _ => DropOldest
+Definition Map_Overflow_Handling_Protocol_pv (pv : property_value) : Overflow_Handling_Protocol :=
+  match pv with
+    | (PV_Enum (Id "DropOldest")) => DropOldest
+    | (PV_Enum (Id "DropnNwest")) => DropNewest
+    | (PV_Enum (Id "Error")) => Error
+    | _ => Overflow_Handling_Protocol_Unspecified
   end.
 
 Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
   match filter Is_Overflow_Handling_Protocol pa with
-  | nil => DropOldest
-  | v :: _ => Map_Overflow_Handling_Protocol_pv v
+  | nil =>
+    let pv := resolve_default_value [Communication_Properties_PS] Overflow_Handling_Protocol_Name in
+    match pv with
+    | None => Overflow_Handling_Protocol_Unspecified
+    | Some pv => Map_Overflow_Handling_Protocol_pv pv
+    end
+  | v :: _ => Map_Overflow_Handling_Protocol_pv v.(PV)
   end.
 
 (** ** %\texttt{Communication\_Properties}% as Coq native types

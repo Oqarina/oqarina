@@ -17,7 +17,7 @@ Require Export Oqarina.property_sets.aadl_timing_properties.
 
 Definition AADL_Predeclared_Property_Sets :=
     [ AADL_Project_PS ; Communication_Properties_PS ;
-    Thread_Properties_PS ; Timing_Properties_PS ] .
+      Thread_Properties_PS ; Timing_Properties_PS ] .
 
 Lemma Timing_Properties_PS_Valid :
     typecheck_property_sets AADL_Predeclared_Property_Sets = true.

@@ -8,6 +8,8 @@ Import ListNotations.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.properties.properties.
+Require Import Oqarina.properties.typecheck.
+
 (* end hide *)
 
 (** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
@@ -27,8 +29,11 @@ Definition Map_PV_Int (pa : property_association) :=
 
 (** XXX default should not be required, we should be able to resolve default form the property type declaration, *)
 
-Definition Map_PV_Int_List (pa : list property_association) (default : Z) (name : property_association -> bool) :=
+Definition Map_PV_Int_List (pa : list property_association) (default : property_value) (name : property_association -> bool) :=
   match filter name pa with
-    | nil => default
+    | nil => match default with
+            | PV_Int i => i
+            | _ => 0
+            end
     | v :: _ => Map_PV_Int v
     end.

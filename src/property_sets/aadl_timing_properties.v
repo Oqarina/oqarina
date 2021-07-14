@@ -42,7 +42,6 @@ Proof.
   trivial.
 Qed.
 
-
 (**
 %\paragraph{} \begin{definition}[Period (\S XXX]
  TBD
@@ -54,7 +53,7 @@ Definition Is_Period (pa : property_association) :=
   Is_Property_Name Period_Name pa.
 
 Definition Map_Period (pa : list property_association) :=
-  Map_PV_Int_List pa 0%Z Is_Period.
+  Map_PV_Int_List pa (PV_Int 0%Z) Is_Period.
 
 (**
 %\paragraph{} \begin{definition}[Deadline (\S XXX]
@@ -67,4 +66,4 @@ Definition Is_Deadline (pa : property_association) :=
   Is_Property_Name Deadline_Name pa.
 
 Definition Map_Deadline (pa : list property_association) : Z :=
-  Map_PV_Int_List pa 0%Z Is_Deadline.
+  Map_PV_Int_List pa (PV_Int 0%Z) Is_Deadline.
