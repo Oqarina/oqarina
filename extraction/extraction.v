@@ -24,9 +24,7 @@ Set Warnings "-extraction-opaque-accessed,-extraction".
 Cd "extraction/generated-src".
 
 (* List of modules we want to generate *)
-Require Import Oqarina.aadl_declarative.
 Require Import Oqarina.parsers.aadl_frontend.
-Separate Extraction aadl_declarative.
 
 (** * Default tool commands *)
 
@@ -124,7 +122,10 @@ Fixpoint process_arguments
 
 Definition Oqarina_main (argv : list LString.t) : C.t System.effect unit :=
   let action_todo := parse_arguments (argv) in
-  process_arguments argv action_todo.
+  match action_todo with
+  | nil => show_help argv
+  | _ =>  process_arguments argv action_todo
+  end.
 
 (** Extract the program to `extraction/main.ml`. *)
 Definition main := Extraction.launch Oqarina_main.
