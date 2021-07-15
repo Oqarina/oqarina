@@ -13,7 +13,7 @@ Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.aadl_categories.
 (* end hide *)
 
-(** ** %\texttt{thread\_properties}% as Coq/AADL property_types *)
+(** %\N \texttt{thread\_properties}% as Coq/AADL property_types. *)
 
 Definition Thread_Properties_PS :=
     PropertySet (Id "Thread_Properties") [
@@ -97,15 +97,6 @@ Definition Dispatch_Protocol_Name := PSQN "Thread_Properties" "Dispatch_Protocol
 
 Definition Is_Scheduling_Protocol (pa : property_association) :=
     Is_Property_Name Dispatch_Protocol_Name pa.
-
-(** ** %\texttt{thread\_properties}% as Coq native types *)
-
-(** %\paragraph{}
-  \begin{definition}[Dispatch\_Protocol (Coq)]
-  TBD
-  \end{definition}
-%
-*)
 
 Inductive Dispatch_Protocol :=
   Dispatch_Protocol_Unspecified | Periodic | Sporadic | Aperiodic | Background | Timed | Hybrid.

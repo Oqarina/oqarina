@@ -1,7 +1,5 @@
 (** %\section{\texttt{Timing\_Properties}} %*)
 
-(** Loose mapping of aadl_project.aadl to define common types, units, etc. *)
-
 (* begin hide *)
 (** Coq Library *)
 Require Import Coq.Lists.List.
@@ -16,7 +14,7 @@ Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.aadl_categories.
 (* end hide *)
 
-(** ** %\texttt{timing\_properties}% as Coq/AADL property_types *)
+(** %\N \texttt{timing\_properties}% as Coq/AADL property_types. *)
 
 Definition Timing_Properties_PS :=
     PropertySet (Id "Timing_Properties") [

@@ -15,6 +15,8 @@ Require Import Oqarina.property_sets.aadl_aadl_project.
 Require Import Oqarina.aadl_categories.
 (* end hide *)
 
+(** %\N \texttt{communication\_properties}% as Coq/AADL property_types. *)
+
 Definition Communication_Properties_PS :=
     PropertySet (Id "Communication_Properties") [
 
@@ -39,19 +41,21 @@ Definition Communication_Properties_PS :=
       Id "Dispatch" ; Id "Start" ;  Id "Completion" ; Id "Deadline" ;
       Id "NoIO" ; Id "Dynamic" ];
 
-    (* 	IO_Time_Spec: type record (
+    (* IO_Time_Spec: type record (
         Offset: Time_Range;
         Time: IO_Reference_Time; ); *)
 
     "IO_Time_Spec" :type PT_Record [
       FieldDecl (Id "Offset") (PT_TypeRef (PSQN "AADL_Project" "Time_Range")) ;
-      FieldDecl (Id "Time") (PT_TypeRef (PSQN "Communication_Properties" "IO_Reference_Time")) ];
+      FieldDecl (Id "Time")
+        (PT_TypeRef (PSQN "Communication_Properties" "IO_Reference_Time")) ];
 
     (* Input_Time: list of IO_Time_Spec =>
         ([Time => Dispatch; Offset => 0 ns .. 0 ns;])
 		    applies to (feature); *)
 
-    "Input_Time" :prop PT_List (PT_TypeRef (PSQN "Communication_Properties" "IO_Time_Spec"))
+    "Input_Time" :prop PT_List
+                  (PT_TypeRef (PSQN "Communication_Properties" "IO_Time_Spec"))
       => (Some (PV_List
                 [ PV_Record [
                   FieldVal (Id "Time") (PV_Enum (Id "Dispatch")) ;
@@ -68,7 +72,6 @@ Definition Communication_Properties_PS :=
   Proof.
       trivial.
   Admitted. (* XXX cannot typecheck Input_Time, issue in checking the default value *)
-  (* Qed. *)
 
 (** %
   \begin{definition}[Queue\_Size (AADLv2.2 \S XXX]
@@ -103,10 +106,11 @@ Inductive Overflow_Handling_Protocol :=
 Overflow_Handling_Protocol_Unspecified | DropOldest | DropNewest | Error.
 Scheme Equality for Overflow_Handling_Protocol.
 
-Definition Map_Overflow_Handling_Protocol_pv (pv : property_value) : Overflow_Handling_Protocol :=
+Definition Map_Overflow_Handling_Protocol_pv
+  (pv : property_value) : Overflow_Handling_Protocol :=
   match pv with
     | (PV_Enum (Id "DropOldest")) => DropOldest
-    | (PV_Enum (Id "DropnNwest")) => DropNewest
+    | (PV_Enum (Id "DropnNewest")) => DropNewest
     | (PV_Enum (Id "Error")) => Error
     | _ => Overflow_Handling_Protocol_Unspecified
   end.
@@ -114,17 +118,16 @@ Definition Map_Overflow_Handling_Protocol_pv (pv : property_value) : Overflow_Ha
 Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
   match filter Is_Overflow_Handling_Protocol pa with
   | nil =>
-    let pv := resolve_default_value [Communication_Properties_PS] Overflow_Handling_Protocol_Name in
-    match pv with
-    | None => Overflow_Handling_Protocol_Unspecified (* should never be executed *)
-    | Some pv => Map_Overflow_Handling_Protocol_pv pv
-    end
+    let pv := resolve_default_value [
+      Communication_Properties_PS] Overflow_Handling_Protocol_Name in
+      match pv with
+      | None => Overflow_Handling_Protocol_Unspecified
+      | Some pv => Map_Overflow_Handling_Protocol_pv pv
+      end
   | v :: _ => Map_Overflow_Handling_Protocol_pv v.(PV)
   end.
 
-(** ** %\texttt{Communication\_Properties}% as Coq native types
-
-%\define{Queue\_Processing\_Protocol (Coq)}{}{TBD} %
+(** %\define{Queue\_Processing\_Protocol (Coq)}{}{TBD} %
 *)
 
 Inductive Queue_Processing_Protocol :=
@@ -178,6 +181,8 @@ Definition projectionIO_Time_Spec (i : input_time) :=
   | Input_Time t => t
   end.
 
+(** %\define{Input\_Time (Coq)}{}{TBD} % *)
+
 Definition Input_Time_Name := PSQN "Communication_Properties" "Input_Time".
 
 Definition Is_Input_Time (pa : property_association) :=
@@ -186,10 +191,10 @@ Definition Is_Input_Time (pa : property_association) :=
 Definition Unspecified_Input_Time := Input_Time [ ] .
 
 Definition Map_Input_Time_pv (pv : property_value) :=
-match pv with
-| PV_List l => Input_Time (Map_IO_Time_Spec_list l)
-| _ => Unspecified_Input_Time
-end.
+  match pv with
+  | PV_List l => Input_Time (Map_IO_Time_Spec_list l)
+  | _ => Unspecified_Input_Time
+  end.
 
 Definition Map_Input_Time (pa : list property_association) : input_time :=
   match filter Is_Input_Time pa with
