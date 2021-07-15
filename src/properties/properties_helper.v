@@ -27,8 +27,6 @@ Definition Map_PV_Int (pa : property_association) :=
 
 (** [Map_PV_Int_List] returns the property value for property [name] or [default] is the property is not set *)
 
-(** XXX default should not be required, we should be able to resolve default form the property type declaration, *)
-
 Definition Map_PV_Int_List (pa : list property_association) (default : property_value) (name : property_association -> bool) :=
   match filter name pa with
     | nil => match default with
@@ -37,3 +35,15 @@ Definition Map_PV_Int_List (pa : list property_association) (default : property_
             end
     | v :: _ => Map_PV_Int v
     end.
+
+(** [Get_Record_Member] return the member [name] from the list of field_value *)
+
+Fixpoint Get_Record_Member (pv : list field_value) (name : identifier) :=
+      match pv with
+      | nil => None
+      | h :: t =>
+        match h with
+        | FieldVal id v => if identifier_beq id name then Some h
+                                                     else Get_Record_Member t name
+        end
+      end.

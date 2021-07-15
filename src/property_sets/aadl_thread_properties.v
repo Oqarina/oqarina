@@ -45,7 +45,7 @@ Definition Thread_Properties_PS :=
         => (Some (PV_Enum (Id "OneItem"))) applies [];
 
     (* Dequeued_Items: aadlinteger
-		   applies to (event port, event data port);*)
+		   applies to (event port, event data port); *)
 
     "Dequeued_Items" :prop aadlinteger
        => None applies [ ]
@@ -64,7 +64,7 @@ Qed.
   \end{definition}
 % *)
 
-Definition Priority_Name := PSQN "thread_properties" "priority".
+Definition Priority_Name := PSQN "Thread_Properties" "Priority".
 
 Definition Is_Priority (pa : property_association) :=
   Is_Property_Name Priority_Name pa.
@@ -78,7 +78,7 @@ Definition Map_Priority (pa : list property_association) : Z :=
   \end{definition}
 % *)
 
-Definition Urgency_Name := PSQN "thread_properties" "urgency".
+Definition Urgency_Name := PSQN "Thread_Properties" "Urgency".
 
 Definition Is_Urgency (pa : property_association) :=
   Is_Property_Name Urgency_Name pa.
@@ -93,7 +93,7 @@ Definition Map_Urgency (pa : list property_association) : Z :=
   \end{definition}
 % *)
 
-Definition Dispatch_Protocol_Name := PSQN "thread_properties" "dispatch_protocol".
+Definition Dispatch_Protocol_Name := PSQN "Thread_Properties" "Dispatch_Protocol".
 
 Definition Is_Scheduling_Protocol (pa : property_association) :=
     Is_Property_Name Dispatch_Protocol_Name pa.
@@ -114,11 +114,11 @@ Scheme Equality for Dispatch_Protocol.
 
 Definition Map_Scheduling_Protocol_pv (pa : property_association) : Dispatch_Protocol :=
   match pa.(PV) with
-    | (PV_Enum (Id "periodic")) => Periodic
-    | (PV_Enum (Id "sporadic")) => Sporadic
-    | (PV_Enum (Id "aperiodic")) => Aperiodic
-    | (PV_Enum (Id "background")) => Background
-    | (PV_Enum (Id "timed")) => Timed
+    | (PV_Enum (Id "Periodic")) => Periodic
+    | (PV_Enum (Id "Sporadic")) => Sporadic
+    | (PV_Enum (Id "Aperiodic")) => Aperiodic
+    | (PV_Enum (Id "Background")) => Background
+    | (PV_Enum (Id "Timed")) => Timed
     | (PV_Enum (Id "Hybrid")) => Hybrid
     | _ => Dispatch_Protocol_Unspecified
   end.
@@ -135,26 +135,31 @@ Definition Map_Scheduling_Protocol (pa : list property_association) : Dispatch_P
   \end{definition}
 % *)
 
-Definition Dequeue_Protocol_Name := PSQN "thread_properties" "dequeue_protocol".
+Definition Dequeue_Protocol_Name := PSQN "Thread_Properties" "Dequeue_Protocol".
 
 Definition Is_Dequeue_Protocol (pa : property_association) :=
   Is_Property_Name Dequeue_Protocol_Name pa.
 
 Inductive Dequeue_Protocol :=
-Dequeue_Protocol_Unspecified | OneItem | MultipleItems | AllItems.
+  Unspecified_Dequeue_Protocol | OneItem | MultipleItems | AllItems.
 
-Definition Map_Dequeue_Protocol_pv (pa : property_association) : Dequeue_Protocol :=
-  match pa.(PV) with
-    | (PV_Enum (Id "oneitem")) => OneItem
-    | (PV_Enum (Id "multipleitems")) => MultipleItems
-    | (PV_Enum (Id "allitems")) => AllItems
-    | _ => OneItem
+Definition Map_Dequeue_Protocol_pv (pv : property_value) : Dequeue_Protocol :=
+  match pv with
+    | (PV_Enum (Id "OneItem")) => OneItem
+    | (PV_Enum (Id "MultipleItems")) => MultipleItems
+    | (PV_Enum (Id "AllItems")) => AllItems
+    | _ => Unspecified_Dequeue_Protocol
   end.
 
 Definition Map_Dequeue_Protocol (pa : list property_association) :=
   match filter Is_Dequeue_Protocol pa with
-  | nil => OneItem
-  | v :: _ => Map_Dequeue_Protocol_pv v
+  | nil =>
+    let pv := resolve_default_value [Thread_Properties_PS] Dequeue_Protocol_Name in
+    match pv with
+      | None => Unspecified_Dequeue_Protocol (* should never be executed *)
+      | Some pv_ => Map_Dequeue_Protocol_pv pv_
+    end
+  | v :: _ => Map_Dequeue_Protocol_pv v.(PV)
   end.
 
 (** %
@@ -163,7 +168,7 @@ Definition Map_Dequeue_Protocol (pa : list property_association) :=
   \end{definition}
 % *)
 
-Definition Dequeued_Items_Name := PSQN "thread_properties" "dequeued_items".
+Definition Dequeued_Items_Name := PSQN "Thread_Properties" "Dequeued_Items".
 
 Definition Is_Dequeued_Items (pa : property_association) :=
   Is_Property_Name Dequeued_Items_Name pa.

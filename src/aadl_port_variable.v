@@ -80,7 +80,7 @@ Section Port_Variable.
     is_data := Is_Data_Portb f;
     inner_variable := [];
     outer_variable := [];
-    port_input_times := Input_Time [ Default_IO_Time_Spec ];
+    port_input_times := Map_Input_Time (projectionFeatureProperties f);
     urgency := Map_Urgency (projectionFeatureProperties f);
     size := Map_Queue_Size (projectionFeatureProperties f);
     overflow_handling_protocol := Map_Overflow_Handling_Protocol (projectionFeatureProperties f);

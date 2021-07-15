@@ -52,11 +52,13 @@ Definition Communication_Properties_PS :=
 		    applies to (feature); *)
 
     "Input_Time" :prop PT_List (PT_TypeRef (PSQN "Communication_Properties" "IO_Time_Spec"))
-      => (Some (PV_Record
-          [ FieldVal (Id "Time") (PV_Enum (Id "Dispatch")) ;
-            FieldVal (Id "Offset")
-              (PV_IntRange (PV_IntU 0 (PV_Unit (Id "ns")))
-                           (PV_IntU 0 (PV_Unit (Id "ns"))))]))
+      => (Some (PV_List
+                [ PV_Record [
+                  FieldVal (Id "Time") (PV_Enum (Id "Dispatch")) ;
+                  FieldVal (Id "Offset")
+                      (PV_IntRange (PV_IntU 0 (PV_Unit (Id "ns")))
+                                  (PV_IntU 0 (PV_Unit (Id "ns"))))
+                     ]]))
         applies []
 
   ].
@@ -82,7 +84,7 @@ Definition Is_Queue_Size (pa : property_association) :=
 Definition Map_Queue_Size (pa : list property_association) : Z :=
     let pv := resolve_default_value [Communication_Properties_PS] Queue_Size_Name in
       match pv with
-      | None => 0%Z
+      | None => -1%Z (* should never be executed *)
       | Some pv_ => Map_PV_Int_List pa pv_ Is_Queue_Size
       end.
 
@@ -114,7 +116,7 @@ Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
   | nil =>
     let pv := resolve_default_value [Communication_Properties_PS] Overflow_Handling_Protocol_Name in
     match pv with
-    | None => Overflow_Handling_Protocol_Unspecified
+    | None => Overflow_Handling_Protocol_Unspecified (* should never be executed *)
     | Some pv => Map_Overflow_Handling_Protocol_pv pv
     end
   | v :: _ => Map_Overflow_Handling_Protocol_pv v.(PV)
@@ -134,11 +136,32 @@ Inductive IO_Time_Spec :=
 | Dispatch
 | Start : AADL_Time -> IO_Time_Spec
 | Completion : AADL_Time -> IO_Time_Spec
-| NoIo.
+| NoIo
+| IO_Time_Spec_Unspecified.
 
 Scheme Equality for IO_Time_Spec.
 
-Definition Default_IO_Time_Spec := Dispatch.
+Definition Unspecified_IO_Time_Spec := IO_Time_Spec_Unspecified.
+
+Definition Map_IO_Time_Spec (pv : property_value) :=
+  match pv with
+  | PV_Record l =>
+    let time := Get_Record_Member l (Id "Time") in
+    match time with
+    | None => Unspecified_IO_Time_Spec
+    | Some (FieldVal (Id "Time") (PV_Enum (Id "Dispatch"))) => Dispatch
+    | Some (FieldVal (Id "Time") (PV_Enum (Id "NoIo"))) => NoIo
+    (** XXX TBD *)
+    | _ => Unspecified_IO_Time_Spec
+    end
+  | _ => Unspecified_IO_Time_Spec
+  end.
+
+Fixpoint Map_IO_Time_Spec_list (pv : list property_value) :=
+  match pv with
+  | nil => nil
+  | h :: t => Map_IO_Time_Spec h :: Map_IO_Time_Spec_list t
+  end.
 
 Inductive input_time :=
 | Input_Time : list IO_Time_Spec -> input_time.
@@ -153,7 +176,31 @@ Defined.
 Definition projectionIO_Time_Spec (i : input_time) :=
   match i with
   | Input_Time t => t
+  end.
+
+Definition Input_Time_Name := PSQN "Communication_Properties" "Input_Time".
+
+Definition Is_Input_Time (pa : property_association) :=
+  Is_Property_Name Input_Time_Name pa.
+
+Definition Unspecified_Input_Time := Input_Time [ ] .
+
+Definition Map_Input_Time_pv (pv : property_value) :=
+match pv with
+| PV_List l => Input_Time (Map_IO_Time_Spec_list l)
+| _ => Unspecified_Input_Time
 end.
+
+Definition Map_Input_Time (pa : list property_association) : input_time :=
+  match filter Is_Input_Time pa with
+  | nil =>
+    let pv := resolve_default_value [Communication_Properties_PS] Input_Time_Name in
+    match pv with
+    | None => Unspecified_Input_Time (* should never be executed *)
+    | Some pv_ => Map_Input_Time_pv pv_
+    end
+  | v :: _ => Map_Input_Time_pv v.(PV)
+  end.
 
 (** %\define{IO\_Time\_Spec Well-formedness rule (Coq)}{}
   {An input time is well-formed iff. there is no duplicate in the list of IO\_Time\_Spec.} %

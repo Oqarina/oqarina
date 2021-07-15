@@ -352,7 +352,7 @@ Definition Get_Elected_Triggering_Feature (th : thread_state_variable) : port_va
 (** %\N% [Current_Valid_IO_Time_Spec] returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}% *)
 
 Definition Current_Valid_IO_Time_Spec (p : port_variable) (th : thread_state_variable) :=
-  hd Default_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times)).
+  hd Unspecified_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times)).
 
 (** %\N% The definition of the [Frozen] predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc.*)
 
@@ -379,6 +379,7 @@ Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
   | NoIo => False
   | Start _ => False
   | Completion _ => False
+  | IO_Time_Spec_Unspecified => False
   end.
 
 Definition Frozen_Ports' (th : thread_state_variable): list port_variable :=
@@ -602,7 +603,7 @@ End Thread_RTS.
 (** In this example, we first build a periodic AADL [Component], we then map it to a [thread_state_variable] and perform some steps on it. *)
 
 Definition Periodic_Dispatch := {|
-  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "periodic"); |}.
+  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "Periodic"); |}.
 
 Definition A_Priority_Value := {|
   P := Priority_Name; PV := PV_Int 42; |}.
@@ -648,7 +649,7 @@ Qed.
 (** In this example, we consider a sporadic thread with one input event port. *)
 
 Definition Sporadic_Dispatch  := {|
-  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "sporadic"); |}.
+  P := Dispatch_Protocol_Name; PV := PV_Enum (Id "Sporadic"); |}.
 
 Definition An_Input_Feature :=
   Feature (Id "a_feature") inF eventPort nil_component nil.
