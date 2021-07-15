@@ -64,3 +64,11 @@ Lemma AADLProject_PS_Valid : typecheck_property_sets [AADL_Project_PS] = true.
 Proof.
     trivial.
 Qed.
+
+Definition Time_Range := (prod AADL_Time AADL_Time).
+
+Definition Map_Time_Ramge (pv : property_value) : Time_Range :=
+  match pv with
+    | PV_IntRange (PV_Int min) (PV_Int max) => (min, max)
+    | _ => (0, 0)
+  end.

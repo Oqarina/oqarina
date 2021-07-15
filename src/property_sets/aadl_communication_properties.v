@@ -61,7 +61,7 @@ Definition Communication_Properties_PS :=
                   FieldVal (Id "Time") (PV_Enum (Id "Dispatch")) ;
                   FieldVal (Id "Offset")
                       (PV_IntRange (PV_IntU 0 (PV_Unit (Id "ns")))
-                                  (PV_IntU 0 (PV_Unit (Id "ns"))))
+                                   (PV_IntU 0 (PV_Unit (Id "ns"))))
                      ]]))
         applies []
 
@@ -137,12 +137,15 @@ Inductive Queue_Processing_Protocol :=
 
 Inductive IO_Time_Spec :=
 | Dispatch
-| Start : AADL_Time -> IO_Time_Spec
-| Completion : AADL_Time -> IO_Time_Spec
+| Start : Time_Range -> IO_Time_Spec
+| Completion : Time_Range -> IO_Time_Spec
 | NoIo
 | IO_Time_Spec_Unspecified.
 
-Scheme Equality for IO_Time_Spec.
+Lemma IO_Time_Spec_eq_dec : forall x y : IO_Time_Spec, {x=y}+{x<>y}.
+Proof.
+  repeat decide equality.
+Qed.
 
 Definition Unspecified_IO_Time_Spec := IO_Time_Spec_Unspecified.
 
@@ -154,7 +157,12 @@ Definition Map_IO_Time_Spec (pv : property_value) :=
     | None => Unspecified_IO_Time_Spec
     | Some (FieldVal (Id "Time") (PV_Enum (Id "Dispatch"))) => Dispatch
     | Some (FieldVal (Id "Time") (PV_Enum (Id "NoIo"))) => NoIo
-    (** XXX TBD *)
+    | Some (FieldVal (Id "Time") (PV_Enum (Id "Start"))) =>
+    let offset := Get_Record_Member l (Id "Offset") in
+    match offset with
+      | None => Unspecified_IO_Time_Spec
+      | Some (FieldVal _ pv) =>  Start (Map_Time_Ramge pv)
+    end
     | _ => Unspecified_IO_Time_Spec
     end
   | _ => Unspecified_IO_Time_Spec
