@@ -103,7 +103,7 @@ Definition Is_Overflow_Handling_Protocol(pa : property_association) :=
   Is_Property_Name Overflow_Handling_Protocol_Name pa.
 
 Inductive Overflow_Handling_Protocol :=
-Overflow_Handling_Protocol_Unspecified | DropOldest | DropNewest | Error.
+Unspecified_Overflow_Handling_Protocol | DropOldest | DropNewest | Error.
 Scheme Equality for Overflow_Handling_Protocol.
 
 Definition Map_Overflow_Handling_Protocol_pv
@@ -112,7 +112,7 @@ Definition Map_Overflow_Handling_Protocol_pv
     | (PV_Enum (Id "DropOldest")) => DropOldest
     | (PV_Enum (Id "DropnNewest")) => DropNewest
     | (PV_Enum (Id "Error")) => Error
-    | _ => Overflow_Handling_Protocol_Unspecified
+    | _ => Unspecified_Overflow_Handling_Protocol
   end.
 
 Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
@@ -121,7 +121,7 @@ Definition Map_Overflow_Handling_Protocol (pa : list property_association) :=
     let pv := resolve_default_value [
       Communication_Properties_PS] Overflow_Handling_Protocol_Name in
       match pv with
-      | None => Overflow_Handling_Protocol_Unspecified
+      | None => Unspecified_Overflow_Handling_Protocol
       | Some pv => Map_Overflow_Handling_Protocol_pv pv
       end
   | v :: _ => Map_Overflow_Handling_Protocol_pv v.(PV)
@@ -140,14 +140,12 @@ Inductive IO_Time_Spec :=
 | Start : Time_Range -> IO_Time_Spec
 | Completion : Time_Range -> IO_Time_Spec
 | NoIo
-| IO_Time_Spec_Unspecified.
+| Unspecified_IO_Time_Spec.
 
 Lemma IO_Time_Spec_eq_dec : forall x y : IO_Time_Spec, {x=y}+{x<>y}.
 Proof.
   repeat decide equality.
 Qed.
-
-Definition Unspecified_IO_Time_Spec := IO_Time_Spec_Unspecified.
 
 Definition Map_IO_Time_Spec (pv : property_value) :=
   match pv with

@@ -99,7 +99,7 @@ Definition Is_Scheduling_Protocol (pa : property_association) :=
     Is_Property_Name Dispatch_Protocol_Name pa.
 
 Inductive Dispatch_Protocol :=
-  Dispatch_Protocol_Unspecified | Periodic | Sporadic | Aperiodic | Background | Timed | Hybrid.
+  Unspecified_Dispatch_Protocol | Periodic | Sporadic | Aperiodic | Background | Timed | Hybrid.
 
 Scheme Equality for Dispatch_Protocol.
 
@@ -111,12 +111,12 @@ Definition Map_Scheduling_Protocol_pv (pa : property_association) : Dispatch_Pro
     | (PV_Enum (Id "Background")) => Background
     | (PV_Enum (Id "Timed")) => Timed
     | (PV_Enum (Id "Hybrid")) => Hybrid
-    | _ => Dispatch_Protocol_Unspecified
+    | _ => Unspecified_Dispatch_Protocol
   end.
 
 Definition Map_Scheduling_Protocol (pa : list property_association) : Dispatch_Protocol :=
   match filter Is_Scheduling_Protocol pa with
-  | nil => Dispatch_Protocol_Unspecified
+  | nil => Unspecified_Dispatch_Protocol
   | v :: _ => Map_Scheduling_Protocol_pv v
   end.
 
