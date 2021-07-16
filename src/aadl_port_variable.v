@@ -91,7 +91,10 @@ Section Port_Variable.
   (** A port variable is well-formed iff its configuration parameters are well-formed. This property is decidable. *)
 
   Definition port_variable_wf (p : port_variable) :=
-    input_time_wf p.(port_input_times).
+    input_time_wf p.(port_input_times) /\
+    p.(overflow_handling_protocol) <> Unspecified_Overflow_Handling_Protocol /\
+    p.(dequeue_protocol) <> Unspecified_Dequeue_Protocol
+  .
 
   (* begin hide *)
   Definition port_variable_wf_dec : forall p : port_variable,
@@ -100,9 +103,28 @@ Section Port_Variable.
     intros.
     unfold port_variable_wf.
     destruct port_input_times.
-    apply input_time_wf_dec.
+    repeat apply dec_sumbool_and.
+    - apply input_time_wf_dec.
+    -  destruct (Overflow_Handling_Protocol_eq_dec (overflow_handling_protocol p) Unspecified_Overflow_Handling_Protocol).
+      * subst; auto.
+      * subst; auto.
+    - destruct (Dequeue_Protocol_eq_dec (dequeue_protocol p) Unspecified_Dequeue_Protocol).
+      * subst; auto.
+      * subst; auto.
   Defined.
   (* end hide *)
+
+  Definition port_variable_list_wf (l : list port_variable) :=
+    All port_variable_wf l.
+
+  Definition port_variable_list_wf_dec : forall p : list port_variable,
+    dec_sumbool (port_variable_list_wf p).
+  Proof.
+    intros.
+    unfold port_variable_list_wf.
+    apply sumbool_All_dec.
+    apply port_variable_wf_dec.
+  Qed.
 
   Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.
 

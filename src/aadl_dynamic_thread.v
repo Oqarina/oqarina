@@ -28,6 +28,8 @@ Require Import Oqarina.property_sets.all.
 Require Import Oqarina.aadl_port_variable.
 Require Import Oqarina.aadl_feature_helper.
 
+Require Import Oqarina.cpdttactics.
+(* https://jozefg.bitbucket.io/posts/2014-07-09-dissecting-crush.html *)
 Open Scope Z_scope.
 (* end hide *)
 
@@ -79,6 +81,25 @@ TBD
     output_ports := Build_Output_Port_Variables (t->features);
     dispatch_trigger := Build_Dispatch_Trigger (t->features);
   |}.
+
+  Definition thread_state_variable_wf (t : thread_state_variable) :=
+    t.(dispatch_protocol) <> Unspecified_Dispatch_Protocol /\
+    port_variable_list_wf t.(input_ports) /\
+    port_variable_list_wf t.(output_ports)
+    .
+
+  Lemma thread_state_variable_wf_dec : forall t : thread_state_variable,
+    dec_sumbool (thread_state_variable_wf t).
+  Proof.
+    intros.
+    unfold thread_state_variable_wf.
+    repeat apply dec_sumbool_and.
+    - destruct (Dispatch_Protocol_eq_dec (dispatch_protocol t) Unspecified_Dispatch_Protocol).
+      * subst. auto.
+      * subst. auto.
+    - apply port_variable_list_wf_dec.
+    - apply port_variable_list_wf_dec.
+  Qed.
 
 (* begin hide *)
 End Thread_State_Variable.
@@ -621,6 +642,13 @@ Definition A_Periodic_Thread := Component
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 
+Lemma A_Periodic_Thread_State_valid : thread_state_variable_wf A_Periodic_Thread_State_ .
+Proof.
+  unfold thread_state_variable_wf.
+  compute.
+  crush.
+Qed.
+
 (** - "activate" the thread *)
 
 Definition A_Periodic_Thread_State := update_thread_state A_Periodic_Thread_State_.
@@ -666,6 +694,16 @@ Definition A_Sporadic_Thread := Component
 (** We can continue and build a corresponding thread state variable, add an event, avance time and check whether the thread is enabled. *)
 
 Definition A_Sporadic_Thread_State_ := mk_thread_state_variable (A_Sporadic_Thread).
+
+Lemma A_Sporadic_Thread_State_valid : thread_state_variable_wf A_Sporadic_Thread_State_.
+Proof.
+  unfold thread_state_variable_wf.
+  compute.
+  crush.
+  apply NoDup_cons ; auto.
+  apply NoDup_nil.
+Qed.
+
 Definition A_Sporadic_Thread_State := update_thread_state A_Sporadic_Thread_State_.
 
 (** - Initially, the sporadic thread is not enabled *)
@@ -681,9 +719,6 @@ Definition A_Sporadic_Thread_State' :=
   store_in A_Sporadic_Thread_State (Id "a_feature") false.
 Definition A_Sporadic_Thread_State'' :=
   store_in A_Sporadic_Thread_State' (Id "a_feature") true.
-
-Compute A_Sporadic_Thread_State'.
-Compute A_Sporadic_Thread_State''.
 
 (** - The thread is not enabled yet *)
 
@@ -702,8 +737,6 @@ Lemma Sporadic_t42_enabled : th.(current_state) = Ready.
 Proof.
   trivial.
 Qed.
-
-Compute th.
 
 Lemma ETF: Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_feature".
 Proof.

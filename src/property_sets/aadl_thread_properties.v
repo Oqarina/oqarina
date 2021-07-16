@@ -134,6 +134,8 @@ Definition Is_Dequeue_Protocol (pa : property_association) :=
 Inductive Dequeue_Protocol :=
   Unspecified_Dequeue_Protocol | OneItem | MultipleItems | AllItems.
 
+Scheme Equality for Dequeue_Protocol.
+
 Definition Map_Dequeue_Protocol_pv (pv : property_value) : Dequeue_Protocol :=
   match pv with
     | (PV_Enum (Id "OneItem")) => OneItem
