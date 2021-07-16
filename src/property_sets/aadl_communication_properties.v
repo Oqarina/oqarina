@@ -24,7 +24,7 @@ Definition Communication_Properties_PS :=
        => DropOldest applies to (event port, event data port,
                                  subprogram access); *)
 
-      "Overflow_Handling_Protocol" :prop PT_Enumeration [
+    "Overflow_Handling_Protocol" :prop PT_Enumeration [
         Id "DropOldest"; Id "DropNewest"; Id "Error" ]
         => (Some (PV_Enum (Id "DropOldest"))) applies [];
 
