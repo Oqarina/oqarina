@@ -129,7 +129,7 @@ End Predicates.
 
 Section Lists.
 (* end hide *)
-  Variable T : Set.
+  Variable T : Type.
   Variable P : T -> Prop.
   Hypothesis HP' : forall t : T, {P t} + {~ P t}.
 
