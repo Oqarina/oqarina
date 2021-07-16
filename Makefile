@@ -76,6 +76,8 @@ clean:              ## Clean generated files
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
 	( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
+	make -C extraction clean
+	make -C src/parsers clean
 	-rm -rf src/**/*.vo
 
 distclean:
