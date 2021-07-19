@@ -49,6 +49,21 @@ Proof.
   intros. apply iff_reflect. symmetry. apply identifier_beq_eq.
 Qed.
 
+(** [fq_name] defines a fully qualified nane for component classifiers, e.g. "A::B::C (.impl)" *)
+
+Inductive fq_name :=
+| FQN (path : list identifier) (name : identifier) (impl_name : option identifier).
+
+Lemma fq_name_eqdec  : eq_dec fq_name.
+Proof.
+    unfold eq_dec.
+    repeat decide equality.
+Defined.
+
+Definition empty_fqname : fq_name := FQN nil empty_identifier None.
+
+(** [ps_qname] defines a qualified name for property related construct, e.g.  "foo::bar" *)
+
 Inductive ps_qname :=
 | PSQN (psname : string) (name : string).
 

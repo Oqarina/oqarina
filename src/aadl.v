@@ -76,7 +76,7 @@ Section AADL_Definitions.
   Inductive component :=
   | Component : identifier ->          (* component identifier *)
                 ComponentCategory ->   (* category *)
-                identifier ->          (* classifier *)
+                fq_name ->             (* classifier, e.g. A::B::c.impl *)
                 list feature ->        (* features *)
                 list component ->      (* subcomponents *)
                 list property_association -> (* properties *)
@@ -97,7 +97,7 @@ Section AADL_Definitions.
     .
 
   (** Definition of an empty component *)
-  Definition nil_component := Component empty_identifier (null) empty_identifier nil nil nil nil.
+  Definition nil_component := Component empty_identifier (null) empty_fqname nil nil nil nil.
 
   (** Definition of an invalid feature *)
   Definition Invalid_Feature :=
@@ -117,10 +117,12 @@ End AADL_Definitions.
 (** - Definition of a component *)
 
 Definition A_Component := Component (Id "a_component") (abstract)
-  (Id "foo_classifier") nil nil nil nil.
+  (FQN [Id "pack1" ] (Id "foo_classifier") None) nil nil nil nil.
 
 Definition A_Component_Impl :=
-  Component (Id "another_component_impl") (abstract) (Id "bar_classifier.impl") nil
+  Component (Id "a_component_impl")
+  (abstract)
+  (FQN [Id "pack1" ] (Id "foo_classifier") (Some (Id "impl")))  nil
   [ A_Component ] nil nil.
 
 Definition A_Feature := Feature (Id "a_feature") inF eventPort nil_component.
@@ -147,7 +149,7 @@ Section AADL_Component_Decidability.
   (* begin hide *)
   Hint Resolve connection_eq_dec DirectionType_eq_dec
       identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec
-      property_association_eq_dec
+      property_association_eq_dec fq_name_eqdec
 
       : core.
   (* end hide *)

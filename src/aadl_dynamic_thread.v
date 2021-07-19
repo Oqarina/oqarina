@@ -635,7 +635,7 @@ Definition A_Period := {|
 Definition A_Periodic_Thread := Component
   (Id "a_periodic_thread")
   (thread)
-  (Id "a_periodic_thread_classifier")
+  (FQN [Id "pack"] (Id "a_periodic_thread_classifier") None)
   nil
   nil
   [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
@@ -685,7 +685,7 @@ Definition An_Input_Feature :=
 Definition A_Sporadic_Thread := Component
   (Id "a_sporadic_thread")
   (thread)
-  (Id "a_sporadic_thread_classifier")
+  (FQN [Id "pack"] (Id "a_sporadic_thread_classifier") None)
   [ An_Input_Feature ]
   nil
   [A_Priority_Value ; Sporadic_Dispatch ; A_Period ]
