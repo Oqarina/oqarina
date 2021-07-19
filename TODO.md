@@ -7,6 +7,7 @@
 - [ ] connections requires some thoughts
 - [ ] the lexer is manually written, lexing elements with a space like "virtual bus" could be changed for clarity. E.g. we have "virtual group" but "eventPort"
 - [ ] some elements are optional in the gramamr, for instance {}. We could have them in all cases. Compare p_SystemInstance and p_ComponentInstance. p_SystemInstance forces {}, p_ComponentInstance has them optional.
+- [ ] the instance notation loses the information on the types in case of extensions, see test02 for an illustration
 
 ## Properties
 
@@ -15,7 +16,6 @@
 - [ ] add units to range constraints
 - [ ] inherit?
 - [ ] reference to property constant in proprety type? see aadl_thread_properties
-- [ ] definition and validation of applies to
 
 ## Property Sets
 
