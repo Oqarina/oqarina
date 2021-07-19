@@ -41,7 +41,7 @@ Section AADL_Categories.
   *)
 
   Inductive DirectionType : Type :=
-    inF | outF | inoutF .
+    inF | outF | inoutF | nullDirection.
 
   Scheme Equality for ComponentCategory.
   Scheme Equality for FeatureCategory.
