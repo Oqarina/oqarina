@@ -204,12 +204,13 @@ End Actor_Definition.
 
 (** * Example *)
 
-(** In this examplem we define a dummy actor made of two states, A and B and three actions DoA, DoB and Nothing.
-*)
+(** In this example, we build a producer/consummer system made of two actors, and a diagram. *)
 
 Inductive some_states := dummy.
 Definition some_types := nat.
 Definition a_value : some_types := 42.
+
+(** ** Definition of [producer_Actor] *)
 
 Definition producer_states := some_states.
 Definition producer_inputs := some_types.
@@ -237,6 +238,8 @@ Definition producer_Actor : Actor producer_states producer_inputs := {|
     Time_Update := producer_Time_Update;
 |}.
 
+(** ** Definition of [consumer_Actor] *)
+
 Definition consumer_states := some_states.
 Definition consumer_inputs := nat.
 Definition consumer_outputs := nat.
@@ -263,6 +266,8 @@ Definition consumer_Actor : Actor consumer_states consumer_inputs := {|
     Time_Update := consumer_Time_Update;
 |}.
 
+(** ** Definition of the [prodcons_Diagram ]*)
+
 Definition prod := producer_Actor.
 Definition cons := consumer_Actor.
 
@@ -273,7 +278,8 @@ Compute Get_States (Actor_Diagram_Step prodcons_Diagram (Dis [ 1 ]) 0).
 
 Definition prodcons_Diagram_step0 := Actor_Diagram_Set_Input prodcons_Diagram ([ 1 ]) 0.
 Compute Get_States prodcons_Diagram_step0.
-Definition prodcons_Diagram_step1 := Actor_Diagram_Step prodcons_Diagram_step0 (Dis [ 1 ]) 0.
+Definition prodcons_Diagram_step1 :=
+    Actor_Diagram_Step prodcons_Diagram_step0 (Dis [ 1 ]) 0.
 Compute Get_States prodcons_Diagram_step1.
 Definition prodcons_Diagram_step2 := Actor_Diagram_Reset_Output prodcons_Diagram_step1 0.
 Compute Get_States prodcons_Diagram_step2.
@@ -283,12 +289,9 @@ Definition coin St V (a : Actor_Diagram St V) (i : V) (id : nat) :=
             (fun x : Actor_Diagram St V => Actor_Diagram_Set_Input x ([  ]) id)
         a.
 
-
 Definition coin2 St V (a : Actor_Diagram St V) (i : V) (id : nat) :=
     let micro_step1 := Actor_Diagram_Set_Input a ([  ]) id in
         Actor_Diagram_Step micro_step1 (Dis [ i ]) id.
-
-
 
 Definition prodcons_Diagram_step1bis := coin prodcons_Diagram 42 0.
 Compute Get_States prodcons_Diagram_step1bis.
@@ -298,7 +301,8 @@ Compute Get_States prodcons_Diagram_step1ter.
 
 Definition prodcons_Diagram_step2bis := Propagate_Outputs prodcons_Diagram_step1bis 0.
 Compute Get_States prodcons_Diagram_step2bis.
-Definition prodcons_Diagram_step3bis := Actor_Diagram_Reset_Output prodcons_Diagram_step2bis 0.
+Definition prodcons_Diagram_step3bis :=
+    Actor_Diagram_Reset_Output prodcons_Diagram_step2bis 0.
 Compute Get_States prodcons_Diagram_step3bis.
 
 Print Actor_Diagram_Step.
