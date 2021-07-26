@@ -54,7 +54,7 @@ Import ListNotations. (* from List *)
 Require Import Oqarina.formalisms.actor.
 Require Import Oqarina.core.time.
 Import NaturalTime.
-Require Import Oqarina.property_sets.all.
+Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.coq_utils.utils.
 Require Import Oqarina.formalisms.lts.
 Set Implicit Arguments.

@@ -9,9 +9,8 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
-Require Import Oqarina.properties.all.
-Require Import Oqarina.property_sets.aadl_aadl_project.
-Require Import Oqarina.aadl_categories.
+Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.property_sets.aadl_aadl_project.
 (* end hide *)
 
 (** %\N \texttt{timing\_properties}% as Coq/AADL property_types. *)
@@ -24,14 +23,14 @@ Definition Timing_Properties_PS :=
                    virtual processor); *)
 
     "Deadline" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
-        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor];
+        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor ];
 
     (* Period: inherit Time
        applies to (thread, thread group, process, system, device,
                    virtual processor); *)
 
     "Period" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
-        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor]
+        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor ]
   ].
 
 Lemma Timing_Properties_PS_Valid :

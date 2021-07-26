@@ -11,7 +11,7 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
-Require Import Oqarina.properties.all.
+Require Import Oqarina.AADL.Kernel.all.
 (* end hide *)
 
 Definition AADL_Time : Type := Z.

@@ -22,8 +22,8 @@ Require Import Sumbool.
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
-Require Import Oqarina.aadl_categories.
-Require Import Oqarina.properties.properties.
+Require Import Oqarina.AADL.Kernel.aadl_categories.
+Require Import Oqarina.AADL.Kernel.properties.
 Open Scope list_scope.
 (* end hide *)
 

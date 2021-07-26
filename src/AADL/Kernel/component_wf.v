@@ -10,10 +10,10 @@ Require Import Coq.Logic.Decidable.
 Require Import Coq.Lists.ListDec.
 
 (** Oqarina library *)
-Require Import Oqarina.aadl.
+Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
-Require Import Oqarina.properties.properties.
+Require Import Oqarina.AADL.Kernel.properties.
 (* end hide *)
 
 (**

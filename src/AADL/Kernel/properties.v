@@ -9,7 +9,7 @@ Import ListNotations.
 Require Import Coq.Logic.Decidable.
 
 (** Oqarina library *)
-Require Import Oqarina.aadl_categories.
+Require Import Oqarina.AADL.Kernel.aadl_categories.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)

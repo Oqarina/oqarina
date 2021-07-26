@@ -7,8 +7,8 @@ Import ListNotations.
 
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.properties.properties.
-Require Import Oqarina.properties.typecheck.
+Require Import Oqarina.AADL.Kernel.properties.
+Require Import Oqarina.AADL.Kernel.typecheck.
 
 (* end hide *)
 

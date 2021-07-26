@@ -12,9 +12,18 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 
 ## Organization of the code base
 
-* AADL generic AADL component definition
-    * `aadl_categories.v`, `aadl.v`: definition of a generic AADL component
-    * `aadl_wf.v`; well-formedness rules of a generic AADL component
+### Definition of AADL models:
+
+Directory `AADL` holds the definitions of that capture AADL concepts. It is organized as a collection of "packages":
+
+* AADL generic AADL component definition: `AADL/Kernel`
+    * `aadl_categories.v`, `component.v`: definition of a generic AADL component
+    * `component_wf.v`: well-formedness rules of a generic AADL component
+    * `properties.v`, `typecheck.v`: definition of properties and typing rules
+    * `properties_helper`: helper rountine
+
+* AADL default property sets: `AADL/property_sets`
+    * this directory provides an implementation of AADL default property set. The names match the name of the corresponding AADL property set.
 
 * AADL declarative and instance model
     * `aadl_declatative.v` and `aadl_instance.v`
@@ -28,10 +37,6 @@ This is a work-in-progress, the organization may evolve as we add more elements 
     * For each component category, a file `aadl_dynamic_<category>.v` is defined
 
     Similar to the static semantics, the dynamic semantics requires a partial definition of a component implementation reduced to the components and its direct subcomponents.
-
-* `properties`: this directory provides a definition of constructs to support AADL property mechanisms.
-
-* `property sets`: this directory provides an implementation of AADL default property set. The names match the name of the corresponding AADL property set.
 
 * Helper packages
     * `aadl_feature_helper`: helper function to manipulate features

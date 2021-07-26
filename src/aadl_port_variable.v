@@ -14,9 +14,8 @@ Require Import Oqarina.coq_utils.utils.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
 Require Import Oqarina.core.queue.
-Require Import Oqarina.property_sets.all.
-Require Import Oqarina.aadl_categories.
-Require Import Oqarina.aadl.
+Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.aadl_feature_helper.
 
 Local Open Scope Z_scope.

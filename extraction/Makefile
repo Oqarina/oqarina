@@ -3,4 +3,4 @@ build:
 
 clean:
 	ocamlbuild -clean
-	rm generated-src/*.ml generated-src/*.mli
+	-rm generated-src/*.ml generated-src/*.mli

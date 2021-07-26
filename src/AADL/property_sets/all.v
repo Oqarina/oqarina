@@ -5,12 +5,12 @@ Import ListNotations.
 Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
-Require Import Oqarina.properties.all.
+Require Import Oqarina.AADL.Kernel.all.
 
-Require Export Oqarina.property_sets.aadl_aadl_project.
-Require Export Oqarina.property_sets.aadl_communication_properties.
-Require Export Oqarina.property_sets.aadl_thread_properties.
-Require Export Oqarina.property_sets.aadl_timing_properties.
+Require Export Oqarina.AADL.property_sets.aadl_aadl_project.
+Require Export Oqarina.AADL.property_sets.aadl_communication_properties.
+Require Export Oqarina.AADL.property_sets.aadl_thread_properties.
+Require Export Oqarina.AADL.property_sets.aadl_timing_properties.
 (* end hide *)
 
 (** [AADL_Predeclared_Property_Sets] lists all predeclared property sets. *)

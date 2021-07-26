@@ -8,9 +8,8 @@ Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.properties.all.
-Require Import Oqarina.property_sets.aadl_aadl_project.
-Require Import Oqarina.aadl_categories.
+Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.property_sets.aadl_aadl_project.
 (* end hide *)
 
 (** %\N \texttt{thread\_properties}% as Coq/AADL property_types. *)

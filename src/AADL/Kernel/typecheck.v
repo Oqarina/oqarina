@@ -8,7 +8,7 @@ Require Import Coq.Setoids.Setoid.
 Require Import Coq.Classes.Morphisms.
 
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.properties.properties.
+Require Import Oqarina.AADL.Kernel.properties.
 
 (*! Type Checking *)
 

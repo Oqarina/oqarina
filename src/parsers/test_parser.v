@@ -5,8 +5,7 @@ Require Import Oqarina.parsers.aadl_frontend.
 Open Scope string_scope.
 
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.aadl_categories.
-Require Import Oqarina.aadl.
+Require Import Oqarina.AADL.Kernel.all.
 
 Definition example := "system s_impl_Instance : test_1::s.impl {
 	system test_1::sc sc1 : test_1::s.impl:sc1 {}
@@ -45,15 +44,15 @@ end.
 Definition Map_FeatureCategory (cat : AST.FeatureCategory_ast) :=
   match cat with
   | AST.FEATURE_CATEGORY (Id "dataPort") => dataPort
-  | AST.FEATURE_CATEGORY (Id  "eventPort") => eventPort
-  | AST.FEATURE_CATEGORY (Id  "eventDataPort") => eventDataPort
-  | AST.FEATURE_CATEGORY (Id  "parameter") => parameter
+  | AST.FEATURE_CATEGORY (Id "eventPort") => eventPort
+  | AST.FEATURE_CATEGORY (Id "eventDataPort") => eventDataPort
+  | AST.FEATURE_CATEGORY (Id "parameter") => parameter
   | AST.FEATURE_CATEGORY (Id "busAccess") => busAccess
-  | AST.FEATURE_CATEGORY (Id  "dataAccess") => dataAccess
-  | AST.FEATURE_CATEGORY (Id  "subprogramAccess") => subprogramAccess
-  | AST.FEATURE_CATEGORY (Id  "subprogramGroupAccess") => subprogramGroupAccess
+  | AST.FEATURE_CATEGORY (Id "dataAccess") => dataAccess
+  | AST.FEATURE_CATEGORY (Id "subprogramAccess") => subprogramAccess
+  | AST.FEATURE_CATEGORY (Id "subprogramGroupAccess") => subprogramGroupAccess
   | AST.FEATURE_CATEGORY (Id "featureGroup") => featureGroup
-  | AST.FEATURE_CATEGORY (Id  "abstractFeature") => abstractFeature
+  | AST.FEATURE_CATEGORY (Id "abstractFeature") => abstractFeature
   | _ =>invalid
   end.
 

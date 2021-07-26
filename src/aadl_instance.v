@@ -13,8 +13,7 @@ Require Import Coq.Lists.ListDec.
 Require Import Coq.Bool.Sumbool.
 
 (** Oqarina library *)
-Require Import Oqarina.aadl.
-Require Import Oqarina.aadl_wf.
+Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
