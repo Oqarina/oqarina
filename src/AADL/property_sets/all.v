@@ -7,10 +7,10 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.all.
 
-Require Export Oqarina.AADL.property_sets.aadl_aadl_project.
-Require Export Oqarina.AADL.property_sets.aadl_communication_properties.
-Require Export Oqarina.AADL.property_sets.aadl_thread_properties.
-Require Export Oqarina.AADL.property_sets.aadl_timing_properties.
+Require Export Oqarina.AADL.property_sets.aadl_project.
+Require Export Oqarina.AADL.property_sets.communication_properties.
+Require Export Oqarina.AADL.property_sets.thread_properties.
+Require Export Oqarina.AADL.property_sets.timing_properties.
 (* end hide *)
 
 (** [AADL_Predeclared_Property_Sets] lists all predeclared property sets. *)
@@ -23,4 +23,4 @@ Lemma Timing_Properties_PS_Valid :
     typecheck_property_sets AADL_Predeclared_Property_Sets = true.
   Proof.
     trivial.
-  Admitted. (* See not on Communication_Properties_PS *)
+  Admitted. (* See note on Communication_Properties_PS *)

@@ -11,7 +11,7 @@ src/core/queue.v
 src/formalisms/lts.v
 src/formalisms/actor.v
 
-src/AADL/Kernel/aadl_categories.v
+src/AADL/Kernel/categories.v
 src/AADL/Kernel/properties.v
 src/AADL/Kernel/component.v
 src/AADL/Kernel/component_wf.v
@@ -20,10 +20,10 @@ src/AADL/Kernel/properties_helper.v
 src/AADL/Kernel/typing_test.v
 src/AADL/Kernel/all.v
 
-src/AADL/property_sets/aadl_aadl_project.v
-src/AADL/property_sets/aadl_timing_properties.v
-src/AADL/property_sets/aadl_thread_properties.v
-src/AADL/property_sets/aadl_communication_properties.v
+src/AADL/property_sets/aadl_project.v
+src/AADL/property_sets/timing_properties.v
+src/AADL/property_sets/thread_properties.v
+src/AADL/property_sets/communication_properties.v
 src/AADL/property_sets/all.v
 
 src/aadl_feature_helper.v

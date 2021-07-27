@@ -17,7 +17,7 @@ This is a work-in-progress, the organization may evolve as we add more elements 
 Directory `AADL` holds the definitions of that capture AADL concepts. It is organized as a collection of "packages":
 
 * AADL generic AADL component definition: `AADL/Kernel`
-    * `aadl_categories.v`, `component.v`: definition of a generic AADL component
+    * `categories.v`, `component.v`: definition of a generic AADL component
     * `component_wf.v`: well-formedness rules of a generic AADL component
     * `properties.v`, `typecheck.v`: definition of properties and typing rules
     * `properties_helper`: helper rountine

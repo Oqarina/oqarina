@@ -10,7 +10,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.core.time.
 Require Import Oqarina.AADL.Kernel.all.
-Require Import Oqarina.AADL.property_sets.aadl_aadl_project.
+Require Import Oqarina.AADL.property_sets.aadl_project.
 (* end hide *)
 
 (** %\N \texttt{timing\_properties}% as Coq/AADL property_types. *)
