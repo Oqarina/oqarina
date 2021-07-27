@@ -12,7 +12,7 @@ Import ListNotations. (* from List *)
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.AADL.Kernel.all.
-Require Import Oqarina.aadl_declarative.
+Require Import Oqarina.AADL.declarative.all.
 (* end hide *)
 
 (** %

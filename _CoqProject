@@ -27,8 +27,12 @@ src/AADL/property_sets/communication_properties.v
 src/AADL/property_sets/all.v
 
 src/aadl_feature_helper.v
-src/aadl_declarative.v
-src/aadl_instance.v
+
+src/AADL/declarative/declarative_model.v
+src/AADL/declarative/all.v
+
+src/AADL/instance/instance_model.v
+src/AADL/instance/all.v
 
 src/aadl_port_variable.v
 

@@ -20,7 +20,7 @@ Require Import Oqarina.core.queue.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 
-Require Import Oqarina.aadl_declarative.
+Require Import Oqarina.AADL.declarative.all.
 
 Require Import Oqarina.aadl_port_variable.
 Require Import Oqarina.aadl_feature_helper.
