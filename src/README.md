@@ -32,9 +32,11 @@ It is organized as a collection of "packages". Following Coq conventions, each d
 * AADL instance model: `AADL/instance`
 
 * AADL Textual Instance Notation front-end: `AADL/atin_frontend`
-    OSATE can export instance model into a textual notation. This package is an attempt to parse these notations. Unfortunaetly, this is a dead end: the instance notation is not self-contained and miss critical information like corresponding instances for feature classifiers.
+    OSATE can export instance model into a textual notation. This package is an attempt to parse this notation. Unfortunately, this is a dead end: the instance notation is not self-contained and miss critical information like corresponding instances for feature classifiers. In addition, parsing properties is challenging with a LR(1) parser.
 
-    This directory is kept as a rerence on how to use Menhir to build a parser.
+    This directory is kept as a reference on how to use Menhir to build a parser.
+
+## TO BE REORGANIZED
 
 * AADL static semantics
     * For each component category, a file `aadl_static_<category>.v` is defined.
