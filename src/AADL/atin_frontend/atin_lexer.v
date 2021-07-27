@@ -10,7 +10,7 @@ Require Import BinNat Ascii String.
 Require Import List.
 Import ListNotations. (* from List *)
 
-Require Import Oqarina.parsers.aadl_parser.
+Require Import Oqarina.AADL.atin_frontend.atin_parser.
 Import MenhirLibParser.Inter.
 
 Open Scope char_scope.

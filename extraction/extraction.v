@@ -24,7 +24,7 @@ Set Warnings "-extraction-opaque-accessed,-extraction".
 Cd "extraction/generated-src".
 
 (* List of modules we want to generate *)
-Require Import Oqarina.parsers.aadl_frontend.
+Require Import Oqarina.AADL.atin_frontend.atin_frontend.
 
 (** * Default tool commands *)
 

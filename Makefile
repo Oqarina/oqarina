@@ -34,7 +34,7 @@ install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
 
 generate_parser:
-	make -C src/parsers
+	make -C src/AADL/atin_frontend
 
 compile:            ## Compile Coq files
 	make -f coq_makefile
@@ -77,7 +77,7 @@ clean:              ## Clean generated files
 	( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
 	make -C extraction clean
-	make -C src/parsers clean
+	make -C src/AADL/atin_frontend clean
 	-rm -rf src/**/*.vo
 
 distclean:

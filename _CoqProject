@@ -18,7 +18,7 @@ src/AADL/Kernel/component_wf.v
 src/AADL/Kernel/typecheck.v
 src/AADL/Kernel/properties_helper.v
 src/AADL/Kernel/typing_test.v
-src/AADL/Kernel/features_helper.v 
+src/AADL/Kernel/features_helper.v
 src/AADL/Kernel/all.v
 
 src/AADL/property_sets/aadl_project.v
@@ -41,9 +41,9 @@ src/threadMonad.v
 
 src/aadl_dynamic_system.v
 
-src/parsers/aadl_parser.v
-src/parsers/aadl_lexer.v
-src/parsers/aadl_frontend.v
-src/parsers/test_parser.v
+src/AADL/atin_frontend/atin_parser.v
+src/AADL/atin_frontend/atin_lexer.v
+src/AADL/atin_frontend/atin_frontend.v
+src/AADL/atin_frontend/test_parser.v
 
 extraction/extraction.v

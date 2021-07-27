@@ -1,8 +1,8 @@
 MENHIR            := menhir
 MENHIRFLAGS       := --coq --coq-no-complete
 
-all: aadl_parser.vy
+all: atin_parser.vy
 	$(MENHIR) $(MENHIRFLAGS) $<
 
 clean:
-	-rm -f aadl_parser.v
+	-rm -f atin_parser.v

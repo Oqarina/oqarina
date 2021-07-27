@@ -1,7 +1,9 @@
 Require Import List String.
-Require Import Oqarina.parsers.aadl_lexer.
-Require Import Oqarina.parsers.aadl_parser.
-Require Import Oqarina.parsers.aadl_frontend.
+
+Require Import Oqarina.AADL.atin_frontend.atin_lexer.
+Require Import Oqarina.AADL.atin_frontend.atin_parser.
+Require Import Oqarina.AADL.atin_frontend.atin_frontend.
+
 Open Scope string_scope.
 
 Require Import Oqarina.core.identifiers.
