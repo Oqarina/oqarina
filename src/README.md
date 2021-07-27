@@ -2,19 +2,21 @@
 
 This file provides a high-level overview of the Oqarina source code.
 
-This is a work-in-progress, the organization may evolve as we add more elements to the formalization.
-
-## Library elements
-
-* `coq_utils`: additonal elements not found in the Coq standard library;
-* `core`: reusable libraries for basic types, e.g. identifiers, queues, etc.;
-* `formalisms`: abstract types for expressing formalisms such as Labelled Transition Systems, timed automata. etc.
+_Note: this is a work-in-progress, the organization may evolve as we add more elements to the formalization._
 
 ## Organization of the code base
 
+### Library elements
+
+* `coq_utils`: additonal elements not found in the Coq standard library;
+* `core`: reusable libraries for basic types, e.g. identifiers, queues, etc.;
+* `formalisms`: abstract types for expressing formalisms such as Labelled Transition Systems, actor/director model, etc.
+
 ### Definition of AADL models:
 
-Directory `AADL` holds the definitions of that capture AADL concepts. It is organized as a collection of "packages":
+The directory `AADL` holds the definitions that capture core AADL concepts.
+
+It is organized as a collection of "packages". Following Coq conventions, each directory has a `all` module that exports all definitions from that directory.
 
 * AADL generic AADL component definition: `AADL/Kernel`
     * `categories.v`, `component.v`: definition of a generic AADL component
