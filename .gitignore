@@ -10,6 +10,7 @@ coq_makefile.conf
 .lia.cache
 extraction/_build
 extraction/generated-src
+src/AADL/atin_frontend/atin_parser.v
 
 # LaTeX temporary files
 latex-src/coqdoc.sty
