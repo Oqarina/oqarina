@@ -9,7 +9,9 @@ Import ListNotations. (* from List *)
 Require Import Coq.Bool.Bool.
 
 (** Oqarina library *)
-Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.Kernel.categories.
+Require Import Oqarina.AADL.Kernel.component.
+
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 

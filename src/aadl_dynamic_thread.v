@@ -23,7 +23,6 @@ Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.AADL.declarative.all.
 
 Require Import Oqarina.aadl_port_variable.
-Require Import Oqarina.aadl_feature_helper.
 
 Require Import Oqarina.cpdttactics.
 (* https://jozefg.bitbucket.io/posts/2014-07-09-dissecting-crush.html *)

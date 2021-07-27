@@ -20,13 +20,14 @@ Directory `AADL` holds the definitions of that capture AADL concepts. It is orga
     * `categories.v`, `component.v`: definition of a generic AADL component
     * `component_wf.v`: well-formedness rules of a generic AADL component
     * `properties.v`, `typecheck.v`: definition of properties and typing rules
-    * `properties_helper`: helper rountine
+    * `features_helper`, `properties_helper`: helper routines to access features and properties
 
 * AADL default property sets: `AADL/property_sets`
     * this directory provides an implementation of AADL default property set. The names match the name of the corresponding AADL property set.
 
-* AADL declarative and instance model
-    * `aadl_declatative.v` and `aadl_instance.v`
+* AADL declarative model: `AADL/declarative`
+
+* AADL instance model: `AADL/instance`
 
 * AADL static semantics
     * For each component category, a file `aadl_static_<category>.v` is defined.
@@ -37,7 +38,3 @@ Directory `AADL` holds the definitions of that capture AADL concepts. It is orga
     * For each component category, a file `aadl_dynamic_<category>.v` is defined
 
     Similar to the static semantics, the dynamic semantics requires a partial definition of a component implementation reduced to the components and its direct subcomponents.
-
-* Helper packages
-    * `aadl_feature_helper`: helper function to manipulate features
-

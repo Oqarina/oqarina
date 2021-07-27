@@ -16,7 +16,6 @@ Require Import Oqarina.core.time.
 Require Import Oqarina.core.queue.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
-Require Import Oqarina.aadl_feature_helper.
 
 Local Open Scope Z_scope.
 (* end hide *)
