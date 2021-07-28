@@ -21,6 +21,7 @@ help:               ## Show this help
 
 
 install_deps:       ## Install dependencies
+	opam repo add coq-released
 	opam install coq-list-string menhir coq-menhirlib coq-io-system
 
 ##
@@ -51,6 +52,7 @@ html:               ## Generate HTML
 	cp $(EXTRA_DIR)/resources/* html
 
 generate_latex:     ## Generate LaTeX files from Coq
+	-mkdir latex-src/generated-content
 	coqdoc \
 		$(COQDOCFLAGS) --latex  \
 		-d latex-src/generated-content -s --body-only -g --interpolate `coqdep -sort $(COQMF_VFILES)`
