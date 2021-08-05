@@ -84,7 +84,7 @@ Definition Well_Formed_Abstract_Component_Implementation (c: component) :=
         system ; abstract 
       ].
 
-Lemma Well_Formed_Abstract_Component_Implementation_dec (c : component) :
+Lemma Well_Formed_Abstract_Component_Implementation_dec :
   forall c:component,
     {Well_Formed_Abstract_Component_Implementation c} +
     {~ Well_Formed_Abstract_Component_Implementation c}.
@@ -94,4 +94,35 @@ Proof.
   apply Well_Formed_Component_Implementation_dec.
 Qed.
 
+(**************************************************)
+(* Page 65 *)
 
+Definition Well_Formed_Data_Component_Type (c: component) := 
+  Well_Formed_Component_Type c
+    [ featureGroup ; subprogramAccess ; subprogramGroupAccess ; 
+      dataAccess ; abstractFeature 
+    ].
+
+Lemma Well_Formed_Data_Component_Type_dec :
+  forall c:component,
+    {Well_Formed_Data_Component_Type c} +
+    {~ Well_Formed_Data_Component_Type c}.
+Proof.
+  intros.
+  unfold Well_Formed_Data_Component_Type.
+  apply Well_Formed_Component_Type_dec.
+Qed.
+
+Definition Well_Formed_Data_Component_Implementation (c:component) :=
+  Well_Formed_Component_Implementation c 
+    [ data ; subprogram ; abstract ].
+
+Lemma Well_Formed_Data_Component_Implementation_dec :
+  forall c:component,
+    {Well_Formed_Data_Component_Implementation c} +
+    {~ Well_Formed_Data_Component_Implementation c}.
+Proof.
+  intros.
+  unfold Well_Formed_Data_Component_Implementation.
+  apply Well_Formed_Component_Implementation_dec.
+Qed.
