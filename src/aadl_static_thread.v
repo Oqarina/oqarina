@@ -54,3 +54,75 @@ Proof.
   unfold Well_Formed_Thead_Component_Implementation.
   apply Well_Formed_Component_Implementation_dec.
 Qed.
+
+(********************************************************************)
+(* TODO: Move the below to an appropriate new file *)
+
+(* page 54 *)
+Definition Well_Formed_Abstract_Component_Type (c: component) := 
+  Well_Formed_Component_Type c
+      [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
+        subprogramAccess ; subprogramGroupAccess ; busAccess ;
+        (* virtualBusAccess *)
+        abstractFeature
+      ].
+
+Lemma Well_Formed_Abstract_Component_Type_dec :
+  forall c:component,
+    {Well_Formed_Abstract_Component_Type c} +
+    {~ Well_Formed_Abstract_Component_Type c}.
+Proof.
+  intros.
+  unfold Well_Formed_Abstract_Component_Type.
+  apply Well_Formed_Component_Type_dec.
+Qed.
+
+Definition Well_Formed_Abstract_Component_Implementation (c: component) := 
+  Well_Formed_Component_Implementation c
+      [ data ; subprogram ; subprogramGroup ; thread ; threadGroup ; process ;
+        processor ; virtualProcessor ; memory ; bus ; virtualBus ; device ;
+        system ; abstract 
+      ].
+
+Lemma Well_Formed_Abstract_Component_Implementation_dec :
+  forall c:component,
+    {Well_Formed_Abstract_Component_Implementation c} +
+    {~ Well_Formed_Abstract_Component_Implementation c}.
+Proof. 
+  intros.
+  unfold Well_Formed_Abstract_Component_Implementation.
+  apply Well_Formed_Component_Implementation_dec.
+Qed.
+
+(**************************************************)
+(* Page 65 *)
+
+Definition Well_Formed_Data_Component_Type (c: component) := 
+  Well_Formed_Component_Type c
+    [ featureGroup ; subprogramAccess ; subprogramGroupAccess ; 
+      dataAccess ; abstractFeature 
+    ].
+
+Lemma Well_Formed_Data_Component_Type_dec :
+  forall c:component,
+    {Well_Formed_Data_Component_Type c} +
+    {~ Well_Formed_Data_Component_Type c}.
+Proof.
+  intros.
+  unfold Well_Formed_Data_Component_Type.
+  apply Well_Formed_Component_Type_dec.
+Qed.
+
+Definition Well_Formed_Data_Component_Implementation (c:component) :=
+  Well_Formed_Component_Implementation c 
+    [ data ; subprogram ; abstract ].
+
+Lemma Well_Formed_Data_Component_Implementation_dec :
+  forall c:component,
+    {Well_Formed_Data_Component_Implementation c} +
+    {~ Well_Formed_Data_Component_Implementation c}.
+Proof.
+  intros.
+  unfold Well_Formed_Data_Component_Implementation.
+  apply Well_Formed_Component_Implementation_dec.
+Qed.
