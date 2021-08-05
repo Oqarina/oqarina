@@ -46,4 +46,6 @@ src/AADL/atin_frontend/atin_lexer.v
 src/AADL/atin_frontend/atin_frontend.v
 src/AADL/atin_frontend/test_parser.v
 
+src/AADL/json_frontend/json_frontend.v
+
 extraction/extraction.v
