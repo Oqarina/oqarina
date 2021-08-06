@@ -24,7 +24,11 @@ Set Warnings "-extraction-opaque-accessed,-extraction".
 Cd "extraction/generated-src".
 
 (* List of modules we want to generate *)
-Require Import Oqarina.AADL.json_frontend.json_frontend.
+From Oqarina Require Import
+  coq_utils.utils
+  AADL.Kernel.all
+  AADL.json_frontend.json_frontend
+  AADL.instance.all.
 
 (** * Default tool commands *)
 
@@ -53,6 +57,12 @@ Definition version_cmd := {|
 
 (** * - [parse_aadl_json_file] : parse an AADL JSON file *)
 
+Definition validate_AADL_root (c : list component) : C.t System.effect unit :=
+  let AADL_Root := hd nil_component c in
+  let AADL_Root_Valid := Oracle (Is_AADL_Instance_dec AADL_Root) in
+  if AADL_Root_Valid then System.log (LString.s "well-formed success")
+  else System.log (LString.s "well-formed failure").
+
 Definition parse_aadl_json_file (argv : list LString.t) : C.t System.effect unit :=
   match argv with
   | [_; _; file_name] =>
@@ -61,8 +71,9 @@ Definition parse_aadl_json_file (argv : list LString.t) : C.t System.effect unit
     | None => System.log (LString.s "Cannot read file")
     | Some content => let AADL_Root := Map_JSON_String_To_Component (Conversion.to_string content) in
       match AADL_Root with
-      | [] => System.log (LString.s "parse error")
-      | _    => System.log (LString.s "parsing success")
+      | [ ] => System.log (LString.s "parse error")
+      | _    => do! System.log (LString.s "parsing success") in
+                validate_AADL_root AADL_Root
       end
     end
   | _ => System.log (LString.s "Expected one parameter.")
