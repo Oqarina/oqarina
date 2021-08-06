@@ -29,7 +29,7 @@ Section AADL_Categories.
 
   Inductive FeatureCategory : Type :=
     dataPort | eventPort | eventDataPort | parameter |
-	  busAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
+	  busAccess | virtualBusAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
 	  featureGroup | abstractFeature | invalid.
 
   (** ** Feature Directions
