@@ -7,6 +7,7 @@ src/coq_utils/utils.v
 src/core/identifiers.v
 src/core/time.v
 src/core/queue.v
+src/core/all.v
 
 src/formalisms/lts.v
 src/formalisms/actor.v

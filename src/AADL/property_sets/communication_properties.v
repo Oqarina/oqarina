@@ -8,7 +8,7 @@ Require Import Coq.Lists.ListDec.
 Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
-Require Import Oqarina.core.identifiers.
+Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.aadl_project.

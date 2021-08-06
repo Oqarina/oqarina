@@ -10,10 +10,7 @@ Require Import Coq.ZArith.BinInt.
 
 (** Oqarina library *)
 Require Import Oqarina.coq_utils.utils.
-
-Require Import Oqarina.core.identifiers.
-Require Import Oqarina.core.time.
-Require Import Oqarina.core.queue.
+Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 

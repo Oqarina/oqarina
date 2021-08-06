@@ -7,8 +7,7 @@ Import ListNotations. (* from List *)
 
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.aadl_dynamic_thread.
-Require Import Oqarina.core.identifiers.
-Require Import Oqarina.core.time.
+Require Import Oqarina.core.all.
 
 Require Import Coq.ZArith.ZArith_base.
 
