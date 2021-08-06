@@ -22,7 +22,7 @@ help:               ## Show this help
 
 install_deps:       ## Install dependencies
 	opam repo add coq-released
-	opam install coq-list-string menhir coq-menhirlib coq-io-system
+	opam install coq-list-string menhir coq-menhirlib coq-io-system coq-json coq-ext-lib
 
 ##
 
