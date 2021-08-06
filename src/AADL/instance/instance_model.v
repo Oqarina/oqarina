@@ -31,9 +31,7 @@ Section AADL_Instance.
 (* end hide *)
 
     Definition Is_AADL_Instance (c : component) : Prop :=
-        Well_Formed_Component_Hierarchy c /\
-        c->subcomps = nil /\
-        c->connections = nil.
+        Well_Formed_Component_Hierarchy c.
 
     Lemma Is_AADL_Instance_dec :
         forall c : component, { Is_AADL_Instance c } +
