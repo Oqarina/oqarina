@@ -31,6 +31,9 @@ It is organized as a collection of "packages". Following Coq conventions, each d
 
 * AADL instance model: `AADL/instance`
 
+* JSON front-end: `AADL/json_frontend`
+    Ocarina can export instance model as XML files, then converted to JSON (see AADlib for the process). This package provides a translator fron JSON format to AADL instance files.
+
 * AADL Textual Instance Notation front-end: `AADL/atin_frontend`
     OSATE can export instance model into a textual notation. This package is an attempt to parse this notation. Unfortunately, this is a dead end: the instance notation is not self-contained and miss critical information like corresponding instances for feature classifiers. In addition, parsing properties is challenging with a LR(1) parser.
 

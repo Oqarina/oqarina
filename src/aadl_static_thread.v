@@ -10,7 +10,7 @@ Require Import List.
 Import ListNotations. (* from List *)
 
 (** Oqarina library *)
-Require Import Oqarina.core.identifiers.
+Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.declarative.all.
 (* end hide *)
@@ -64,7 +64,7 @@ Qed.
 (* TODO: Move the below to an appropriate new file *)
 
 (* page 54 *)
-Definition Well_Formed_Abstract_Component_Type (c: component) := 
+Definition Well_Formed_Abstract_Component_Type (c: component) :=
   Well_Formed_Component_Type c
       [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
         subprogramAccess ; subprogramGroupAccess ; busAccess ;
@@ -82,18 +82,18 @@ Proof.
   apply Well_Formed_Component_Type_dec.
 Qed.
 
-Definition Well_Formed_Abstract_Component_Implementation (c: component) := 
+Definition Well_Formed_Abstract_Component_Implementation (c: component) :=
   Well_Formed_Component_Implementation c
       [ data ; subprogram ; subprogramGroup ; thread ; threadGroup ; process ;
         processor ; virtualProcessor ; memory ; bus ; virtualBus ; device ;
-        system ; abstract 
+        system ; abstract
       ].
 
 Lemma Well_Formed_Abstract_Component_Implementation_dec :
   forall c:component,
     {Well_Formed_Abstract_Component_Implementation c} +
     {~ Well_Formed_Abstract_Component_Implementation c}.
-Proof. 
+Proof.
   intros.
   unfold Well_Formed_Abstract_Component_Implementation.
   apply Well_Formed_Component_Implementation_dec.
@@ -102,10 +102,10 @@ Qed.
 (**************************************************)
 (* Page 65 *)
 
-Definition Well_Formed_Data_Component_Type (c: component) := 
+Definition Well_Formed_Data_Component_Type (c: component) :=
   Well_Formed_Component_Type c
-    [ featureGroup ; subprogramAccess ; subprogramGroupAccess ; 
-      dataAccess ; abstractFeature 
+    [ featureGroup ; subprogramAccess ; subprogramGroupAccess ;
+      dataAccess ; abstractFeature
     ].
 
 Lemma Well_Formed_Data_Component_Type_dec :
@@ -119,7 +119,7 @@ Proof.
 Qed.
 
 Definition Well_Formed_Data_Component_Implementation (c:component) :=
-  Well_Formed_Component_Implementation c 
+  Well_Formed_Component_Implementation c
     [ data ; subprogram ; abstract ].
 
 Lemma Well_Formed_Data_Component_Implementation_dec :

@@ -7,6 +7,7 @@ src/coq_utils/utils.v
 src/core/identifiers.v
 src/core/time.v
 src/core/queue.v
+src/core/all.v
 
 src/formalisms/lts.v
 src/formalisms/actor.v
@@ -45,5 +46,7 @@ src/AADL/atin_frontend/atin_parser.v
 src/AADL/atin_frontend/atin_lexer.v
 src/AADL/atin_frontend/atin_frontend.v
 src/AADL/atin_frontend/test_parser.v
+
+src/AADL/json_frontend/json_frontend.v
 
 extraction/extraction.v

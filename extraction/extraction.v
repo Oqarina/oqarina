@@ -24,7 +24,7 @@ Set Warnings "-extraction-opaque-accessed,-extraction".
 Cd "extraction/generated-src".
 
 (* List of modules we want to generate *)
-Require Import Oqarina.AADL.atin_frontend.atin_frontend.
+Require Import Oqarina.AADL.json_frontend.json_frontend.
 
 (** * Default tool commands *)
 
@@ -51,17 +51,17 @@ Definition version_cmd := {|
   cmd := show_version ;
 |}.
 
-(** * - [parse_aadl_instance_file] : parse an AADL instance file *)
+(** * - [parse_aadl_json_file] : parse an AADL JSON file *)
 
-Definition parse_aadl_instance_file (argv : list LString.t) : C.t System.effect unit :=
+Definition parse_aadl_json_file (argv : list LString.t) : C.t System.effect unit :=
   match argv with
   | [_; _; file_name] =>
     let! content := System.read_file file_name in
     match content with
     | None => System.log (LString.s "Cannot read file")
-    | Some content => let foo := string2aadl (Conversion.to_string content) in
-      match foo with
-      | None => System.log (LString.s "parse error")
+    | Some content => let AADL_Root := Map_JSON_String_To_Component (Conversion.to_string content) in
+      match AADL_Root with
+      | [] => System.log (LString.s "parse error")
       | _    => System.log (LString.s "parsing success")
       end
     end
@@ -70,8 +70,8 @@ Definition parse_aadl_instance_file (argv : list LString.t) : C.t System.effect 
 
 Definition parse_cmd := {|
   flag := "--parse" ;
-  help_string := "parse file" ;
-  cmd := parse_aadl_instance_file ;
+  help_string := "parse JSON file" ;
+  cmd := parse_aadl_json_file ;
 |}.
 
 (** - [show_help] display help information *)

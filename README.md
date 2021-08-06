@@ -38,7 +38,7 @@ or
 
 - then, run
 
-  ```./extraction/main.native --parse testsuite/test01.instance```
+  ```./extraction/main.native --parse testsuite/car.impl.json```
 
 ## Suggested reading
 

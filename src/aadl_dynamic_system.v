@@ -52,7 +52,7 @@ Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
 
 Require Import Oqarina.formalisms.actor.
-Require Import Oqarina.core.time.
+Require Import Oqarina.core.all.
 Import NaturalTime.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.coq_utils.utils.
