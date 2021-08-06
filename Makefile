@@ -21,7 +21,7 @@ help:               ## Show this help
 
 
 install_deps:       ## Install dependencies
-	opam repo add coq-released
+	opam repo add coq-released https://coq.inria.fr/opam/released
 	opam install coq-list-string menhir coq-menhirlib coq-io-system coq-json coq-ext-lib
 
 ##
