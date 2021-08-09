@@ -19,17 +19,20 @@ all: help
 help:               ## Show this help
 	    @sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
-
-install_deps:       ## Install dependencies
+install_deps:       ## Install dependencies (no extraction)
 	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
 	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
-	opam install -y coq-list-string menhir coq-menhirlib coq-io coq-ext-lib coq-json coq-io-system
+	opam install -y coq-ext-lib menhir coq-menhirlib coq-json
+
+install_deps_bin:   ## Install dependencies (extraction)
+	$(MAKE) install_deps
+	opam install -y coq-io-system
 
 ##
 
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
-	make generate_parser
+	$(MAKE) generate_parser
 	mkdir -p extraction/generated-src
 
 install:            ## Install Oqarina as a stand alone Coq library
@@ -74,14 +77,11 @@ world:              ## All of the above
 build_docker:	    ## Build docker image for testing
 	docker build -t safir/coq .
 
-run_docker:
-	docker run -ti  -v `pwd`:/work  safir/coq make install_deps clean distclean build_makefile compile
-
-run_docker2:
+test_build_docker:  ## Test build using docker
 	$(MAKE) clean distclean
-	docker run -ti  -v `pwd`:/work safir/coq make dune_build
+	docker run -ti  -v `pwd`:/work safir/coq make install_deps generate_parser dune_build
 
-dune_build:        ## Build using dune
+dune_build:         ## Build using dune
 	dune build
 
 ##

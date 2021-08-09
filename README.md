@@ -4,7 +4,7 @@ Oqarina provides elements of a formalization of AADLv2. It aligns with AADLv2.3.
 
 ## Directory structure
 
-* `extra` : additional material for producing HTML from coq
+* `extra` : additional material for producing HTML from Coq
 * `extraction` : wrapper to extract code and compile a binary
 * `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources for AADL mechanization
@@ -17,28 +17,36 @@ Oqarina has been tested using Coq version 8.13.1 and either VSCoq extension for 
 
 The following packages should be installed separately using opam:
 
-* `https://github.com/clarus/coq-list-string`: some string manipulation functions
 * `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
 * `http://coq.io/`: additional elements to read from files, helper for code extractions
+* `https://github.com/liyishuai/coq-json`: JSON manipulation
 
-Use `make install_deps` to install these packages.
+Use `make install_deps` to install them.
 
 ## Usage
 
 You may either
-- just run from a makefile, type `make` for available targets or
+- just run from a makefile, type `make` for available targets
+
 - play with the Coq files from VSCode. In this case, make sure the Coq directory is the only one in your workspace. Then from the terminal, run
 
     ```make build_makefile compile ```
 
-or
 - extract code, e.g.
 
   ```make build_makefile compile build_bin```
 
-- then, run
+  then, run
 
   ```./extraction/main.native --parse testsuite/car.impl.json```
+
+- build using Dune, in this case no extraction is performed
+
+  ```make build_dune```
+
+- build using provided docker container, no extraction
+
+  ```make test_build_docker```
 
 ## Suggested reading
 
