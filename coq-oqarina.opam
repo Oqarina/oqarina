@@ -1,0 +1,30 @@
+opam-version: "2.0"
+maintainer: "jhugues@andrew.cmu.edu"
+version: "dev"
+
+homepage: ""
+dev-repo: ""
+bug-reports: ""
+license: "BSD"
+
+synopsis: "AADL mechanization in Coq"
+description: """
+Oqarina provides a collection of libraries to manipulate AADL models as Coq types."""
+
+build: ["dune" "build" "-p" name "-j" jobs]
+depends: [
+  "dune" {>= "2.5"}
+  "coq" {(>= "8.13" & < "8.14~") | (= "dev")}
+  "coq-ext-lib" {(= "dev")}
+  "coq-io" {(>= "4.0.0")}
+  "coq-io-system" {(>= "2.4.1")}
+  "coq-json" {(= "dev")}
+  "coq-menhirlib" {(= "dev")}
+  "menhir" {(= "dev")}
+]
+
+authors: [
+  "Jerome Hugues"
+  "Lutz Wrage"
+  "Will Klieber"
+]

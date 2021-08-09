@@ -21,8 +21,9 @@ help:               ## Show this help
 
 
 install_deps:       ## Install dependencies
-	opam repo add coq-released https://coq.inria.fr/opam/released
-	opam install coq-list-string menhir coq-menhirlib coq-io-system coq-json coq-ext-lib
+	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
+	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
+	opam install -y coq-list-string menhir coq-menhirlib coq-io coq-ext-lib coq-json coq-io-system
 
 ##
 
@@ -68,7 +69,20 @@ debug:
 	echo $(COQMF_VFILES)
 
 world:              ## All of the above
-	$(MAKE) clean build_makefile compile generate_latex pdf
+	$(MAKE) clean distclean build_makefile compile generate_latex pdf
+
+build_docker:	    ## Build docker image for testing
+	docker build -t safir/coq .
+
+run_docker:
+	docker run -ti  -v `pwd`:/work  safir/coq make install_deps clean distclean build_makefile compile
+
+run_docker2:
+	$(MAKE) clean distclean
+	docker run -ti  -v `pwd`:/work safir/coq make dune_build
+
+dune_build:        ## Build using dune
+	dune build
 
 ##
 
@@ -81,6 +95,7 @@ clean:              ## Clean generated files
 	make -C extraction clean
 	make -C src/AADL/atin_frontend clean
 	-rm -rf src/**/*.vo
+	find . -type f -name '.*.aux' -exec rm {} +
 
 distclean:
 	-rm -rf html
