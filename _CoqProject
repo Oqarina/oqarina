@@ -28,6 +28,9 @@ src/AADL/property_sets/thread_properties.v
 src/AADL/property_sets/communication_properties.v
 src/AADL/property_sets/all.v
 
+src/AADL/legality/categories_wf.v
+src/AADL/legality/all.v
+
 src/AADL/declarative/declarative_model.v
 src/AADL/declarative/all.v
 
@@ -35,8 +38,6 @@ src/AADL/instance/instance_model.v
 src/AADL/instance/all.v
 
 src/aadl_port_variable.v
-
-src/aadl_static_thread.v
 src/aadl_dynamic_thread.v
 src/threadMonad.v
 

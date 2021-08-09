@@ -612,7 +612,7 @@ Global Hint Resolve
 \section{Master theorem}
 
 
-Here, we define two master theorema that assess wether a component type has a valid interface and a component implementation valid subcomponents.
+Here, we define two master theorems that assess wether a component type has a valid interface and a component implementation valid subcomponents.
 
 %*)
 
