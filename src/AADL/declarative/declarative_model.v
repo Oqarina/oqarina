@@ -15,6 +15,7 @@ Require Import Coq.Bool.Sumbool.
 
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
@@ -48,48 +49,26 @@ Section AADL_Component_Type.
     Defined.
 
 (**
-%\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category.}%
+%\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.}%
 *)
 
-(** XXX Actually wrong, we must check for the direction of the feature as well *)
-
-    Fixpoint Valid_Features_Category
-        (l : list feature) (lcat : list FeatureCategory) :=
-            match l with
-            | nil => True
-            | h :: t => In (projectionFeatureCategory  h) lcat /\
-                        Valid_Features_Category t lcat
-            end.
-
-    Lemma Valid_Features_Category_dec :
-        forall (l:list feature) (lcat :list FeatureCategory),
-            { Valid_Features_Category l lcat } +
-            { ~Valid_Features_Category l lcat }.
-    Proof.
-        intros.
-        unfold Valid_Features_Category.
-        induction l.
-        auto.
-        apply dec_sumbool_and.
-        - apply In_dec; apply FeatureCategory_eq_dec.
-        - auto.
-    Qed.
-
-    Definition Well_Formed_Component_Type
-        (c: component) (l : list FeatureCategory) :=
+    Definition Well_Formed_Component_Type (c: component) :=
             Is_AADL_Component_Type c /\
-            Valid_Features_Category (c->features) l.
+            Well_Formed_Component_Type_Interface c /\
+            Well_Formed_Component c.
 
     Lemma Well_Formed_Component_Type_dec :
-        forall (c:component) (lcat :list FeatureCategory),
-            {Well_Formed_Component_Type c lcat} +
-            { ~Well_Formed_Component_Type c lcat}.
+        forall (c:component),
+            {Well_Formed_Component_Type c} +
+            { ~Well_Formed_Component_Type c}.
     Proof.
         intros.
         unfold Well_Formed_Component_Type.
         apply dec_sumbool_and.
         apply Is_AADL_Component_Type_dec.
-        apply Valid_Features_Category_dec.
+        apply dec_sumbool_and.
+        apply Well_Formed_Component_Type_Interface_dec.
+        apply Well_Formed_Component_dec.
       Qed.
 
 (* begin hide *)
@@ -121,44 +100,24 @@ Section AADL_Component_Implementation.
 {An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.}%
 *)
 
-    Fixpoint Valid_Subcomponents_Category
-        (l : list component) (lcat : list ComponentCategory) :=
-        match l with
-        | nil => True
-        | h :: t => In (h->category) lcat /\
-            Valid_Subcomponents_Category t lcat
-        end.
-
-    Lemma Valid_Subcomponents_Category_dec :
-        forall (l:list component) (lcat :list ComponentCategory),
-            { Valid_Subcomponents_Category l lcat } +
-            { ~Valid_Subcomponents_Category l lcat }.
-    Proof.
-        intros.
-        unfold Valid_Subcomponents_Category.
-        induction l.
-        auto.
-        apply dec_sumbool_and.
-        - apply In_dec; apply ComponentCategory_eq_dec.
-        - auto.
-    Qed.
-
-    Definition Well_Formed_Component_Implementation
-        (c: component) (l : list ComponentCategory) :=
-            Is_AADL_Component_Implementation c /\
-            Valid_Subcomponents_Category (c->subcomps) l.
+    Definition Well_Formed_Component_Implementation (c: component) :=
+        Is_AADL_Component_Implementation c /\
+        Well_Formed_Component_Implementation_Subcomponents c /\
+        Well_Formed_Component c.
 
     Lemma Well_Formed_Component_Implementation_dec :
-        forall (c:component) (lcat :list ComponentCategory),
-            {Well_Formed_Component_Implementation c lcat} +
-            { ~Well_Formed_Component_Implementation c lcat}.
+    forall (c:component),
+        {Well_Formed_Component_Implementation c} +
+        { ~Well_Formed_Component_Implementation c}.
     Proof.
         intros.
         unfold Well_Formed_Component_Implementation.
         apply dec_sumbool_and.
         apply Is_AADL_Component_Implementation_dec.
-        apply Valid_Subcomponents_Category_dec.
-      Qed.
+        apply dec_sumbool_and.
+        apply Well_Formed_Component_Implementation_Subcomponents_dec.
+        apply Well_Formed_Component_dec.
+    Qed.
 
 (* begin hide *)
 End AADL_Component_Implementation.

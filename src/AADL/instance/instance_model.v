@@ -14,8 +14,10 @@ Require Import Coq.Bool.Sumbool.
 
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.AADL.declarative.all.
 (* end hide *)
 
 (** * AADL instance model
@@ -41,6 +43,19 @@ Section AADL_Instance.
         intros.
         repeat apply dec_sumbool_and; auto.
     Defined.
+
+    Definition Well_Formed_Component_Instance (c : component) :=
+        Well_Formed_Component_Implementation c.
+
+    Lemma Well_Formed_Component_Instance_dec :
+        forall (c:component),
+            {Well_Formed_Component_Instance c } +
+            { ~Well_Formed_Component_Instance c }.
+    Proof.
+        intros.
+        unfold Well_Formed_Component_Instance.
+        apply Well_Formed_Component_Implementation_dec.
+    Qed.
 
 (* begin hide *)
 End AADL_Instance.

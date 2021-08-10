@@ -25,7 +25,10 @@ It is organized as a collection of "packages". Following Coq conventions, each d
     * `features_helper`, `properties_helper`: helper routines to access features and properties
 
 * AADL default property sets: `AADL/property_sets`
-    * this directory provides an implementation of AADL default property set. The names match the name of the corresponding AADL property set.
+    * this directory provides an implementation of AADL default property sets. The names match the name of the corresponding AADL property set.
+
+* AADL legality rules: `AADL/legality_rules`
+    * implementation of (a subset of) AADL legality rules, organized by concepts: components, categories, etc.
 
 * AADL declarative model: `AADL/declarative`
 

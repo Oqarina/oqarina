@@ -7,7 +7,6 @@ Import ListNotations. (* from List *)
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
-Require Import Oqarina.AADL.declarative.all.
 (* end hide *)
 
 (**
@@ -27,7 +26,7 @@ From these rules, we deduce the two following lemmas and their decidability resu
 % *)
 
 Definition Well_Formed_Thead_Component_Type (c: component) :=
-  Well_Formed_Component_Type c
+  Well_Formed_Component_Interface c
       [ dataPort ; eventPort ; eventDataPort ; dataAccess ;
         subprogramAccess ; subprogramGroupAccess ; featureGroup ; abstractFeature ].
 
@@ -38,11 +37,11 @@ Lemma Well_Formed_Thead_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Thead_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Thead_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
     [ data ; subprogram ; subprogramGroup ; abstract ].
 
 Lemma Well_Formed_Thead_Component_Implementation_dec :
@@ -51,7 +50,7 @@ Lemma Well_Formed_Thead_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Thead_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -64,7 +63,7 @@ Qed.
 *)
 
 Definition Well_Formed_Data_Component_Type (c: component) :=
-  Well_Formed_Component_Type c
+  Well_Formed_Component_Interface c
     [ featureGroup ; subprogramAccess ; subprogramGroupAccess ;
       dataAccess ; abstractFeature
     ].
@@ -76,11 +75,11 @@ Lemma Well_Formed_Data_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Data_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Data_Component_Implementation (c:component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
     [ data ; subprogram ; abstract ].
 
 Lemma Well_Formed_Data_Component_Implementation_dec :
@@ -90,7 +89,7 @@ Lemma Well_Formed_Data_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Data_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -103,7 +102,7 @@ Qed.
 *)
 
 Definition Well_Formed_Subprogram_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ eventPort ; featureGroup ; dataAccess ; subprogramAccess ;
       subprogramGroupAccess ; parameter ; abstractFeature
     ].
@@ -115,11 +114,11 @@ Lemma Well_Formed_Subprogram_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Subprogram_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Subprogram_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ data ; abstract; subprogram ].
 
 Lemma Well_Formed_Subprogram_Component_Implementation_dec :
@@ -129,7 +128,7 @@ Lemma Well_Formed_Subprogram_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Subprogram_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -142,7 +141,7 @@ Qed.
 *)
 
 Definition Well_Formed_SubprogramGroup_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ featureGroup ; subprogramAccess ; subprogramGroupAccess ;
       abstractFeature ].
 
@@ -153,11 +152,11 @@ Lemma Well_Formed_SubprogramGroup_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_SubprogramGroup_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_SubprogramGroup_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ data ; abstract; subprogram ].
 
 Lemma Well_Formed_SubprogramGroup_Component_Implementation_dec :
@@ -167,7 +166,7 @@ Lemma Well_Formed_SubprogramGroup_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_SubprogramGroup_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -180,7 +179,7 @@ Qed.
 *)
 
 Definition Well_Formed_ThreadGroup_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
       subprogramAccess ; subprogramGroupAccess ; abstractFeature ].
 
@@ -191,11 +190,11 @@ Lemma Well_Formed_ThreadGroup_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_ThreadGroup_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_ThreadGroup_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ data ; subprogram ; subprogramGroup ; thread ; threadGroup ; abstract ].
 
 Lemma Well_Formed_ThreadGroup_Component_Implementation_dec :
@@ -205,7 +204,7 @@ Lemma Well_Formed_ThreadGroup_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_ThreadGroup_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 
@@ -218,7 +217,7 @@ Qed.
 \processconstraints
 *)
 Definition Well_Formed_Process_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
       subprogramAccess ; subprogramGroupAccess ; abstractFeature ].
 
@@ -229,11 +228,11 @@ Lemma Well_Formed_Process_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Process_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Process_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ data ; subprogram ; subprogramGroup ; thread ; threadGroup ; abstract ].
 
 Lemma Well_Formed_Process_Component_Implementation_dec :
@@ -243,7 +242,7 @@ Lemma Well_Formed_Process_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Process_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -259,7 +258,7 @@ Qed.
 *)
 
 Definition Well_Formed_Processor_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ subprogramAccess ; subprogramGroupAccess ;
       dataPort ; eventPort ; eventDataPort ;
       featureGroup ; busAccess ; virtualBusAccess;
@@ -272,11 +271,11 @@ Lemma Well_Formed_Processor_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Processor_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Processor_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ memory ; bus ; virtualProcessor ; virtualBus ; abstract ].
 
 Lemma Well_Formed_Processor_Component_Implementation_dec :
@@ -286,7 +285,7 @@ Lemma Well_Formed_Processor_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Processor_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -299,7 +298,7 @@ Qed.
 *)
 
 Definition Well_Formed_VirtualProcessor_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ subprogramAccess ; subprogramGroupAccess ;
       dataPort ; eventPort ; eventDataPort ;
       virtualBusAccess;
@@ -312,11 +311,11 @@ Lemma Well_Formed_VirtualProcessor_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_VirtualProcessor_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_VirtualProcessor_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ virtualProcessor ; virtualBus ; abstract ].
 
 Lemma Well_Formed_VirtualProcessor_Component_Implementation_dec :
@@ -326,7 +325,7 @@ Lemma Well_Formed_VirtualProcessor_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_VirtualProcessor_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -339,7 +338,7 @@ Qed.
 *)
 
 Definition Well_Formed_Memory_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ busAccess ; (* virtualBusAccess ; *)
       featureGroup ; abstractFeature ;
       dataPort ; eventPort ; eventDataPort ].
@@ -351,11 +350,11 @@ Lemma Well_Formed_Memory_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Memory_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Memory_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ memory ; bus ; abstract ].
 
 Lemma Well_Formed_Memory_Component_Implementation_dec :
@@ -365,7 +364,7 @@ Lemma Well_Formed_Memory_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Memory_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -378,7 +377,7 @@ Qed.
 *)
 
 Definition Well_Formed_Bus_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ busAccess ; (* virtualBusAccess ; *)
       featureGroup ; abstractFeature ;
       dataPort ; eventPort ; eventDataPort ].
@@ -390,11 +389,11 @@ Lemma Well_Formed_Bus_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Bus_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Bus_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ virtualBus ; abstract ].
 
 Lemma Well_Formed_Bus_Component_Implementation_dec :
@@ -404,7 +403,7 @@ Lemma Well_Formed_Bus_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Bus_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -417,7 +416,7 @@ Qed.
 *)
 
 Definition Well_Formed_VirtualBus_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ;
       (* virtualBusAccess ; *)
       featureGroup ; abstractFeature ].
@@ -429,11 +428,11 @@ Lemma Well_Formed_VirtualBus_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_VirtualBus_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_VirtualBus_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ virtualBus ; abstract ].
 
 Lemma Well_Formed_VirtualBus_Component_Implementation_dec :
@@ -443,7 +442,7 @@ Lemma Well_Formed_VirtualBus_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_VirtualBus_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -456,7 +455,7 @@ Qed.
 *)
 
 Definition Well_Formed_Device_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ; featureGroup ;
       subprogramAccess ; subprogramGroupAccess ;
       busAccess ; (* virtualBusAccess ; *)
@@ -469,11 +468,11 @@ Lemma Well_Formed_Device_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Device_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Device_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ bus ; virtualBus ; data ; abstract ].
 
 Lemma Well_Formed_Device_Component_Implementation_dec :
@@ -483,7 +482,7 @@ Lemma Well_Formed_Device_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Device_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 
@@ -499,7 +498,7 @@ Qed.
 *)
 
 Definition Well_Formed_Abstract_Component_Type (c: component) :=
-  Well_Formed_Component_Type c
+  Well_Formed_Component_Interface c
       [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
         subprogramAccess ; subprogramGroupAccess ; busAccess ;
         virtualBusAccess ; abstractFeature
@@ -512,11 +511,11 @@ Lemma Well_Formed_Abstract_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_Abstract_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_Abstract_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
       [ data ; subprogram ; subprogramGroup ; thread ; threadGroup ; process ;
         processor ; virtualProcessor ; memory ; bus ; virtualBus ; device ;
         system ; abstract
@@ -529,7 +528,7 @@ Lemma Well_Formed_Abstract_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_Abstract_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (**
@@ -544,7 +543,7 @@ Qed.
 *)
 
 Definition Well_Formed_System_Component_Type (c: component) :=
-    Well_Formed_Component_Type c
+    Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ;
       featureGroup ; subprogramAccess ; subprogramGroupAccess ;
       busAccess ; (* virtualBusAccess ; *)
@@ -557,11 +556,11 @@ Lemma Well_Formed_System_Component_Type_dec :
 Proof.
   intros.
   unfold Well_Formed_System_Component_Type.
-  apply Well_Formed_Component_Type_dec.
+  apply Well_Formed_Component_Interface_dec.
 Qed.
 
 Definition Well_Formed_System_Component_Implementation (c: component) :=
-  Well_Formed_Component_Implementation c
+  Well_Formed_Component_Subcomponents c
   [ data ; subprogram ; subprogramGroup ; process ; processor ;
     virtualProcessor ; memory ; bus ; virtualBus ; device ; system ;
     abstract ].
@@ -573,7 +572,7 @@ Lemma Well_Formed_System_Component_Implementation_dec :
 Proof.
   intros.
   unfold Well_Formed_System_Component_Implementation.
-  apply Well_Formed_Component_Implementation_dec.
+  apply Well_Formed_Component_Subcomponents_dec.
 Qed.
 
 (* begin hide *)
