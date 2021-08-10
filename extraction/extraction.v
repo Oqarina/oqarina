@@ -59,7 +59,7 @@ Definition version_cmd := {|
 
 Definition validate_AADL_root (c : list component) : C.t System.effect unit :=
   let AADL_Root := hd nil_component c in
-  let AADL_Root_Valid := Oracle (Is_AADL_Instance_dec AADL_Root) in
+  let AADL_Root_Valid := Oracle (Well_Formed_Component_Instance_dec AADL_Root) in
   if AADL_Root_Valid then System.log (LString.s "well-formed success")
   else System.log (LString.s "well-formed failure").
 
