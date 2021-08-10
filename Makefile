@@ -4,9 +4,8 @@
 ##
 
 EXTRA_DIR:=extra
+
 COQDOCFLAGS:= \
-  --external 'http://ssr2.msr-inria.inria.fr/doc/ssreflect-1.5/' Ssreflect \
-  --external 'http://ssr2.msr-inria.inria.fr/doc/mathcomp-1.5/' MathComp \
   --toc --toc-depth 2 --html --interpolate \
   --index indexpage --no-lib-name --parse-comments \
   --with-header $(EXTRA_DIR)/header.html --with-footer $(EXTRA_DIR)/footer.html
@@ -19,6 +18,13 @@ all: help
 help:               ## Show this help
 	    @sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
+# -----------------------------------------------------------------------------
+# * Management of dependencies: Coq libraries can be instaleld through
+#   opam. We provide two targets:
+#   - install_deps installs required libraries to use Oqarina from a Coq IDE
+#   - install_deps_bin instalels additional libraries for code extraction
+#
+
 install_deps:       ## Install dependencies (no extraction)
 	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
 	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
@@ -28,7 +34,11 @@ install_deps_bin:   ## Install dependencies (extraction)
 	$(MAKE) install_deps
 	opam install -y coq-io-system
 
-##
+# -----------------------------------------------------------------------------
+# * Build system: we support two approaches
+#   - using _CoqProject, for inclusion with Coq IDE
+#   - using Dune, for packaging
+#
 
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
@@ -38,17 +48,27 @@ build_makefile:     ## Generate coq makefile
 install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
 
+# This (obsolete) target generates menhir parser. It is kept to serve
+# as proof of concept and might be removed
+
 generate_parser:
 	make -C src/AADL/atin_frontend
 
 compile:            ## Compile Coq files
 	make -f coq_makefile
 
+dune_build:         ## Build using dune
+	dune build
+
 build_bin:          ## Build Oqarina binary
 	make -C extraction
 
-validate:           ## Validate proofs in Coq
+validate:           ## Validate all proofs
 	make -f coq_makefile validate
+
+# -----------------------------------------------------------------------------
+# Documentation generation
+#
 
 .PHONY: html
 html:               ## Generate HTML
@@ -81,22 +101,33 @@ test_build_docker:  ## Test build using docker
 	$(MAKE) clean distclean
 	docker run -ti  -v `pwd`:/work safir/coq make install_deps generate_parser dune_build
 
-dune_build:         ## Build using dune
-	dune build
-
-##
+# -----------------------------------------------------------------------------
+# Cleaning rules
 
 clean:              ## Clean generated files
-	-make -f coq_makefile clean
+	-$(MAKE) -f coq_makefile clean
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
 	( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
-	make -C extraction clean
-	make -C src/AADL/atin_frontend clean
+	$(MAKE) -C extraction clean
+	$(MAKE) -C src/AADL/atin_frontend clean
 	-rm -rf src/**/*.vo
 	find . -type f -name '.*.aux' -exec rm {} +
 
-distclean:
+distclean:          ## Distclean
+	$(MAKE) clean
 	-rm -rf html
 	-rm extraction/*.ml extraction/*.mli
+
+# -----------------------------------------------------------------------------
+# License management
+#
+# We use https://github.com/johann-petrak/licenseheaders.  We provide
+# a local copy (original code is MIT licensed). It has been adjusted
+# to support '.v' file
+#
+
+.PHONY: update_license
+update_license:     ## Update all license headers
+	python3 ./licenseheaders.py -t license-header.txt -cy -d src
