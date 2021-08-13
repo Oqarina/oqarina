@@ -68,7 +68,7 @@ Section Port_Variable.
   Defined.
   (* end hide *)
 
-  (** [mkPortVariable] maps an AADL feature to a [port_variable]. The port variable is initialized with an empty queue. XXX default for port_input_time to be adjusted *)
+  (** [mkPortVariable] maps an AADL feature to a [port_variable]. The port variable is initialized with an empty queue. *)
 
   Definition mkPortVariable (f : feature) := {|
     port := f;
@@ -78,7 +78,8 @@ Section Port_Variable.
     port_input_times := Map_Input_Time (projectionFeatureProperties f);
     urgency := Map_Urgency (projectionFeatureProperties f);
     size := Map_Queue_Size (projectionFeatureProperties f);
-    overflow_handling_protocol := Map_Overflow_Handling_Protocol (projectionFeatureProperties f);
+    overflow_handling_protocol :=
+      Map_Overflow_Handling_Protocol (projectionFeatureProperties f);
     dequeue_protocol := Map_Dequeue_Protocol (projectionFeatureProperties f);
     dequeued_items := Map_Dequeued_Items (projectionFeatureProperties f);
   |}.

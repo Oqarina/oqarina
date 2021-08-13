@@ -110,7 +110,7 @@ Section Actor_Definition.
         | Dis : list V -> Actor_Action
         | Temp : V -> Time -> Actor_Action.
 
-(** - [Actor_Step] executes one step, executing the action [act]. This function returns an updated [Actor_State].*)
+    (** - [Actor_Step] executes one step, executing the action [act]. This function returns an updated [Actor_State].*)
 
     Set Asymmetric Patterns.
     Definition Actor_Step (a : Actor) (ast : Actor_State) (act: Actor_Action) :
@@ -121,7 +121,7 @@ Section Actor_Definition.
                 end.
     Unset Asymmetric Patterns.
 
-(** - [LTS_Of] builds a labelled transition system (LTS) out of an actor. *)
+    (** - [LTS_Of] builds a labelled transition system (LTS) out of an actor. *)
 
     Definition LTS_Of (a : Actor) : LTS_struct := {|
         States := Actor_State;
@@ -130,7 +130,7 @@ Section Actor_Definition.
         Steps := fun ast act => Actor_Step a ast act;
     |}.
 
-(** * Definition of an actor diagram *)
+    (** * Definition of an actor diagram *)
 
     Definition Connection := list nat.
 
@@ -266,7 +266,7 @@ Definition consumer_Actor : Actor consumer_states consumer_inputs := {|
     Time_Update := consumer_Time_Update;
 |}.
 
-(** ** Definition of the [prodcons_Diagram ]*)
+(** ** Definition of the [prodcons_Diagram] *)
 
 Definition prod := producer_Actor.
 Definition cons := consumer_Actor.

@@ -28,9 +28,10 @@ Section AADL_Categories.
   *)
 
   Inductive FeatureCategory : Type :=
-    dataPort | eventPort | eventDataPort | parameter |
-	  busAccess | virtualBusAccess | dataAccess| subprogramAccess | subprogramGroupAccess |
-	  featureGroup | abstractFeature | invalid.
+    | dataPort | eventPort | eventDataPort | parameter
+    | busAccess | virtualBusAccess | dataAccess| subprogramAccess
+    | subprogramGroupAccess | featureGroup | abstractFeature
+    | invalid.
 
   (** ** Feature Directions
 
@@ -43,8 +44,10 @@ Section AADL_Categories.
   Inductive DirectionType : Type :=
     inF | outF | inoutF | nullDirection.
 
+    (* begin hide *)
   Scheme Equality for ComponentCategory.
   Scheme Equality for FeatureCategory.
   Scheme Equality for DirectionType.
 
 End AADL_Categories.
+(* end hide *)

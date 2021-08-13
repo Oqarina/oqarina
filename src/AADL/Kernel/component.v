@@ -37,13 +37,12 @@ This chapter assumes some familiarity of the AADL language version 2.2 %\cite{DB
 
 (** * AADL Component Model -- Concepts Definition
 
-  In this section, we provide the core definition of AADL model elements. The names and hierarchy follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}% provides a concise definition of the concepts that form an AADL model. In chapter%~\ref{chap::aadl_decl}%, we show how to derive the concepts of component type, implementation and instances from these definitions.
+  In this section, we provide the core definition of AADL model elements. The names and hierarchy follows the textual grammar of the AADL Instance model. This Xtext grammar%\footnote{See \href{https://github.com/osate/osate2/blob/master/core/org.osate.aadl2.instance.textual/src/org/osate/aadl2/instance/textual/Instance.xtext}{Instance.xtext}}% provides a concise definition of the concepts that form an AADL model, an equivalent description can be found in AADL Instance meta-model. In chapter%~\ref{chap::aadl_decl}%, we show how to derive the concepts of component type, implementation and instances from these definitions.
 
   In the following, we provide a formalization of the AADL component model
   grammar as a collection of Coq inductive types.
 
-  _Note: Coq is imposing in order type definitions, the order differs from the
-  original Xtext file_.
+  %\input{generated-content/categories}%
 
  *)
 
@@ -53,24 +52,10 @@ Section AADL_Definitions.
 
  (** ** Definition of AADL Components
 
-  An AADL component is made of an identifier, a category, a list of features, a list of properties, a list of subcomponents %\footnote{Flows and modes are subject to further discussions.}%.
-
-  Per definition of the AADL component model, features and subcomponents list components as their parts. From a Coq perspective, we must define these three types as mutually dependent types at once.
+  An AADL component is made of an identifier, a category, a list of features, a list of properties, a list of subcomponents %\footnote{Flows and modes are subject to further discussions.}%. Per definition of the AADL component model, features and subcomponents list components as their parts. From a Coq perspective, we must define these three types as mutually dependent types at once.
 
   _Note: actually, this definition allows also for the definition of component type, implementation and instance. This is discussed in the next chapters_.
 
-<<
-  <component_category> <classifier>
-  features
-    <list feature>
-  subcomponents
-    <list subcomponent>
-  properties
-    <list property>
-  connection
-    <list connection>
-  end
->>
   *)
 
   Inductive component :=
@@ -93,13 +78,15 @@ Section AADL_Definitions.
     | Connection : identifier ->
                    list identifier -> (* path to the source feature *)
                    list identifier -> (* path to the destination feature *)
-                   connection
-    .
+                   connection.
 
   (** Definition of an empty component *)
-  Definition nil_component := Component empty_identifier (null) empty_fqname nil nil nil nil.
+
+  Definition nil_component :=
+    Component empty_identifier (null) empty_fqname nil nil nil nil.
 
   (** Definition of an invalid feature *)
+
   Definition Invalid_Feature :=
     Feature (Id "invalid" ) inF invalid nil_component nil.
 
@@ -114,7 +101,7 @@ End AADL_Definitions.
 
 *)
 
-(** - Definition of a component *)
+(** - Definition of a component type and implementation *)
 
 Definition A_Component := Component (Id "a_component") (abstract)
   (FQN [Id "pack1" ] (Id "foo_classifier") None) nil nil nil nil.
@@ -124,6 +111,8 @@ Definition A_Component_Impl :=
   (abstract)
   (FQN [Id "pack1" ] (Id "foo_classifier") (Some (Id "impl")))  nil
   [ A_Component ] nil nil.
+
+(** - Definition of a feature *)
 
 Definition A_Feature := Feature (Id "a_feature") inF eventPort nil_component.
 
