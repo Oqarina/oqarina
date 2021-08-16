@@ -20,7 +20,7 @@ It is organized as a collection of "packages". Following Coq conventions, each d
 
 * AADL generic AADL component definition: `AADL/Kernel`
     * `categories.v`, `component.v`: definition of a generic AADL component
-    * `component_wf.v`: well-formedness rules of a generic AADL component
+
     * `properties.v`, `typecheck.v`: definition of properties and typing rules
     * `features_helper`, `properties_helper`: helper routines to access features and properties
 
@@ -28,7 +28,10 @@ It is organized as a collection of "packages". Following Coq conventions, each d
     * this directory provides an implementation of AADL default property sets. The names match the name of the corresponding AADL property set.
 
 * AADL legality rules: `AADL/legality_rules`
-    * implementation of (a subset of) AADL legality rules, organized by concepts: components, categories, etc.
+    Implementation of (a subset of) AADL legality rules, organized by concepts: components, categories, etc. It is worth mentioning that the definition of the legality rules in the core standard document has limited dependences on the concept of declarative and instance model.
+
+    - `categories_wf.v`: well-formedness rules for each AADL component category
+    - `component_wf.v`: well-formedness rules of a generic AADL component
 
 * AADL declarative model: `AADL/declarative`
 
@@ -42,12 +45,7 @@ It is organized as a collection of "packages". Following Coq conventions, each d
 
     This directory is kept as a reference on how to use Menhir to build a parser.
 
-## TO BE REORGANIZED
-
-* AADL static semantics
-    * For each component category, a file `aadl_static_<category>.v` is defined.
-
-    It is worth mentioning that the definition of the static semantics as it is in the core standard document has limited dependences on the concept of declarative and instance model. It is usually sufficient to define two well-formedness rules, one for component types and one for component implementations.
+## THE PARTS BELOW MUST BE REORGANIZED
 
 * AADL dynamic semantics
     * For each component category, a file `aadl_dynamic_<category>.v` is defined
