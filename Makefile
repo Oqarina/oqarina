@@ -99,7 +99,7 @@ build_docker:	    ## Build docker image for testing
 
 test_build_docker:  ## Test build using docker
 	$(MAKE) clean distclean
-	docker run -ti  -v `pwd`:/work safir/coq make install_deps generate_parser dune_build
+	docker run -ti  -v `pwd`:/work safir/coq make generate_parser dune_build
 
 # -----------------------------------------------------------------------------
 # Cleaning rules
