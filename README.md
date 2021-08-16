@@ -11,7 +11,7 @@ Oqarina provides elements of a formalization of AADLv2. It aligns with AADLv2.3.
 
 ## Required software
 
-Oqarina has been tested using Coq version 8.13.1 and either VSCoq extension for Visual Code or Proof General.
+Oqarina has been tested using Coq version 8.13.2 and either VSCoq extension for Visual Code or Proof General.
 
 ## Additional packages
 
@@ -21,7 +21,7 @@ The following packages should be installed separately using opam:
 * `http://coq.io/`: additional elements to read from files, helper for code extractions
 * `https://github.com/liyishuai/coq-json`: JSON manipulation
 
-Use `make install_deps` to install them.
+Use `make install_deps` (no extraction) or `make install_deps` (extraction) to install them.
 
 ## Usage
 
