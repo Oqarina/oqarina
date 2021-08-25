@@ -3,7 +3,7 @@
 (**
 This module introduces a JSON-based parser for Oqarina. It maps a JSON file produced by Ocarina to an Oqarina instance model.
 
-This implementation relies on the `coq-json` library for parsing a JSON file, producing an AST. Then the [Map_JSON] function maps this AST onto a valid AADL instance file. Because of Coq typing rules, we can only build a valid instance model, albeit incomplete.
+This implementation relies on the `coq-json` library for parsing a JSON file, producing an AST. Then the [Map_JSON_String_To_Component ] function maps this AST onto a valid AADL instance file. Because of Coq typing rules, we can only build a valid instance model, albeit incomplete.
 *)
 
 (* begin hide *)
@@ -173,7 +173,7 @@ Fixpoint Map_JSON_To_Property_Value (j : json) : property_value :=
   | JSON__Object [("integer_range", j2)] =>
     Map_JSON_To_Property_Value_Abstract j2
       (fun x => PV_IntRange (PV_Int (parse_int (get_string_from_json "value_low" x)))
-                    (PV_Int (parse_int (get_string_from_json "value_high" x))))
+                            (PV_Int (parse_int (get_string_from_json "value_high" x))))
 
   | JSON__Object [("integer_range_unit", j2)] =>
     Map_JSON_To_Property_Value_Abstract j2
@@ -199,8 +199,7 @@ Fixpoint Map_JSON_To_Property_Value (j : json) : property_value :=
   | PV_Computed (function : string)
 *)
 
-
-    | _  => PV_Bool false
+    | _  => PV_Bool false (* error reporting *)
   end.
 
 Fixpoint Map_JSON_To_Property_Association (j : list json) :=
@@ -220,7 +219,7 @@ Fixpoint Map_JSON_To_Component' (fuel : nat) (c : list json) : list component :=
     | (JSON__Object f) :: t =>
        ( Component (get_identifier (JSON__Object f))
                    (Map_JSON_To_ComponentCategory (get_json "category" (JSON__Object f)))
-                   empty_fqname (* classifier *)
+                   (FQN [] (Id (get_string_from_json "classifier" (JSON__Object f))) None)  (* classifier XXX incomplete*)
                    (Map_JSON_To_Feature' m (get_features (JSON__Object f))) (* features *)
                    (Map_JSON_To_Component' m (get_subcomponents (JSON__Object f))) (* subcomponents *)
                    (Map_JSON_To_Property_Association (get_properties (JSON__Object f)))(* properties *)
@@ -253,9 +252,9 @@ Definition Map_JSON_To_Component (c : list json) : list component :=
 Definition Map_JSON_Root_To_Component (AST : option string + json) :=
   match AST with
     | inr (JSON__Object l) =>
-    let aadl_xml := get_json "aadl_xml" (JSON__Object l) in
-    let comps := get_json "components" aadl_xml in
-      inr (Map_JSON_To_Component ([get_json "component" comps]))
+      let aadl_xml := get_json "aadl_xml" (JSON__Object l) in
+      let comps := get_json "components" aadl_xml in
+        inr (Map_JSON_To_Component ([get_json "component" comps]))
     | inr _ =>  inl (Some "Invalid JSON Object")
     | inl x => inl x
   end.
