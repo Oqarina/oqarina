@@ -71,9 +71,9 @@ Definition parse_aadl_json_file (argv : list LString.t) : C.t System.effect unit
     | None => System.log (LString.s "Cannot read file")
     | Some content => let AADL_Root := Map_JSON_String_To_Component (Conversion.to_string content) in
       match AADL_Root with
-      | [ ] => System.log (LString.s "parse error")
-      | _    => do! System.log (LString.s "parsing success") in
-                validate_AADL_root AADL_Root
+      | inl _ => System.log (LString.s "parse error")
+      | inr AADL_Root'    => do! System.log (LString.s "parsing success") in
+                validate_AADL_root AADL_Root'
       end
     end
   | _ => System.log (LString.s "Expected one parameter.")

@@ -7,8 +7,12 @@
 - [ ] add units to range constraints
 - [ ] inherit?
 - [ ] reference to property constant in proprety type? see aadl_thread_properties
+- [ ] property typing and aadlreal, case where the input JSON has an integer value, e.g. "10 ns" vs "10.0 ns"
+- [ ] property resolution should be case insensitive
+- [ ] resolution of predefined property set (or force Ocarina to generate full name ..)
 
 ## Property Sets
 
 - [ ] investigate type checking of Communication_Properties_PS
 
+AAhrus, CIRCUS, SysML
