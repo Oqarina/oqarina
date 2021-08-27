@@ -180,7 +180,7 @@ Inductive property_set_declaration :=
                        (value: property_value)
 | PropertyDecl (name : identifier) (type: property_type)
                (default: option property_value)
-               (appliesTo : list ComponentCategory).
+               (appliesTo : list AppliesToCategory).
 
 Notation "s ':type' t" := (PropertyTypeDecl (Id s) t) (at level 75).
 Notation "s ':const' t '=>' v" := (PropertyConstantDecl (Id s) t v)
@@ -213,7 +213,7 @@ Proof.
   apply property_value_eq_dec.
 Qed.
 
-(*! AADL Property set *)
+(** AADL Property set *)
 
 Inductive property_set :=
 | PropertySet (name : identifier) (declarations : list property_set_declaration).

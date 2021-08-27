@@ -22,14 +22,16 @@ Definition Timing_Properties_PS :=
                    virtual processor); *)
 
     "Deadline" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
-        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor ];
+        => None applies [ CompCat thread ; CompCat threadGroup ; CompCat process ;
+        CompCat system ; CompCat device ; CompCat virtualProcessor ];
 
     (* Period: inherit Time
        applies to (thread, thread group, process, system, device,
                    virtual processor); *)
 
     "Period" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
-        => None applies [ thread ; threadGroup ; process ; system ; device ; virtualProcessor ]
+        => None applies [ CompCat thread ; CompCat threadGroup ; CompCat process ;
+        CompCat system ; CompCat device ; CompCat virtualProcessor ]
   ].
 
 Lemma Timing_Properties_PS_Valid :
@@ -43,7 +45,7 @@ Qed.
  TBD
   \end{definition}% *)
 
-Definition Period_Name := PSQN "timing_properties" "period".
+Definition Period_Name := PSQN "Timing_Properties" "Period".
 
 Definition Is_Period (pa : property_association) :=
   Is_Property_Name Period_Name pa.
@@ -56,7 +58,7 @@ Definition Map_Period (pa : list property_association) :=
  TBD
   \end{definition}% *)
 
-Definition Deadline_Name := PSQN "timing_properties" "deadline".
+Definition Deadline_Name := PSQN "Timing_Properties" "Deadline".
 
 Definition Is_Deadline (pa : property_association) :=
   Is_Property_Name Deadline_Name pa.

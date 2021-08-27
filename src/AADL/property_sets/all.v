@@ -19,8 +19,8 @@ Definition AADL_Predeclared_Property_Sets :=
     [ AADL_Project_PS ; Communication_Properties_PS ;
       Thread_Properties_PS ; Timing_Properties_PS ] .
 
-Lemma Timing_Properties_PS_Valid :
+Lemma AADL_Predeclared_Properties_PS_Valid :
     typecheck_property_sets AADL_Predeclared_Property_Sets = true.
-  Proof.
+Proof.
     trivial.
-  Admitted. (* See note on Communication_Properties_PS *)
+Qed.

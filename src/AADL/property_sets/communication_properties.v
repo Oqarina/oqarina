@@ -70,8 +70,8 @@ Definition Communication_Properties_PS :=
     typecheck_property_sets [AADL_Project_PS ; Communication_Properties_PS] = true.
   Proof.
       trivial.
-  Admitted. (* XXX cannot typecheck Input_Time, issue in checking the default value *)
-
+  Qed.
+ 
 (** %
   \begin{definition}[Queue\_Size (AADLv2.2 \S XXX]
  TBD

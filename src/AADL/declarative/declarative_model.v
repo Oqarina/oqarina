@@ -16,6 +16,7 @@ Require Import Coq.Bool.Sumbool.
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.all.
+Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
@@ -55,7 +56,8 @@ Section AADL_Component_Type.
     Definition Well_Formed_Component_Type (c: component) :=
             Is_AADL_Component_Type c /\
             Well_Formed_Component_Type_Interface c /\
-            Well_Formed_Component c.
+            Well_Formed_Component c /\
+            Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
 
     Lemma Well_Formed_Component_Type_dec :
         forall (c:component),
@@ -68,7 +70,9 @@ Section AADL_Component_Type.
         apply Is_AADL_Component_Type_dec.
         apply dec_sumbool_and.
         apply Well_Formed_Component_Type_Interface_dec.
+        apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
+        apply Well_Formed_Property_Associations_dec.
       Qed.
 
 (* begin hide *)
@@ -103,7 +107,8 @@ Section AADL_Component_Implementation.
     Definition Well_Formed_Component_Implementation (c: component) :=
         Is_AADL_Component_Implementation c /\
         Well_Formed_Component_Implementation_Subcomponents c /\
-        Well_Formed_Component c.
+        Well_Formed_Component c /\
+        Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
 
     Lemma Well_Formed_Component_Implementation_dec :
     forall (c:component),
@@ -116,7 +121,9 @@ Section AADL_Component_Implementation.
         apply Is_AADL_Component_Implementation_dec.
         apply dec_sumbool_and.
         apply Well_Formed_Component_Implementation_Subcomponents_dec.
+        apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
+        apply Well_Formed_Property_Associations_dec.
     Qed.
 
 (* begin hide *)

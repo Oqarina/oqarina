@@ -60,29 +60,12 @@ Section WellFormedness_Rules.
     apply Well_Formed_Identifier_prop_dec.
   Qed.
 
-  (** _Note: we add this result to the core hint database. Hence, we can
-    use the "auto" tactics instead of "apply foo_dec"_.
-    *)
+  (* begin hide *)
   Hint Resolve Well_Formed_Component_Id_dec : core.
+  (* end hide *)
 
-  (** ** Properties type checking rules *)
 
-  (*
-  Definition Property_Correctly_Applies_To (c : component) (p : property_association) :=
-    In (c->category) (Applicable_ComponentCategory (p.(PT))).
-
-  Lemma Property_Correctly_Applies_To_dec :
-    forall (p : property_value) (c : component),
-        { Property_Correctly_Applies_To c p  } + { ~ Property_Correctly_Applies_To c p } .
-  Proof.
-    intros p c.
-    unfold Property_Correctly_Applies_To.
-    apply in_dec.
-    unfold eq_dec.
-    apply ComponentCategory_eq_dec.
-  Qed.
-*)
-  (** * AADL legality and consistency rules *)
+  (** * AADL legality rules *)
 
   (** ** Naming rule 4.5 (N1) *)
   (** 4.5 (N1) The defining identifier of a subcomponent declaration placed in a

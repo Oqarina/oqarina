@@ -19,7 +19,7 @@ Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 
 Require Import Oqarina.AADL.declarative.all.
-
+Require Import Oqarina.AADL.instance.all.
 Require Import Oqarina.aadl_port_variable.
 
 Require Import Oqarina.cpdttactics.
@@ -632,7 +632,13 @@ Definition A_Periodic_Thread := Component
   (FQN [Id "pack"] (Id "a_periodic_thread_classifier") None)
   nil
   nil
-  [A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
+  [ A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
+
+Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
+Proof.
+  compute.
+  crush; apply NoDup_nil.
+Qed.
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 

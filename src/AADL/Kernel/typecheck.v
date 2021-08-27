@@ -343,6 +343,12 @@ Definition resolve_property (ps : property_sets) (qname : ps_qname) : option pro
   | _ => None
   end.
 
+  (** [resolve_property_decl] resolves a [property_set_declaration] in [ps]. *)
+
+  Definition resolve_property_decl (ps : property_sets) (qname : ps_qname) : option property_set_declaration :=
+    let 'PSQN setname name := qname in
+     in_model ps (Id setname) (Id name).
+
 Reserved Notation "m '|-' t1 '==' t2" (at level 60, t1, t2 at next level).
 
 Inductive same_typeR (ps : property_sets) (t t' : property_type) : Prop :=

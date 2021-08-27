@@ -21,14 +21,15 @@ Definition Thread_Properties_PS :=
         applies to (thread, device, virtual processor); *)
 
     "Dispatch_Protocol" :prop PT_TypeRef (PSQN "AADL_Project" "Supported_Dispatch_Protocols")
-        => None applies [ thread ; device ; virtualProcessor ];
+        => None applies [ CompCat thread ; CompCat device ; CompCat virtualProcessor ];
 
     (* Priority: inherit aadlinteger
         applies to (thread, thread group, process, system, device, data); *)
 
     "Priority" :prop aadlinteger
       => None
-      applies [ thread ; threadGroup ; process ; system ; device ; data];
+      applies [ CompCat thread ; CompCat threadGroup ; CompCat process ;
+      CompCat system ; CompCat device ; CompCat data];
 
     (* Urgency: aadlinteger 0 .. Max_Urgency
       applies to (port, subprogram); *)
@@ -41,13 +42,14 @@ Definition Thread_Properties_PS :=
 
     "Dequeue_Protocol" :prop PT_Enumeration [
         Id "OneItem"; Id "MultipleItems"; Id "AllItems" ]
-        => (Some (PV_Enum (Id "OneItem"))) applies [];
+        => (Some (PV_Enum (Id "OneItem")))
+        applies [ FeatureCat eventPort ; FeatureCat eventDataPort ];
 
     (* Dequeued_Items: aadlinteger
 		   applies to (event port, event data port); *)
 
     "Dequeued_Items" :prop aadlinteger
-       => None applies [ ]
+       => None applies [ FeatureCat eventPort ; FeatureCat eventDataPort ]
 
 ].
 

@@ -22,7 +22,7 @@ Section AADL_Categories.
 
   (** ** Feature Categories
 
-    The %\coqdocvar{FeatureCategory}% type denotes AADL feature categories.
+    The [FeatureCategory] type denotes AADL feature categories.
     The [invalid] category is an addition used to denote an invalid feature.
 
   *)
@@ -32,6 +32,16 @@ Section AADL_Categories.
     | busAccess | virtualBusAccess | dataAccess| subprogramAccess
     | subprogramGroupAccess | featureGroup | abstractFeature
     | invalid.
+
+(** ** AppliesTo Categories
+
+The [AppliesToCategory] type is an aggreagate type used in [applies to] clauses in AADL. AADL properties may apply to different categories: components, features, meta model elements, etc. Hence the need for such an aggregate.
+
+*)
+
+  Inductive AppliesToCategory : Type :=
+    | CompCat : ComponentCategory -> AppliesToCategory
+    | FeatureCat : FeatureCategory -> AppliesToCategory.
 
   (** ** Feature Directions
 
@@ -47,6 +57,7 @@ Section AADL_Categories.
     (* begin hide *)
   Scheme Equality for ComponentCategory.
   Scheme Equality for FeatureCategory.
+  Scheme Equality for AppliesToCategory.
   Scheme Equality for DirectionType.
 
 End AADL_Categories.
