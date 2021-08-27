@@ -33,6 +33,9 @@ Section AADL_Categories.
     | subprogramGroupAccess | featureGroup | abstractFeature
     | invalid.
 
+  Inductive MetaModelCategory : Type :=
+    | connection.
+
 (** ** AppliesTo Categories
 
 The [AppliesToCategory] type is an aggreagate type used in [applies to] clauses in AADL. AADL properties may apply to different categories: components, features, meta model elements, etc. Hence the need for such an aggregate.
@@ -41,7 +44,9 @@ The [AppliesToCategory] type is an aggreagate type used in [applies to] clauses 
 
   Inductive AppliesToCategory : Type :=
     | CompCat : ComponentCategory -> AppliesToCategory
-    | FeatureCat : FeatureCategory -> AppliesToCategory.
+    | FeatureCat : FeatureCategory -> AppliesToCategory
+    | MetaCat : MetaModelCategory -> AppliesToCategory
+    | all.
 
   (** ** Feature Directions
 
