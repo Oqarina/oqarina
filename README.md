@@ -21,7 +21,7 @@ The following packages should be installed separately using opam:
 * `http://coq.io/`: additional elements to read from files, helper for code extractions
 * `https://github.com/liyishuai/coq-json`: JSON manipulation
 
-Use `make install_deps` (no extraction) or `make install_deps` (extraction) to install them.
+Use `make install_deps` (no extraction) or `make install_deps_bin` (extraction) to install them.
 
 ## Usage
 
