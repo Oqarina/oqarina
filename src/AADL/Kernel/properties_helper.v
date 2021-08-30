@@ -36,6 +36,25 @@ Definition Map_PV_Int_List (pa : list property_association) (default : property_
     | v :: _ => Map_PV_Int v
     end.
 
+(** [Map_PV_Bool] maps a property value to an integer. *)
+
+Definition Map_PV_Bool (pa : property_association) :=
+  match pa.(PV) with
+    | PV_Bool b => b
+    | _ => false (** XXX address error case *)
+  end.
+
+(** [Map_PV_BoolList] returns the property value for property [name] or [default] is the property is not set *)
+
+Definition Map_PV_Bool_List (pa : list property_association) (default : property_value) (name : property_association -> bool) :=
+  match filter name pa with
+    | nil => match default with
+            | PV_Bool i => i
+            | _ => false
+            end
+    | v :: _ => Map_PV_Bool v
+    end.
+
 (** [Get_Record_Member] return the member [name] from the list of field_value *)
 
 Fixpoint Get_Record_Member (pv : list field_value) (name : identifier) :=

@@ -23,6 +23,10 @@ Definition Thread_Properties_PS :=
     "Dispatch_Protocol" :prop PT_TypeRef (PSQN "AADL_Project" "Supported_Dispatch_Protocols")
         => None applies [ CompCat thread ; CompCat device ; CompCat virtualProcessor ];
 
+    (* Dispatch_Able: aadlboolean applies to (thread); *)
+
+    "Dispatch_Able" :prop aadlboolean => None applies [ CompCat thread ];
+
     (* Priority: inherit aadlinteger
         applies to (thread, thread group, process, system, device, data); *)
 
@@ -169,3 +173,17 @@ Definition Is_Dequeued_Items (pa : property_association) :=
 
 Definition Map_Dequeued_Items (pa : list property_association) : Z :=
   Map_PV_Int_List pa (PV_Int 0%Z) Is_Dequeued_Items.
+
+(** %
+  \begin{definition}[Dispatch\_Able (AADLv2.2 \S XXX]
+ TBD
+  \end{definition}
+% *)
+
+Definition Dispatch_Able_Name := PSQN "Thread_Properties" "Dispatch_Able".
+
+Definition Is_Dispatch_Able (pa : property_association) :=
+  Is_Property_Name Dispatch_Able_Name pa.
+
+Definition Map_Dispatch_Able (pa : list property_association) :=
+  Map_PV_Bool_List pa (PV_Bool true) Is_Dequeued_Items.

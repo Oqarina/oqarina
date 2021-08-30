@@ -51,6 +51,7 @@ TBD
     period : AADL_Time;
     deadline : AADL_Time;
     priority : Z;
+    dispatch_able : bool;
     (* wcet : AADL_Time; *)
 
     (* dynamic status *)
@@ -67,6 +68,7 @@ TBD
     period := Map_Period (t->properties);
     priority := Map_Priority (t->properties);
     deadline := Map_Deadline (t->properties);
+    dispatch_able := Map_Dispatch_Able (t->properties);
 
     clock := 0;
     dispatch_time := 0;
@@ -200,10 +202,25 @@ Section AADL_Dispatching.
 
 (** ** Definition of [Enabled]
 
-%\N% From the previous definitions, we can now define the [Enabled] function that returns [true] when a thread is dispatched. First, we define basic predicates for each dispatch protocol.*)
+%\N% From the previous definitions, we can now define the [Enabled] function that returns [true] when a thread is dispatched.
+
+A thread can be enable if it is "dispatchable". Then, we define basic predicates for each dispatch protocol.
+*)
+
+  Definition Thread_Dispatchable (th : thread_state_variable) :=
+    (th.(dispatch_able) = true).
+
+  Lemma Thread_Dispatchable_dec:
+    forall (th : thread_state_variable), dec_sumbool (Thread_Dispatchable th).
+  Proof.
+    unfold dec_sumbool.
+    unfold Thread_Dispatchable.
+    intros.
+    apply bool_dec.
+  Defined.
 
   Definition Periodic_Enabled (th : thread_state_variable) :=
-    th.(clock) mod th.(period) = 0.
+    (Thread_Dispatchable th) /\ (th.(clock) mod th.(period) = 0).
 
   (* begin hide *)
   Lemma Periodic_Enabled_dec:
@@ -212,12 +229,15 @@ Section AADL_Dispatching.
     unfold dec_sumbool.
     unfold Periodic_Enabled.
     intros.
+    apply dec_sumbool_and.
+    apply Thread_Dispatchable_dec.
     apply Z.eq_dec.
   Defined.
   (* end hide *)
 
   Definition Aperiodic_Enabled (th : thread_state_variable) :=
-    Thread_Has_Activated_Triggering_Feature th.
+    (Thread_Dispatchable th) /\
+      (Thread_Has_Activated_Triggering_Feature th).
 
   (* begin hide *)
   Lemma Aperiodic_Enabled_dec:
@@ -226,13 +246,16 @@ Section AADL_Dispatching.
     unfold dec_sumbool.
     unfold Aperiodic_Enabled.
     intros.
+    apply dec_sumbool_and.
+    apply Thread_Dispatchable_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
   (* end hide *)
 
   Definition Sporadic_Enabled (th : thread_state_variable) :=
-    th.(period) <= th.(clock) /\
-     Thread_Has_Activated_Triggering_Feature th.
+    (Thread_Dispatchable th) /\
+      th.(period) <= th.(clock) /\
+      Thread_Has_Activated_Triggering_Feature th.
 
   (* begin hide *)
   Lemma Sporadic_Enabled_dec:
@@ -242,14 +265,17 @@ Section AADL_Dispatching.
     unfold Sporadic_Enabled.
     intros.
     apply dec_sumbool_and.
+    apply Thread_Dispatchable_dec.
+    apply dec_sumbool_and.
     apply Z_le_dec. (* {period th <= clock th} + {~ period th <= clock th} *)
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
   (* end hide *)
 
   Definition Timed_Enabled (th : thread_state_variable) :=
-    (th.(period) = th.(clock)) \/
-    Thread_Has_Activated_Triggering_Feature th.
+    (Thread_Dispatchable th) /\
+    ((th.(period) = th.(clock)) \/
+    Thread_Has_Activated_Triggering_Feature th).
 
   (* begin hide *)
   Lemma Timed_Enabled_dec:
@@ -258,6 +284,8 @@ Section AADL_Dispatching.
     unfold dec_sumbool.
     unfold Timed_Enabled.
     intros.
+    apply dec_sumbool_and.
+    apply Thread_Dispatchable_dec.
     apply dec_sumbool_or.
     apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
@@ -265,7 +293,7 @@ Section AADL_Dispatching.
   (* end hide *)
 
   Definition Hybrid_Enabled (th : thread_state_variable) :=
-    (th.(period) = th.(clock)) /\
+    (Thread_Dispatchable th) /\ (th.(period) = th.(clock)) /\
     Thread_Has_Activated_Triggering_Feature th.
 
   (* begin hide *)
@@ -276,13 +304,15 @@ Section AADL_Dispatching.
     unfold Hybrid_Enabled.
     intros.
     apply dec_sumbool_and.
+    apply Thread_Dispatchable_dec.
+    apply dec_sumbool_and.
     apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
   (* end hide *)
 
   Definition Background_Enabled (th : thread_state_variable) :=
-    True.
+    (Thread_Dispatchable th).
 
   (* begin hide *)
   Lemma Background_Enabled_dec:
@@ -290,7 +320,7 @@ Section AADL_Dispatching.
   Proof.
     unfold dec_sumbool.
     unfold Background_Enabled.
-    auto.
+    apply Thread_Dispatchable_dec.
   Defined.
   (* end hide *)
 
@@ -420,6 +450,7 @@ Section Thread_RTS.
       period := th.(period);
       deadline := th.(deadline);
       priority := th.(priority);
+      dispatch_able := th.(dispatch_able);
 
       input_ports := th.(input_ports);
       output_ports := th.(output_ports);
@@ -441,6 +472,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -459,6 +492,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -480,6 +515,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -517,6 +554,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     input_ports := t.(input_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -538,6 +577,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     input_ports := t.(input_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -577,6 +618,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -596,6 +639,8 @@ This private API function stores a value in an outer\_port of an AADL thread.
     period := t.(period);
     deadline := t.(deadline);
     priority := t.(priority);
+    dispatch_able := t.(dispatch_able);
+
     clock := t.(clock);
     output_ports := t.(output_ports);
     dispatch_trigger := t.(dispatch_trigger);
@@ -742,8 +787,6 @@ Lemma ETF: Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_
 Proof.
   trivial.
 Qed.
-
-Compute Frozen_Ports' (th).
 
 (* - At this stage, we have not called receive_input, no event available *)
 
