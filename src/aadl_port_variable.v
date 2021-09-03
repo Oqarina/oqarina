@@ -174,8 +174,6 @@ Section Port_Variable_RTS.
 TBD
   \end{definition} %*)
 
-(** This implements a drop newest, must do other*)
-
     Definition Store_DropNewest  (p : port_variable) (name : identifier) (value : PortVal.V) :=
       if identifier_beq (projectionFeatureIdentifier p.(port)) name
         && (Z.of_nat (PortQueue.count p.(outer_variable)) <? p.(size))
