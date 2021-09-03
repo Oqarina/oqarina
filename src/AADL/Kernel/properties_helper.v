@@ -9,12 +9,33 @@ Import ListNotations.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
-
+Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
 (** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
 Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
   ps_qname_beq pa.(P) name.
+
+(** [Is_Property_Defined] returns [True] iff property [name] is defined. *)
+
+Fixpoint Is_Property_Defined (name : ps_qname) (pa : list property_association) :=
+  match pa with
+  | [] => False
+  | h :: t => (name = h.(P)) \/ (Is_Property_Defined name t)
+  end.
+
+Lemma Is_Property_Defined_dec :
+  forall (name:ps_qname) (pa: list property_association),
+    {Is_Property_Defined name pa} + {~ Is_Property_Defined name pa}.
+Proof.
+  intros.
+  unfold Is_Property_Defined.
+  induction pa.
+  auto.
+  apply dec_sumbool_or.
+  apply ps_qname_eq_dec.
+  apply IHpa.
+Qed.
 
 (** [Map_PV_Int] maps a property value to an integer. *)
 
