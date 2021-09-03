@@ -107,6 +107,7 @@ test_build_docker:  ## Test build using docker
 clean:              ## Clean generated files
 	-$(MAKE) -f coq_makefile clean
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
+	-rm -rf _build
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
 	( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
@@ -117,20 +118,20 @@ clean:              ## Clean generated files
 
 distclean:          ## Distclean
 	$(MAKE) clean
-	-rm -rf html
+	-rm -rf html coq-oqarina.opam
 	-rm extraction/*.ml extraction/*.mli
 
 # -----------------------------------------------------------------------------
 # License management
 #
-# We use https://github.com/johann-petrak/licenseheaders.  We provide
-# a local copy (original code is MIT licensed). It has been adjusted
-# to support '.v' file
+# See https://github.com/jjhugues/licenseheaders for an adaptation of
+# the licenseheaders.py script to support Coq.
 #
 
 .PHONY: update_license
 update_license:     ## Update all license headers
-	python3 ./licenseheaders.py -t license-header.txt -cy -d src
+	python3 `which licenseheaders.py` -t tools/license-header.txt -cy -d src
+	python3 `which licenseheaders.py` -t tools/license-header.txt -cy -d extraction
 
 deps.dot: _CoqProject
 	tools/deps.sh > deps.dot-
