@@ -22,9 +22,18 @@ Section ThreadStateMonad.
     Context {MonadExc_m : MonadExc string m}.
 
     Inductive thread_action :=
-    | th_crash
+    (* Definition of the "private" RTS of a thread, i.e. the functions that the AADL runtime may manipulate *)
+
+    | th_advance_time : AADL_Time -> thread_action
     | th_store_in : identifier -> bool -> thread_action
-    | th_advance_time : AADL_Time -> thread_action.
+
+    (* Definition of the "public" RTS of a thred, as defined by the AADL standard. *)
+
+    | th_await_dispatch
+    | th_get_count : identifier -> thread_action
+
+    (* To crash the thread *)
+    | th_crash.
 
     Fixpoint run_actions' (act : list thread_action): m thread_state_variable :=
         match act with
@@ -34,7 +43,7 @@ Section ThreadStateMonad.
             match h with
             | th_store_in id value => MonadState.put (store_in v id value)
             | th_advance_time time => MonadState.put (advance_time v time)
-            | th_crash => raise "kaboom"%string
+            | _ => raise "kaboom"%string
             end ;;
             run_actions' t
         end.
@@ -51,7 +60,7 @@ Definition main := run_actions [] A_Periodic_Thread_State.
 Compute main.
 
 Compute run_actions [ th_store_in  (Id "a_feature") true ;
-                      th_crash ;
+                   (*   th_crash ; *)
                       th_advance_time 1%Z ]
                         A_Periodic_Thread_State.
 
