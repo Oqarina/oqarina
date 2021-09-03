@@ -13,7 +13,6 @@ Require Import Oqarina.AADL.Kernel.typecheck.
 
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
-Require Import Oqarina.cpdttactics.
 (* end hide *)
 
 (** XXX Actually wrong, we must check for the direction of the feature as well *)
@@ -98,7 +97,7 @@ Qed.
      let p_decl := resolve_property_decl ps p.(P) in
      match p_decl with
         | Some p_decl' => In (CompCat (c->category)) (Applicable_ComponentCategory p_decl')
-        | None => False 
+        | None => False
      end.
 
   Lemma Property_Correctly_Applies_To_dec :
