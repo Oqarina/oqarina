@@ -1,7 +1,5 @@
 -Q src Oqarina
 
-src/cpdttactics.v
-
 src/coq_utils/utils.v
 
 src/core/identifiers.v

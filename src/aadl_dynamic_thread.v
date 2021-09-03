@@ -22,8 +22,6 @@ Require Import Oqarina.AADL.declarative.all.
 Require Import Oqarina.AADL.instance.all.
 Require Import Oqarina.aadl_port_variable.
 
-Require Import Oqarina.cpdttactics.
-(* https://jozefg.bitbucket.io/posts/2014-07-09-dissecting-crush.html *)
 Open Scope Z_scope.
 (* end hide *)
 
@@ -679,19 +677,34 @@ Definition A_Periodic_Thread := Component
   nil
   [ A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
 
+Ltac prove_component_wf :=
+  repeat match goal with
+    | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
+    | |- (Id _ = Id _ -> False) => injection; inversion H
+    | |- NoDup [] => apply NoDup_nil
+  end.
+
 Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
 Proof.
-  compute.
-  crush; apply NoDup_nil.
+  prove_component_wf.
 Qed.
+
+Ltac prove_thread_state_variable_wf :=
+  repeat match goal with
+    | |- thread_state_variable_wf _ => compute; repeat split; auto
+    | |- ( _ = Unspecified_Dispatch_Protocol -> False) => discriminate
+    | |- ( _ = Unspecified_Overflow_Handling_Protocol -> False) => discriminate
+    | |- ( _ = Unspecified_Dequeue_Protocol -> False) => discriminate
+    | |- NoDup [ _ ] => apply NoDup_cons ; auto
+    | |- NoDup [] => apply NoDup_nil
+
+  end.
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 
 Lemma A_Periodic_Thread_State_valid : thread_state_variable_wf A_Periodic_Thread_State_ .
 Proof.
-  unfold thread_state_variable_wf.
-  compute.
-  crush.
+  prove_thread_state_variable_wf.
 Qed.
 
 (** - "activate" the thread *)
@@ -742,11 +755,7 @@ Definition A_Sporadic_Thread_State_ := mk_thread_state_variable (A_Sporadic_Thre
 
 Lemma A_Sporadic_Thread_State_valid : thread_state_variable_wf A_Sporadic_Thread_State_.
 Proof.
-  unfold thread_state_variable_wf.
-  compute.
-  crush.
-  apply NoDup_cons ; auto.
-  apply NoDup_nil.
+  prove_thread_state_variable_wf.
 Qed.
 
 Definition A_Sporadic_Thread_State := update_thread_state A_Sporadic_Thread_State_.
