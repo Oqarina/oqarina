@@ -81,7 +81,9 @@ Scheme Equality for system_states.
 Inductive system_actions : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
 
-Definition system_Fire (s : system_states) (a : system_actions) : list system_actions := nil.
+Definition system_inputs : Type := unit.
+
+Definition system_Fire (s : system_states) (a : system_actions) : list system_inputs := nil.
 
 Definition system_Post_Fire
     (s : system_states)
@@ -98,26 +100,27 @@ Definition system_Post_Fire
         | _, _ => s
         end.
 
-Definition system_Deadline (s : system_states)  (i : system_actions) : Time :=
+Definition system_Deadline (s : system_states) (a : system_actions) : Time :=
     0%nat.
 
 Definition system_Time_Update
-    (s : system_states)  (i : system_actions) (t : Time) : system_states :=
+    (s : system_states)  (a : system_actions) (t : Time) : system_states :=
     s.
-
-Definition System_Actor : Actor system_states system_actions := {|
+(*
+Definition System_Actor : Actor system_states system_actions system_inputs (*system_inputs*) := {|
     Initial_State := system_offline;
     Fire := system_Fire;
     Post_Fire := system_Post_Fire;
     Deadline := system_Deadline;
     Time_Update := system_Time_Update;
 |}.
-
+*)
 (** * Example *)
 
 (** %\N% From the previous elements, one can step a system *)
-
+(*
 Definition System_LTS := LTS_Of (System_Actor).
 
 Example f' := step_lts System_LTS (Init System_LTS) (Dis [start_system ; started_system]).
 Compute f'.
+*)

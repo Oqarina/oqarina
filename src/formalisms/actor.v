@@ -1,6 +1,6 @@
 (** %\chapter{Actor Component Model}\label{chap::actor}%
 
-The following captures the Actor component model as described in the Ptolemy toolset and presented in %\cite{tripakisModularFormalSemantics2013,leeHeterogeneousActorModeling2011}%. *)
+The following captures the Actor component model as described in the Ptolemy toolset and presented in %\cite{tripakisModularFormalSemantics2013,leeHeterogeneousActorModeling2011}%. This model has been extended to decouple actions of a component from input/output communication.  *)
 
 (* begin hide *)
 (** Coq Library *)
@@ -24,32 +24,48 @@ Section Actor_Definition.
 
     (** * Definition of an actor
 
-    % \begin{definition}[Actor (Ptolemy)]
-    An Actor is a tuple $A = (I,O,S,s_0,F,P,D,T)$ where $I$ is a set of input variables, $O$ is a set of output variables, $S$ is a set of state variables, $s_0 \in S$ is the initial state, and $Fire$, $Post\_Fire$, $Deadline$, and $Time_Update$ are total functions with the following types that controls the execution of an actor.
+    %
+    In Ptolemy, an Actor~\cite{tripakisModularFormalSemantics2013,leeHeterogeneousActorModeling2011} is defined as a tuple $A = (I,O,S,s_0,F,P,D,T)$ where $I$ is a set of input variables, $O$ is a set of output variables, $S$ is a set of state variables, $s_0 \in S$ is the initial state, and $Fire$, $Post\_Fire$, $Deadline$, and $Time\_Update$ are total functions that controls the execution of an actor. This model fits the regular model of computations-driven CPS. However, inputs and outputs are base numeric types only. This does not sufficiently capture the life-cycle of an actor. Indeed, one need to initialize a component, change its mode of operation in addition to performing computation.%
 
-    \end{definition}% *)
+    This model has been recently revisited to define the Reactor model  %\cite{lohstrohLinguaFrancaDeterministic2021}%. Reactors provide a clearer separation between input/outputs and actions. Yet, this model has a couple of abstraction limits. The most important one at this stage is the absence of an explicit Director that synchronizes components for different MoCs. This limitation stems from the targeted domain of reactive systems.
 
-    Variable St : Type. (* States *)
-    Variable V : Type.  (* Values *)
+    Hence, we revise the definition of actors as follows: intuitively, an actor is an automata-like ADT. It is defined by a state and a collection of operations that operate on this state. We define the following:
+    - [L] a set of labels that represent the different phases of the execution of the actor;
+    - [A] denote the actions that the actor may perform;
+    - [V] are the values the actor may receive or send;
+    - [I] represents the internal state of an actor, i.e. any memory the actor needs.
 
-    Record Actor: Type := {
-        (* Immutable state variable *)
-        Initial_State : St;
+    An actor relies on an definition of time, inherited from [Time] formalization.
 
-        (* Mapping functions *)
-        Fire : St -> V -> list V;
-        Post_Fire : St -> V -> St;
-        Deadline : St -> V -> Time;
-        Time_Update : St -> V -> Time -> St;
-    }.
+    *)
+
+    Variable L : Type. (* State labels *)
+    Variable A : Type. (* Actions *)
+    Variable V : Type. (* Values *)
+    Variable I : Type. (* private state *)
+
+    (** First, we define [Actor_State] as a placeholder to store the current state of an acort. An [Actor_State] is a tuple that holds [Current_State] which is is the curent state label (i.e. position in the underlying automata). [Actor_State] represents the mutable part of an actor definition. *)
 
     Record Actor_State : Type := {
-        Current_State : St;
+        Current_State : L;
         Clock_Variable : Time;
         Inputs : list V;
         Outputs : list V;
+        Internal : I;
     }.
 
+    (** Then, we define [Actor] as the immutable part of an actor definition. An [Actor] gathers the definition of initial state of an actor, and the definitions of the various operations on a state. *)
+
+    Record Actor: Type := {
+        (* Immutable state variable *)
+        Initial_State : L;
+
+        (* Mapping functions *)
+        Fire : Actor_State -> A -> Actor_State;
+        Post_Fire : Actor_State -> A -> Actor_State;
+        Deadline : L -> A -> Time;
+        Time_Update : L -> A -> Time -> L;
+    }.
     (** * Operations on an actor.
 
     We provide three accessors for manipulating inputs, outpurs and setting the initial state of an actor. *)
@@ -61,6 +77,7 @@ Section Actor_Definition.
         Clock_Variable := ast.(Clock_Variable);
         Inputs := ast.(Inputs);
         Outputs := tl ast.(Outputs);
+        Internal := ast.(Internal);
     |}.
 
     (** - [Set_Input] adds one input to an Actor. *)
@@ -70,45 +87,55 @@ Section Actor_Definition.
         Clock_Variable := ast.(Clock_Variable);
         Inputs := concat [ast.(Inputs) ; i] ;
         Outputs := ast.(Outputs);
+        Internal := ast.(Internal);
+    |}.
+
+    (** - [Set_Output] adds one output to an Actor. *)
+
+    Definition Set_Output (ast : Actor_State) (i : list V) := {|
+        Current_State := ast.(Current_State);
+        Clock_Variable := ast.(Clock_Variable);
+        Inputs := ast.(Inputs);
+        Outputs := concat [ast.(Outputs) ; i] ;
+        Internal := ast.(Internal);
     |}.
 
     (** - [Set_Initial_Actor_State] configures the initial state of an actor. *)
 
-    Definition Set_Initial_Actor_State (A : Actor) : Actor_State := {|
+    Definition Set_Initial_Actor_State (A : Actor) (Internal : I): Actor_State := {|
         Current_State := Initial_State A;
         Clock_Variable := 0;
         Inputs := nil;
         Outputs := nil;
+        Internal := Internal;
     |}.
 
     (** * Actions on an actor. *)
 
     (** An actor my perform untimed or timed action. we first define each concept separately, then we build a common action type: [Actor_Action]. Each action runs the actors functions defined in [a] on [ast] and returns an updated actor state. *)
 
-    Definition Untimed_Action (a : Actor) (ast : Actor_State) (i : V) : Actor_State := {|
-        Current_State := (Post_Fire a) (Current_State ast) i;
-        Clock_Variable := (Clock_Variable ast);
-        Inputs := tail ast.(Inputs);
-        Outputs := concat [((Fire a) (Current_State ast) i) ; (Outputs ast)];
-    |}.
+    Definition Untimed_Action (actor : Actor) (ast : Actor_State) (action : A) : Actor_State :=
+    let step1 := (Fire actor) ast action in
+        (Post_Fire actor) step1 action.
 
-    Definition Untimed_Actions (a : Actor) (ast : Actor_State) (i : list V) :=
-        fold_left (fun x y => Untimed_Action a x y) i ast.
+    Definition Untimed_Actions (actor : Actor) (ast : Actor_State) (actions : list A) :=
+        fold_left (fun x y => Untimed_Action actor x y) actions ast.
 
-    Definition Timed_Action (a : Actor) (ast : Actor_State) (i : V) (dt : Time) :
+    Definition Timed_Action (actor : Actor) (ast : Actor_State) (action : A) (dt : Time) :
         Actor_State :=
-        if dt <=? (Deadline a) (Current_State ast) i then {|
+        if dt <=? (Deadline actor) (Current_State ast) action then {|
                 Clock_Variable := (Clock_Variable ast) + dt;
-                Current_State := (Time_Update a) (Current_State ast) i dt;
+                Current_State := (Time_Update actor) (Current_State ast) action dt;
                 Inputs := ast.(Inputs);
-                Outputs := (Outputs ast)
+                Outputs := ast.(Outputs);
+                Internal := ast.(Internal);
             |}
         else
             ast.
 
     Inductive Actor_Action :=
-        | Dis : list V -> Actor_Action
-        | Temp : V -> Time -> Actor_Action.
+        | Dis : list A -> Actor_Action
+        | Temp : A -> Time -> Actor_Action.
 
     (** - [Actor_Step] executes one step, executing the action [act]. This function returns an updated [Actor_State].*)
 
@@ -116,16 +143,16 @@ Section Actor_Definition.
     Definition Actor_Step (a : Actor) (ast : Actor_State) (act: Actor_Action) :
         Actor_State :=
             match act with
-                | Dis i => Untimed_Actions a ast i
-                | Temp i t => Timed_Action a ast i t
+                | Dis action => Untimed_Actions a ast action
+                | Temp action t => Timed_Action a ast action t
                 end.
     Unset Asymmetric Patterns.
 
     (** - [LTS_Of] builds a labelled transition system (LTS) out of an actor. *)
 
-    Definition LTS_Of (a : Actor) : LTS_struct := {|
+    Definition LTS_Of (a : Actor) (Internal : I) : LTS_struct := {|
         States := Actor_State;
-        Init := Set_Initial_Actor_State a;
+        Init := Set_Initial_Actor_State a Internal;
         Actions := Actor_Action;
         Steps := fun ast act => Actor_Step a ast act;
     |}.
@@ -140,21 +167,23 @@ Section Actor_Definition.
         Actors : list (Actor * Actor_State);
         Connections : list Connection;
     }.
-
+(*
     Definition Set_Initial_States (l : list Actor) : list (Actor_State) :=
         map Set_Initial_Actor_State l.
-
+*)
     Definition Build_Actor_Diagram
         (actors : list Actor)
+        (initial_states : list Actor_State)
         (cnx : list Connection) := {|
-            Actors := combine actors (Set_Initial_States actors);
+            Actors := combine actors initial_states;
             Connections := cnx;
         |}.
 
     Definition Actor_Diagram_Step
-        (diag : Actor_Diagram)
-        (action : Actor_Action)
-        (id : nat) := {|
+            (diag : Actor_Diagram)
+            (action : Actor_Action)
+            (id : nat) :=
+        {|
             Actors := list_alter id diag.(Actors)
                 (fun x => pair (fst x) (Actor_Step (fst x) (snd x) action));
             Connections := diag.(Connections);
@@ -164,8 +193,8 @@ Section Actor_Definition.
         map snd (Actors diag).
 
     Definition Actor_Diagram_Reset_Output
-        (diag : Actor_Diagram)
-        (id : nat)
+            (diag : Actor_Diagram)
+            (id : nat)
         := {|
             Actors := list_alter id diag.(Actors)
                 (fun x => pair (fst x) (Fetch_Output (snd x)));
@@ -206,106 +235,241 @@ End Actor_Definition.
 
 (** In this example, we build a producer/consummer system made of two actors, and a diagram. *)
 
-Inductive some_states := dummy.
-Definition some_types := nat.
-Definition a_value : some_types := 42.
+Section Actor_Example.
 
-(** ** Definition of [producer_Actor] *)
+    Inductive some_states := dummy.
+    Definition some_types := nat.
 
-Definition producer_states := some_states.
-Definition producer_inputs := some_types.
-Definition producer_outputs  := some_types.
+    (** ** Definition of [producer_Actor] *)
 
-Definition producer_Fire
-    (s : producer_states) (i : producer_inputs) : list producer_outputs := [ a_value ].
+    Definition producer_labels := some_states.
+    Inductive producer_actions := step.
+    Definition producer_V := some_types.
+    Definition producer_internal := unit.
+    Definition producer_state : Type := Actor_State producer_labels producer_V producer_internal.
 
-Definition producer_Post_Fire
-    (s : producer_states)  (i : producer_inputs) : producer_states := dummy.
+    Definition producer_Fire (ast : producer_state) (action : producer_actions) :=
+        Set_Output ast [42].
 
-Definition producer_Deadline (s : producer_states)  (i : producer_inputs) : Time := 0.
+    Definition producer_Post_Fire (ast : producer_state) (action : producer_actions) := ast.
 
-Definition producer_Time_Update
-    (s : producer_states)  (i : producer_inputs) (t : Time) : producer_states := s.
+    Definition producer_Deadline (s : producer_labels) (action : producer_actions)  : Time := 0.
 
-Definition producer_Actor : Actor producer_states producer_inputs := {|
-    (* Immutable state variable *)
-    Initial_State := dummy;
+    Definition producer_Time_Update
+        (s : producer_labels) (action : producer_actions) (t : Time) : producer_labels := s.
 
-    (* Mapping function *)
-    Fire := producer_Fire;
-    Post_Fire := producer_Post_Fire;
-    Deadline := producer_Deadline;
-    Time_Update := producer_Time_Update;
-|}.
+    Definition producer_Actor : Actor producer_labels producer_actions producer_V producer_internal := {|
+        (* Immutable state variable *)
+        Initial_State := dummy;
 
-(** ** Definition of [consumer_Actor] *)
+        (* Mapping function *)
+        Fire := producer_Fire;
+        Post_Fire := producer_Post_Fire;
+        Deadline := producer_Deadline;
+        Time_Update := producer_Time_Update;
+    |}.
 
-Definition consumer_states := some_states.
-Definition consumer_inputs := nat.
-Definition consumer_outputs := nat.
+    Definition producer_initial_state := Set_Initial_Actor_State producer_Actor tt.
 
-Definition consumer_Fire
-    (s : consumer_states) (i : consumer_inputs) : list consumer_outputs := [ ].
+    (** ** Definition of [consumer_Actor] *)
 
-Definition consumer_Post_Fire
-    (s : consumer_states)  (i : consumer_inputs) : consumer_states := dummy.
+    Definition consumer_labels := some_states.
+    Definition consumer_actions := producer_actions.
+    Definition consumer_V := producer_V.
+    Definition consumer_internal := unit.
 
-Definition consumer_Deadline (s : consumer_states)  (i : consumer_inputs) : Time := 0.
+    Definition consumer_state : Type := Actor_State consumer_labels consumer_V consumer_internal.
+    Definition consumer_Fire
+        (ast : consumer_state) (action : consumer_actions) :=
+    match ast.(Inputs) with
+        | h :: t => {|
+            Current_State := ast.(Current_State);
+            Clock_Variable := ast.(Clock_Variable);
+            Inputs := t;
+            Outputs := ast.(Outputs) ;
+            Internal := ast.(Internal);
+            |}
+        | [] => ast
+    end.
 
-Definition consumer_Time_Update
-    (s : consumer_states)  (i : consumer_inputs) (t : Time) : consumer_states := s.
+    Definition consumer_Post_Fire
+        (ast : consumer_state) (action : consumer_actions) := ast.
 
-Definition consumer_Actor : Actor consumer_states consumer_inputs := {|
-    (* Immutable state variable *)
-    Initial_State := dummy;
+    Definition consumer_Deadline (s : consumer_labels)  (action : consumer_actions) : Time := 0.
 
-    (* Mapping function *)
-    Fire := consumer_Fire;
-    Post_Fire := consumer_Post_Fire;
-    Deadline := consumer_Deadline;
-    Time_Update := consumer_Time_Update;
-|}.
+    Definition consumer_Time_Update
+        (s : consumer_labels)  (action : consumer_actions) (t : Time) : consumer_labels := s.
 
-(** ** Definition of the [prodcons_Diagram] *)
+    Definition consumer_Actor : Actor consumer_labels consumer_actions consumer_V consumer_internal  := {|
+        (* Immutable state variable *)
+        Initial_State := dummy;
 
-Definition prod := producer_Actor.
-Definition cons := consumer_Actor.
+        (* Mapping function *)
+        Fire := consumer_Fire;
+        Post_Fire := consumer_Post_Fire;
+        Deadline := consumer_Deadline;
+        Time_Update := consumer_Time_Update;
+    |}.
+    Definition consumer_initial_state := Set_Initial_Actor_State consumer_Actor tt.
+    (** ** Definition of the [prodcons_Diagram] *)
 
-Definition prodcons_Diagram := Build_Actor_Diagram [prod ; cons] [ [ 1 ] ; []].
-Compute (Get_States prodcons_Diagram).
+    (** - Initial Actor diagram for the producer/consumer model *)
 
-Compute Get_States (Actor_Diagram_Step prodcons_Diagram (Dis [ 1 ]) 0).
+    Definition prodcons_Diagram_step0 :=
+        Build_Actor_Diagram [producer_Actor ; consumer_Actor] [producer_initial_state ; consumer_initial_state] [ [ 1 ] ; []].
+        Compute Get_States prodcons_Diagram_step0.
+    Lemma step0_OK : Get_States prodcons_Diagram_step0 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := []; Internal := tt;|};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := []; Internal := tt; |}].
+    Proof.
+        trivial.
+    Qed.
+Print prodcons_Diagram_step0.
+    (** - Set an input on the producer node *)
 
-Definition prodcons_Diagram_step0 := Actor_Diagram_Set_Input prodcons_Diagram ([ 1 ]) 0.
-Compute Get_States prodcons_Diagram_step0.
-Definition prodcons_Diagram_step1 :=
-    Actor_Diagram_Step prodcons_Diagram_step0 (Dis [ 1 ]) 0.
-Compute Get_States prodcons_Diagram_step1.
-Definition prodcons_Diagram_step2 := Actor_Diagram_Reset_Output prodcons_Diagram_step1 0.
-Compute Get_States prodcons_Diagram_step2.
+    Definition prodcons_Diagram_step1 :=
+        Actor_Diagram_Set_Input prodcons_Diagram_step0 ([ 1 ]) 0.
+    Lemma step1_OK : Get_States prodcons_Diagram_step1 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := [1]; Outputs := [];Internal := tt; |};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [];Internal := tt;  |}].
+    Proof.
+        trivial.
+    Qed.
 
-Definition coin St V (a : Actor_Diagram St V) (i : V) (id : nat) :=
-    compose (fun x : Actor_Diagram St V => Actor_Diagram_Step x (Dis [ i ]) id)
-            (fun x : Actor_Diagram St V => Actor_Diagram_Set_Input x ([  ]) id)
-        a.
+    (** - Producer node computes, setting its output. _Note: we resume from step0 as step1 does not make sense from an application perspecive_.  *)
 
-Definition coin2 St V (a : Actor_Diagram St V) (i : V) (id : nat) :=
-    let micro_step1 := Actor_Diagram_Set_Input a ([  ]) id in
-        Actor_Diagram_Step micro_step1 (Dis [ i ]) id.
+    Definition prodcons_Diagram_step2 :=
+        Actor_Diagram_Step prodcons_Diagram_step0 (Dis [ step ]) 0.
+    Lemma step2_OK : Get_States prodcons_Diagram_step2 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [42];Internal := tt;  |};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [];Internal := tt;  |}].
+    Proof.
+        trivial.
+    Qed.
 
-Definition prodcons_Diagram_step1bis := coin prodcons_Diagram 42 0.
-Compute Get_States prodcons_Diagram_step1bis.
+    (** - the output is propagated to the consumer *)
 
-Definition prodcons_Diagram_step1ter := coin2 prodcons_Diagram 42 0.
-Compute Get_States prodcons_Diagram_step1ter.
+    Definition prodcons_Diagram_step3 := Propagate_Outputs prodcons_Diagram_step2 0.
+    Lemma step3_OK : Get_States prodcons_Diagram_step3 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [42];Internal := tt;  |};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := [42]; Outputs := [];Internal := tt;  |}].
+    Proof.
+        trivial.
+    Qed.
 
-Definition prodcons_Diagram_step2bis := Propagate_Outputs prodcons_Diagram_step1bis 0.
-Compute Get_States prodcons_Diagram_step2bis.
-Definition prodcons_Diagram_step3bis :=
-    Actor_Diagram_Reset_Output prodcons_Diagram_step2bis 0.
-Compute Get_States prodcons_Diagram_step3bis.
+    (** - the output is deleted from the producer *)
 
-Print Actor_Diagram_Step.
+    Definition prodcons_Diagram_step4 :=
+        Actor_Diagram_Reset_Output prodcons_Diagram_step3 0.
+    Lemma step4_OK : Get_States prodcons_Diagram_step4 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [];Internal := tt;  |};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := [42]; Outputs := [];Internal := tt;  |}].
+    Proof.
+        trivial.
+    Qed.
 
-Definition prodcons_Diagram_step4 := coin2 prodcons_Diagram_step3bis 1 1.
-Compute Get_States prodcons_Diagram_step4.
+    (** - the consumer computes its reaction*)
+
+    Definition prodcons_Diagram_step5 :=
+        Actor_Diagram_Step prodcons_Diagram_step4 (Dis [ step ]) 1.
+    Lemma step5_OK : Get_States prodcons_Diagram_step5 =
+        [{| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [];Internal := tt;  |};
+        {| Current_State := dummy; Clock_Variable := 0; Inputs := []; Outputs := [];Internal := tt;  |}].
+    Proof.
+        trivial.
+    Qed.
+
+    (** ** Definition of [director_Actor] *)
+
+    Inductive director_labels := step0 | step1 | step2  | step3 | step4 | step5.
+    Inductive director_actions := director_step.
+    Definition director_V := nat.
+    Definition director_outputs := nat.
+
+    Definition director_internal := Actor_Diagram producer_labels producer_actions producer_V
+    producer_internal.
+
+    Definition director_state : Type := Actor_State director_labels director_V director_internal.
+
+    Definition director_Fire
+        (ast : director_state) (action : director_actions)  :=
+        let local_internal := match ast.(Current_State) with
+            | step0 => Actor_Diagram_Step ast.(Internal) (Dis [ step ]) 0
+            | step1 => Propagate_Outputs ast.(Internal) 0
+            | step2 => Actor_Diagram_Reset_Output ast.(Internal) 0
+            | step3 => Actor_Diagram_Step ast.(Internal) (Dis [ step ]) 1
+            | _ => ast.(Internal)
+
+        end in {|
+            Clock_Variable := (Clock_Variable ast);
+            Current_State := ast.(Current_State);
+            Inputs := ast.(Inputs);
+            Outputs := ast.(Outputs);
+            Internal := local_internal ;
+        |}.
+    Definition rotata_director_labels (d : director_labels ) :=
+        match d with
+            | step0 => step1
+            | step1 => step2
+            | step2 => step3
+            | step3 => step4
+            | step4 => step5
+            | step5 => step0
+        end.
+
+    Definition director_Post_Fire
+    (ast : director_state) (action : director_actions) :=
+        {|
+            Clock_Variable := (Clock_Variable ast);
+            Current_State := rotata_director_labels ast.(Current_State);
+            Inputs := ast.(Inputs);
+            Outputs := ast.(Outputs);
+            Internal := ast.(Internal);
+    |}.
+
+    Definition director_Deadline (s : director_labels)  (action : director_actions) : Time := 0.
+
+    Definition director_Time_Update
+        (s : director_labels)  (action : director_actions) (t : Time) := s.
+
+    Definition director_Actor : Actor director_labels director_actions director_V director_internal := {|
+        (* Immutable state variable *)
+        Initial_State := step0;
+
+        (* Mapping function *)
+        Fire := director_Fire;
+        Post_Fire := director_Post_Fire;
+        Deadline := director_Deadline;
+        Time_Update := director_Time_Update;
+    |}.
+
+    Definition da_initial_state :=
+        Set_Initial_Actor_State director_Actor prodcons_Diagram_step0.
+    Compute (Current_State da_initial_state).
+
+    (*  Definition Actor_Step (a : Actor) (ast : Actor_State) (act: Actor_Action) :*)
+    Definition da_step1 := Actor_Step director_Actor da_initial_state (Dis [director_step]).
+    Compute (Get_States (Internal da_step1)).
+    Compute (Current_State da_step1).
+
+    Definition da_step2 := Actor_Step director_Actor da_step1 (Dis [director_step]).
+    Compute (Get_States (Internal da_step2)).
+    Compute (Current_State da_step2).
+
+    Definition da_step3 := Actor_Step director_Actor da_step2 (Dis [director_step]).
+    Compute (Get_States (Internal da_step3)).
+    Compute (Current_State da_step3).
+
+    Definition da_step4 := Actor_Step director_Actor da_step3 (Dis [director_step]).
+    Compute (Get_States (Internal da_step4)).
+    Compute (Current_State da_step4).
+
+    Definition da_step5 := Actor_Step director_Actor da_step4 (Dis [director_step]).
+    Compute (Get_States (Internal da_step5)).
+    Compute (Current_State da_step5).
+
+End Actor_Example.
+
+
+
+
