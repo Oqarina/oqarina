@@ -112,7 +112,7 @@ clean:              ## Clean generated files
 	-( cd latex-src ; rm techreport.bbl)
 	$(MAKE) -C extraction clean
 	$(MAKE) -C src/AADL/atin_frontend clean
-	-rm -rf src/**/*.vo
+	-rm -rf src/**/*.vo deps.dot* deps.png
 	find . -type f -name '.*.aux' -exec rm {} +
 
 distclean:          ## Distclean
@@ -131,3 +131,12 @@ distclean:          ## Distclean
 .PHONY: update_license
 update_license:     ## Update all license headers
 	python3 ./licenseheaders.py -t license-header.txt -cy -d src
+
+deps.dot: _CoqProject
+	tools/deps.sh > deps.dot-
+	grep -v coq_utils deps.dot- > deps.dot
+	grep -v core deps.dot > deps.dot-
+	mv deps.dot- deps.dot
+
+deps.png: deps.dot
+	dot -T png deps.dot > deps.png
