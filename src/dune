@@ -1,6 +1,6 @@
 (coq.theory
  (name Oqarina)
  (package coq-oqarina)
- (synopsis "AADL mechanization in Coq")
-)
+ (synopsis "AADL mechanization in Coq"))
+
 (include_subdirs qualified)

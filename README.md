@@ -1,6 +1,6 @@
 # Oqarina -- Coq mechanization of AADL
 
-Oqarina provides elements of a formalization of AADLv2. It aligns with AADLv2.3.
+Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.
 
 ## Directory structure
 
