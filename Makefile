@@ -58,6 +58,7 @@ compile:            ## Compile Coq files
 	make -f coq_makefile
 
 dune_build:         ## Build using dune
+	$(MAKE) generate_parser
 	dune build
 
 build_bin:          ## Build Oqarina binary
@@ -119,7 +120,7 @@ clean:              ## Clean generated files
 distclean:          ## Distclean
 	$(MAKE) clean
 	-rm -rf html coq-oqarina.opam
-	-rm extraction/*.ml extraction/*.mli
+	-rm extraction/*.ml extraction/*.mli main.ml*
 
 # -----------------------------------------------------------------------------
 # License management

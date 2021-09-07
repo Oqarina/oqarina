@@ -1,0 +1,16 @@
+;; Disable warnings as errors
+(env
+  (dev
+    (flags (:standard -warn-error -a+31))))
+
+;; Extract the main module
+(coq.extraction
+ (prelude extraction)
+ (extracted_modules main)
+ (theories Oqarina))
+
+;; Define the executable from this module
+(executable
+ (name main)
+ (public_name main)
+ (libraries base lwt io-system))
