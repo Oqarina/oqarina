@@ -19,7 +19,7 @@ help:               ## Show this help
 	    @sed -ne '/@sed/!s/## //p' $(MAKEFILE_LIST)
 
 # -----------------------------------------------------------------------------
-# * Management of dependencies: Coq libraries can be instaleld through
+# * Management of dependencies: Coq libraries can be installed through
 #   opam. We provide two targets:
 #   - install_deps installs required libraries to use Oqarina from a Coq IDE
 #   - install_deps_bin instalels additional libraries for code extraction
