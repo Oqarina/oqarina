@@ -20,9 +20,6 @@ Import C.Notations.
 (* Suppress warnings on accessing opaque elements*)
 Set Warnings "-extraction-opaque-accessed,-extraction".
 
-(* Move to "extraction/generated-src" directory *)
-Cd "extraction/generated-src".
-
 (* List of modules we want to generate *)
 From Oqarina Require Import
   coq_utils.utils
@@ -138,8 +135,12 @@ Definition Oqarina_main (argv : list LString.t) : C.t System.effect unit :=
   | _ =>  process_arguments argv action_todo
   end.
 
+(* Move to "extraction/generated-src" directory, deprecated since we now use Dune to build *)
+(*Cd "extraction/generated-src".*)
+
 (** Extract the program to `extraction/main.ml`. *)
 Definition main := Extraction.launch Oqarina_main.
 Extraction "main" main.
-
+(*
 Cd "../..". (* move back to original directory, to avoid errors like "cannot generate extraction.vo" *)
+*)
