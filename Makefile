@@ -43,7 +43,6 @@ install_deps_bin:   ## Install dependencies (extraction)
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
 	$(MAKE) generate_parser
-	mkdir -p extraction/generated-src
 
 install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
