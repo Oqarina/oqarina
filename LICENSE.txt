@@ -1,5 +1,7 @@
 Oqarina
+
 Copyright 2021 Carnegie Mellon University.
+
 BSD (SEI)
 
 Redistribution and use in source and binary forms, with or without
@@ -413,9 +415,8 @@ DAMAGES.
 
                      END OF TERMS AND CONDITIONS
 
-2. Coq JSON
-(https://github.com/liyishuai/coq-json/blob/comrade/LICENSE) Copyright
-2021 Yishuai Li.
+2. Coq JSON (https://github.com/liyishuai/coq-json/blob/comrade/LICENSE)
+Copyright 2021 Yishuai Li.
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are
