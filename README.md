@@ -1,0 +1,54 @@
+# Oqarina -- Coq mechanization of AADL
+
+Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.
+
+## Directory structure
+
+* `extra` : additional material for producing HTML from Coq
+* `extraction` : wrapper to extract code and compile a binary
+* `src`: Coq sources for AADL mechanization
+
+## Required software
+
+Oqarina has been tested using Coq version 8.13.2 and either VSCoq extension for Visual Code or Proof General.
+
+## Additional packages
+
+Use `make install_deps` (no extraction) or `make install_deps_bin` (extraction) to install required additional packages.
+
+## Usage
+
+You may either
+- just run from a makefile, type `make` for available targets
+
+- play with the Coq files from VSCode. In this case, make sure the Coq directory is the only one in your workspace. Then from the terminal, run
+
+    ```make build_makefile compile ```
+
+- extract code, e.g.
+
+  ```make build_makefile compile build_bin```
+
+  then, run
+
+  ```./extraction/main.native --parse testsuite/car.impl.json```
+
+- build using Dune, in this case no extraction is performed
+
+  ```make build_dune```
+
+- build using provided docker container, no extraction
+
+  ```make test_build_docker```
+
+## Suggested reading
+
+Many (free) books exist for Coq, the following one is a good introduction for the style of modeling we are using:
+
+- Chlipala, Adam. Certified Programming with Dependent Types - A Pragmatic Introduction to the Coq Proof Assistant. MIT Press, 2013. http://mitpress.mit.edu/books/certified-programming-dependent-types.
+
+  This book is available from the author website: http://adam.chlipala.net/cpdt/
+
+- An additional reference is the collection of books from https://softwarefoundations.cis.upenn.edu/
+
+- This list gathers many other relevant projects and links: https://project-awesome.org/coq-community/awesome-coq
