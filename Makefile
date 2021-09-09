@@ -141,3 +141,16 @@ deps.dot: _CoqProject
 
 deps.png: deps.dot
 	dot -T png deps.dot > deps.png
+
+# -----------------------------------------------------------------------------
+# Packaging
+#
+
+PKG_NAME=coq-ocarina-0.0.1
+FILES=$(shell gls --ignore="$(PKG_NAME)*" --ignore=latex-src .)
+
+package:            ## Build package
+	rm -rf mkdir $(PKG_NAME)
+	mkdir $(PKG_NAME)
+	cp -r $(FILES) $(PKG_NAME)
+	tar zcvf $(PKG_NAME).tar.gz $(PKG_NAME)
