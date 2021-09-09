@@ -118,7 +118,7 @@ clean:              ## Clean generated files
 
 distclean:          ## Distclean
 	$(MAKE) clean
-	-rm -rf html coq-oqarina.opam
+	-rm -rf html coq-oqarina.opam .lia.cache
 	-rm extraction/*.ml extraction/*.mli main.ml*
 
 # -----------------------------------------------------------------------------
