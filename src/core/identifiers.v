@@ -146,3 +146,46 @@ Proof.
   unfold Well_Formed_Identifier_prop.
   auto.
 Qed.
+
+  Require Import BinNat Ascii String.
+
+  Definition ascii_eqb c c' := (N_of_ascii c =? N_of_ascii c')%N.
+  Definition ascii_leb c c' := (N_of_ascii c <=? N_of_ascii c')%N.
+
+  Infix "<=?" := ascii_leb : char_scope.
+  Definition is_digit c := (("0" <=? c) && (c <=? "9"))%char.
+
+  Definition is_alpha c :=
+    ((("a" <=? c) && (c <=? "z")) ||
+     (("A" <=? c) && (c <=? "Z")) ||
+     (c =? "_"))%char.
+
+  Definition starts_with_letter s1  :=
+    match s1 with
+      | EmptyString => false
+      | String head tail => (is_alpha head)
+    end.
+
+  Fixpoint has_only_alphanum s :=
+    match s with
+    | EmptyString => true
+    | String head tail => ((is_alpha head) || (is_digit head)) && (has_only_alphanum tail)
+    end.
+
+  Definition Well_Formed_Identifier_prop2 (i : identifier) : Prop :=
+    Is_true ((starts_with_letter (i->toString)) &&
+             (has_only_alphanum (i->toString))).
+
+  (** [Is_true] defines a mapping from [bool] to [Prop], this mechanism is relevant to build decidable properties out of basic boolean predicates. The [Is_true_dec] tactic expediates the proof of decidability functions based on [Is_true]. *)
+
+  Ltac Is_true_dec :=
+    repeat match goal with
+      | |- forall _, { ?T _ } + { ~ ?T _} => intros; unfold T
+      | |- {Is_true (_)} + {~ Is_true (_)}  => destruct (_); simpl; auto
+      end.
+
+  Lemma Well_Formed_Identifier_prop_dec2: forall id: identifier,
+    { Well_Formed_Identifier_prop2 id } + { ~ Well_Formed_Identifier_prop2 id }.
+  Proof.
+    Is_true_dec.
+  Qed.
