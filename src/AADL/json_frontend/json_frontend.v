@@ -58,7 +58,7 @@ Require Import Coq.Strings.String.
 Definition get_string_from_json (s : string) (j : json) :=
   match get_string s j with
   | Some s' => s'
-  | _ => ""
+  | _ => EmptyString
   end.
 
 (** - [get_identifier] extracts a string object from a JSON object *)
