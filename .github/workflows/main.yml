@@ -33,6 +33,7 @@ jobs:
           # Add extra repository for coq-json ( https://github.com/liyishuai/coq-json )
           before_install: |
             opam repo add  --all-switches --set-default coq-released https://coq.inria.fr/opam/released
+            opam repo add  --all-switches --set-default coq-extra-dev https://coq.inria.fr/opam/extra-dev/
             opam repo list
         
           opam_file: 'coq-oqarina.opam'
