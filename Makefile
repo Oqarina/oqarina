@@ -109,7 +109,7 @@ clean:              ## Clean generated files
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -rf _build
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
-	( cd latex-src ; latexmk -pdf -C techreport.tex )
+	-( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
 	$(MAKE) -C extraction clean
 	$(MAKE) -C src/AADL/atin_frontend clean
@@ -118,8 +118,9 @@ clean:              ## Clean generated files
 
 distclean:          ## Distclean
 	$(MAKE) clean
-	-rm -rf html coq-oqarina.opam .lia.cache
+	-rm -rf html .lia.cache
 	-rm extraction/*.ml extraction/*.mli main.ml*
+	-rm -rf coq-ocarina*
 
 # -----------------------------------------------------------------------------
 # License management
