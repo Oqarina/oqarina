@@ -42,22 +42,14 @@ install_deps_bin:   ## Install dependencies (extraction)
 
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
-	$(MAKE) generate_parser
 
 install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
-
-# This (obsolete) target generates menhir parser. It is kept to serve
-# as proof of concept and might be removed
-
-generate_parser:
-	make -C src/AADL/atin_frontend
 
 compile:            ## Compile Coq files
 	make -f coq_makefile
 
 dune_build:         ## Build using dune
-	$(MAKE) generate_parser
 	dune build
 
 build_bin:          ## Build Oqarina binary

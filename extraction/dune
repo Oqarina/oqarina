@@ -13,4 +13,4 @@
 (executable
  (name main)
  (public_name main)
- (libraries base lwt io-system))
+ (libraries lwt io-system))
