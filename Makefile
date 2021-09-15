@@ -73,7 +73,6 @@ validate:           ## Validate all proofs
 .PHONY: html
 html:               ## Generate HTML
 	make -f coq_makefile html
-	cp $(EXTRA_DIR)/resources/* html
 
 generate_latex:     ## Generate LaTeX files from Coq
 	-mkdir latex-src/generated-content
@@ -120,6 +119,7 @@ distclean:          ## Distclean
 	$(MAKE) clean
 	-rm -rf html coq-oqarina.opam .lia.cache
 	-rm extraction/*.ml extraction/*.mli main.ml*
+	-rm -rf coq-ocarina*
 
 # -----------------------------------------------------------------------------
 # License management

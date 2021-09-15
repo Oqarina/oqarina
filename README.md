@@ -13,11 +13,10 @@ Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries
 
 Oqarina has been tested using Coq version 8.13.2 and either VSCoq extension for Visual Code or Proof General.
 
-## Additional packages
+### Additional packages
 
 The following packages should be installed separately using opam:
 
-* `http://gallium.inria.fr/~fpottier/menhir/`: parser generator
 * `http://coq.io/`: additional elements to read from files, helper for code extractions
 * `https://github.com/liyishuai/coq-json`: JSON manipulation
 
