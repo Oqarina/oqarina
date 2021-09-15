@@ -29,7 +29,7 @@ jobs:
       - uses: coq-community/docker-coq-action@v1
         # See https://github.com/coq-community/docker-coq-action#readme
         # for details on docker-coq-action's syntax and provided features.
-      with:
+        with:
           # Add extra repository for coq-json ( https://github.com/liyishuai/coq-json )
           before_install: |
             opam repo add  --all-switches --set-default coq-released https://coq.inria.fr/opam/released
