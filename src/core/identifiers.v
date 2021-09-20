@@ -189,3 +189,30 @@ Qed.
   Proof.
     Is_true_dec.
   Qed.
+
+
+  Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string) (after_dot : option identifier) :=
+    match s with
+    | EmptyString => (FQN path (Id pending) after_dot)
+    | String ":" (String ":" tail) => split_fq_colons (path ++ (cons (Id pending) nil)) EmptyString tail after_dot
+    | String " " tail => split_fq_colons path pending tail after_dot
+    | String head tail => split_fq_colons path (pending ++ (String head EmptyString)) tail after_dot
+    end.
+
+  Fixpoint split_fq_dot (pending : string) (s : string)  :=
+    match s with
+    | EmptyString => split_fq_colons nil EmptyString pending None
+    | String "." tail => split_fq_colons nil EmptyString pending (Some (Id tail))
+    | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
+    end.
+
+  Definition parse_fq_name (s : string) := split_fq_dot EmptyString s.
+
+
+Compute (split_fq_colons nil EmptyString "Hello" None).
+Compute (split_fq_colons nil EmptyString "Hello::World" None).
+Compute (split_fq_colons nil EmptyString "A::B::C::D" None).
+Compute (split_fq_colons nil EmptyString "" None).
+
+Compute (parse_fq_name "Foo.impl").
+Compute (parse_fq_name "Foo::Bar.impl").
