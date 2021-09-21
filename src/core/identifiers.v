@@ -190,7 +190,7 @@ Qed.
     Is_true_dec.
   Qed.
 
-
+  (** [split_fq_colons] and [split_fq_dot] are helper functions for parsing strings that contain a fully qualitied name in the form "A::B::C.D" *)
   Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string) (after_dot : option identifier) :=
     match s with
     | EmptyString => (FQN path (Id pending) after_dot)
@@ -206,13 +206,42 @@ Qed.
     | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
     end.
 
-  Definition parse_fq_name (s : string) := split_fq_dot EmptyString s.
+  (** [parse_fq_name] parses the input string and returns a fully qualified name*)
+  Definition parse_fq_name (s : string) : fq_name := split_fq_dot EmptyString s.
 
+    (* begin hide *)
+  Example test_split_fq_colons_1 :
+    split_fq_colons nil EmptyString "Hello" None = FQN nil (Id "Hello") None.
+  Proof.
+    trivial.
+  Qed.
 
-Compute (split_fq_colons nil EmptyString "Hello" None).
-Compute (split_fq_colons nil EmptyString "Hello::World" None).
-Compute (split_fq_colons nil EmptyString "A::B::C::D" None).
-Compute (split_fq_colons nil EmptyString "" None).
+  Example test_split_fq_colons_2:
+    split_fq_colons nil EmptyString "Hello::World" None = FQN (Id "Hello" :: nil) (Id "World") None.
+  Proof.
+    trivial.
+  Qed.
 
-Compute (parse_fq_name "Foo.impl").
-Compute (parse_fq_name "Foo::Bar.impl").
+  Example test_split_fq_colons_3:
+    split_fq_colons nil EmptyString "A::B::C::D" None = FQN (Id "A" :: Id "B" :: Id "C" :: nil) (Id "D") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_split_fq_colons_4:
+    split_fq_colons nil EmptyString "" None = FQN nil (Id "") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_parse_fq_name_1 : parse_fq_name "Foo.impl" = FQN nil (Id "Foo") (Some (Id "impl")).
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_parse_fq_name_2 : parse_fq_name "Foo::Bar.impl" = FQN (Id "Foo" :: nil) (Id "Bar") (Some (Id "impl")).
+  Proof.
+    trivial.
+  Qed.
+  (* end hide *)
+  
