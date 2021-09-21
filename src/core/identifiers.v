@@ -40,9 +40,40 @@ From Coq Require Import Bool.Bool.
 From Coq Require Import Logic.Decidable.
 From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
+Require Import BinNat Ascii.
 
 (** Oquarina *)
 Require Import Oqarina.coq_utils.utils.
+
+Section ASCII_Helpers.
+
+  (* The following adds basic string manipulation functions. We might consider moving them in a separate file. *)
+
+  Definition ascii_eqb c c' := (N_of_ascii c =? N_of_ascii c')%N.
+  Definition ascii_leb c c' := (N_of_ascii c <=? N_of_ascii c')%N.
+
+  Infix "<=?" := ascii_leb : char_scope.
+  Definition is_digit c := (("0" <=? c) && (c <=? "9"))%char.
+
+  Definition is_alpha c :=
+    ((("a" <=? c) && (c <=? "z")) ||
+    (("A" <=? c) && (c <=? "Z")) ||
+    (c =? "_"))%char.
+
+  Definition starts_with_letter s1  :=
+    match s1 with
+      | EmptyString => false
+      | String head tail => (is_alpha head)
+    end.
+
+  Fixpoint has_only_alphanum s :=
+    match s with
+    | EmptyString => true
+    | String head tail => ((is_alpha head) || (is_digit head)) && (has_only_alphanum tail)
+    end.
+
+End ASCII_Helpers.
+
 (* end hide *)
 
 (** * Identifier type *)
@@ -109,107 +140,52 @@ must be trivially non empty.}
 XXX Actually, we could check for more things like this is ASCII, no whitespace, etc. See https://github.com/clarus/coq-list-string for an API to make this easy.
 
 *)
+  (** [Is_true] defines a mapping from [bool] to [Prop], this mechanism is relevant to build decidable properties out of basic boolean predicates. The [Is_true_dec] tactic expediates the proof of decidability functions based on [Is_true]. *)
+
+Ltac Is_true_dec :=
+  repeat match goal with
+    | |- forall _, { ?T _ } + { ~ ?T _} => intros; unfold T
+    | |- {Is_true (_)} + {~ Is_true (_)}  => destruct (_); simpl; auto
+   end.
 
 Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
-  (i <> empty_identifier).
+  (i <> empty_identifier) /\
+  Is_true (starts_with_letter (i->toString) &&
+           has_only_alphanum (i->toString)).
 
 Lemma Well_Formed_Identifier_prop_dec: forall id: identifier,
   { Well_Formed_Identifier_prop id } + { ~ Well_Formed_Identifier_prop id }.
 Proof.
   intros.
   unfold Well_Formed_Identifier_prop.
-  destruct (identifier_eq_dec id empty_identifier).
-  - subst. auto.
-  - subst. auto.
+  apply dec_sumbool_and.
+  destruct (identifier_eq_dec id empty_identifier); subst; auto.
+  Is_true_dec.
 Qed.
 
-(** * Examples *)
 
-Example A_WFI : identifier :=
-  Id "o<".
+(** [split_fq_colons] and [split_fq_dot] are helper functions for parsing strings that contain a fully qualitied name in the form "A::B::C.D" *)
 
-Lemma A_WFI_is_well_formed:
-  Well_Formed_Identifier_prop A_WFI.
-Proof.
-  (* In this "boring" version, we do a manual proof using the
-  previous definitions.
+Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string) (after_dot : option identifier) :=
+  match s with
+  | EmptyString => (FQN path (Id pending) after_dot)
+  | String ":" (String ":" tail) => split_fq_colons (path ++ (cons (Id pending) nil)) EmptyString tail after_dot
+  | String " " tail => split_fq_colons path pending tail after_dot
+  | String head tail => split_fq_colons path (pending ++ (String head EmptyString)) tail after_dot
+  end.
 
-  First, we rewrite the proposition to its simple form *)
-  unfold Well_Formed_Identifier_prop.
-  destruct (identifier_eq_dec A_WFI empty_identifier).
-  inversion e. auto.
-Qed.
+Fixpoint split_fq_dot (pending : string) (s : string)  :=
+  match s with
+  | EmptyString => split_fq_colons nil EmptyString pending None
+  | String "." tail => split_fq_colons nil EmptyString pending (Some (Id tail))
+  | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
+  end.
 
-Lemma Empty_Identifier_is_ill_formed:
-  ~ Well_Formed_Identifier_prop empty_identifier.
-Proof.
-  unfold Well_Formed_Identifier_prop.
-  auto.
-Qed.
+(** [parse_fq_name] parses the input string and returns a fully qualified name*)
 
-  Require Import BinNat Ascii String.
+Definition parse_fq_name (s : string) : fq_name := split_fq_dot EmptyString s.
 
-  Definition ascii_eqb c c' := (N_of_ascii c =? N_of_ascii c')%N.
-  Definition ascii_leb c c' := (N_of_ascii c <=? N_of_ascii c')%N.
-
-  Infix "<=?" := ascii_leb : char_scope.
-  Definition is_digit c := (("0" <=? c) && (c <=? "9"))%char.
-
-  Definition is_alpha c :=
-    ((("a" <=? c) && (c <=? "z")) ||
-     (("A" <=? c) && (c <=? "Z")) ||
-     (c =? "_"))%char.
-
-  Definition starts_with_letter s1  :=
-    match s1 with
-      | EmptyString => false
-      | String head tail => (is_alpha head)
-    end.
-
-  Fixpoint has_only_alphanum s :=
-    match s with
-    | EmptyString => true
-    | String head tail => ((is_alpha head) || (is_digit head)) && (has_only_alphanum tail)
-    end.
-
-  Definition Well_Formed_Identifier_prop2 (i : identifier) : Prop :=
-    Is_true ((starts_with_letter (i->toString)) &&
-             (has_only_alphanum (i->toString))).
-
-  (** [Is_true] defines a mapping from [bool] to [Prop], this mechanism is relevant to build decidable properties out of basic boolean predicates. The [Is_true_dec] tactic expediates the proof of decidability functions based on [Is_true]. *)
-
-  Ltac Is_true_dec :=
-    repeat match goal with
-      | |- forall _, { ?T _ } + { ~ ?T _} => intros; unfold T
-      | |- {Is_true (_)} + {~ Is_true (_)}  => destruct (_); simpl; auto
-      end.
-
-  Lemma Well_Formed_Identifier_prop_dec2: forall id: identifier,
-    { Well_Formed_Identifier_prop2 id } + { ~ Well_Formed_Identifier_prop2 id }.
-  Proof.
-    Is_true_dec.
-  Qed.
-
-  (** [split_fq_colons] and [split_fq_dot] are helper functions for parsing strings that contain a fully qualitied name in the form "A::B::C.D" *)
-  Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string) (after_dot : option identifier) :=
-    match s with
-    | EmptyString => (FQN path (Id pending) after_dot)
-    | String ":" (String ":" tail) => split_fq_colons (path ++ (cons (Id pending) nil)) EmptyString tail after_dot
-    | String " " tail => split_fq_colons path pending tail after_dot
-    | String head tail => split_fq_colons path (pending ++ (String head EmptyString)) tail after_dot
-    end.
-
-  Fixpoint split_fq_dot (pending : string) (s : string)  :=
-    match s with
-    | EmptyString => split_fq_colons nil EmptyString pending None
-    | String "." tail => split_fq_colons nil EmptyString pending (Some (Id tail))
-    | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
-    end.
-
-  (** [parse_fq_name] parses the input string and returns a fully qualified name*)
-  Definition parse_fq_name (s : string) : fq_name := split_fq_dot EmptyString s.
-
-    (* begin hide *)
+(* begin hide *)
   Example test_split_fq_colons_1 :
     split_fq_colons nil EmptyString "Hello" None = FQN nil (Id "Hello") None.
   Proof.
@@ -244,4 +220,3 @@ Qed.
     trivial.
   Qed.
   (* end hide *)
-  

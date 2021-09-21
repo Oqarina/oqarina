@@ -183,7 +183,7 @@ Section WellFormedness_Rules.
     unfold Well_Formed_Component.
 
     (* Apply decidability results *)
-    repeat apply dec_sumbool_and; auto.
+    apply dec_sumbool_and; auto.
 
     (* Note: auto requires all theorems to be part of the core hints
     database, see above "Hint Resolve Rule_4_5_N1_dec : core."  *)
