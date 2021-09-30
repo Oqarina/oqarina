@@ -130,6 +130,8 @@ Definition empty_fqname : fq_name := FQN nil empty_identifier None.
 Inductive ps_qname :=
 | PSQN (psname : string) (name : string).
 
+Definition empty_ps_qname := PSQN "" "".
+
 Scheme Equality for ps_qname.
 
 (**
@@ -227,9 +229,18 @@ Fixpoint split_fq_dot (pending : string) (s : string) :=
   | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
   end.
 
-(** [parse_fq_name] parses the input string and returns a fully qualified name*)
+(** [parse_fq_name] parses the input string and returns a fully qualified name *)
 
 Definition parse_fq_name (s : string) : fq_name := split_fq_dot EmptyString s.
+
+(** [parse_ps_qname] parses the input string and returns a property set qualified name *)
+Definition parse_psq_name (s: string) : ps_qname :=
+  let (path, name, _) := parse_fq_name (s) in
+  match path with
+  | h :: nil => PSQN (h->toString) (name->toString)
+  | nil => PSQN "" (name->toString)
+  | _ => empty_ps_qname
+  end.
 
 (* begin hide *)
   Example test_split_fq_colons_1 :
