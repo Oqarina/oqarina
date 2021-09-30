@@ -58,7 +58,8 @@ Section ASCII_Helpers.
   Definition is_alpha c :=
     ((("a" <=? c) && (c <=? "z")) ||
     (("A" <=? c) && (c <=? "Z")) ||
-    (c =? "_"))%char.
+    (c =? "_") ||
+    (c =? "."))%char.
 
   Definition starts_with_letter s1  :=
     match s1 with
@@ -148,21 +149,66 @@ Ltac Is_true_dec :=
     | |- {Is_true (_)} + {~ Is_true (_)}  => destruct (_); simpl; auto
    end.
 
+  Definition Well_Formed_string_prop (s : string) : Prop :=
+    (s <> EmptyString) /\
+    Is_true (starts_with_letter s &&
+             has_only_alphanum s).
+
+  Lemma Well_Formed_string_prop_dec: forall s : string,
+    { Well_Formed_string_prop s } + { ~ Well_Formed_string_prop s }.
+  Proof.
+    intros.
+    unfold Well_Formed_string_prop.
+    apply dec_sumbool_and.
+    destruct (string_dec s EmptyString); subst; auto.
+    Is_true_dec.
+  Qed.
+
 Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
-  (i <> empty_identifier) /\
-  Is_true (starts_with_letter (i->toString) &&
-           has_only_alphanum (i->toString)).
+  Well_Formed_string_prop (i ->toString).
 
 Lemma Well_Formed_Identifier_prop_dec: forall id: identifier,
   { Well_Formed_Identifier_prop id } + { ~ Well_Formed_Identifier_prop id }.
 Proof.
   intros.
   unfold Well_Formed_Identifier_prop.
-  apply dec_sumbool_and.
-  destruct (identifier_eq_dec id empty_identifier); subst; auto.
-  Is_true_dec.
+  apply Well_Formed_string_prop_dec.
 Qed.
 
+Definition Well_Formed_ps_qname_prop (ps : ps_qname) :=
+  let (psname, name) := ps in
+    Well_Formed_string_prop psname /\ Well_Formed_string_prop name.
+
+Lemma Well_Formed_ps_qname_prop_dec: forall ps : ps_qname,
+  { Well_Formed_ps_qname_prop ps } + { ~ Well_Formed_ps_qname_prop ps }.
+Proof.
+  intros.
+  unfold Well_Formed_ps_qname_prop.
+  destruct ps.
+  apply dec_sumbool_and; apply Well_Formed_string_prop_dec.
+Defined.
+
+Definition Well_Formed_fq_name_prop (f : fq_name) :=
+  let (path, name, impl_name) := f in
+    All Well_Formed_Identifier_prop path /\
+    Well_Formed_Identifier_prop name /\
+    match impl_name with
+    | None => True
+    | Some s => Well_Formed_Identifier_prop s
+    end.
+
+Lemma Well_Formed_fq_name_prop_dec: forall f: fq_name,
+  { Well_Formed_fq_name_prop f } + { ~ Well_Formed_fq_name_prop f }.
+Proof.
+  intros.
+  unfold Well_Formed_fq_name_prop.
+  destruct f.
+  apply dec_sumbool_and.
+  - apply sumbool_All_dec; apply Well_Formed_Identifier_prop_dec.
+  - apply dec_sumbool_and.
+    * apply Well_Formed_Identifier_prop_dec.
+    * destruct impl_name. apply Well_Formed_Identifier_prop_dec. auto.
+Defined.
 
 (** [split_fq_colons] and [split_fq_dot] are helper functions for parsing strings that contain a fully qualitied name in the form "A::B::C.D" *)
 
@@ -174,7 +220,7 @@ Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string
   | String head tail => split_fq_colons path (pending ++ (String head EmptyString)) tail after_dot
   end.
 
-Fixpoint split_fq_dot (pending : string) (s : string)  :=
+Fixpoint split_fq_dot (pending : string) (s : string) :=
   match s with
   | EmptyString => split_fq_colons nil EmptyString pending None
   | String "." tail => split_fq_colons nil EmptyString pending (Some (Id tail))
