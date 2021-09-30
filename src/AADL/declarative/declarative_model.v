@@ -104,7 +104,7 @@ Section AADL_Component_Type.
         apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
         apply Well_Formed_Property_Associations_dec.
-      Qed.
+    Defined.
 
 (* begin hide *)
 End AADL_Component_Type.
@@ -155,7 +155,7 @@ Section AADL_Component_Implementation.
         apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
         apply Well_Formed_Property_Associations_dec.
-    Qed.
+    Defined.
 
 (* begin hide *)
 End AADL_Component_Implementation.

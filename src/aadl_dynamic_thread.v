@@ -711,8 +711,9 @@ Definition A_Periodic_Thread := Component
 Ltac prove_component_wf :=
   repeat match goal with
     | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
+    | |- (_ =  EmptyString -> False) => intuition; inversion H
     | |- (Id _ = Id _ -> False) => injection; inversion H
-    | |- NoDup [] => apply NoDup_nil
+    | |- NoDup nil => apply NoDup_nil
   end.
 
 Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
@@ -726,9 +727,8 @@ Ltac prove_thread_state_variable_wf :=
     | |- ( _ = Unspecified_Dispatch_Protocol -> False) => discriminate
     | |- ( _ = Unspecified_Overflow_Handling_Protocol -> False) => discriminate
     | |- ( _ = Unspecified_Dequeue_Protocol -> False) => discriminate
-    | |- NoDup [ _ ] => apply NoDup_cons ; auto
-    | |- NoDup [] => apply NoDup_nil
-
+    | |- NoDup  _  => apply NoDup_cons ; auto
+    | |- NoDup nil => apply NoDup_nil
   end.
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).

@@ -49,6 +49,7 @@ Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.utils.
 Require Import Oqarina.AADL.declarative.all.
+Require Import Oqarina.cpdttactics.
 (* end hide *)
 
 (** * AADL instance model
@@ -86,8 +87,28 @@ Section AADL_Instance.
         intros.
         unfold Well_Formed_Component_Instance.
         apply Well_Formed_Component_Implementation_dec.
-    Qed.
+    Defined.
 
 (* begin hide *)
 End AADL_Instance.
 (* end hide *)
+
+(** The [prove_Is_AADL_Instance] helps proving a component is a valid AADL instance *)
+
+Ltac prove_Is_AADL_Instance :=
+    repeat match goal with
+      | |- Is_AADL_Instance _ => compute; repeat split; auto
+      | |- (_ =  EmptyString -> False) => intuition; inversion H
+      | |- NoDup nil => apply NoDup_nil
+      | |- NoDup  _  => apply NoDup_cons ; crush
+      | |- ~ In _ _ => intuition
+    end.
+
+Ltac prove_Well_Formed_Component_Instance :=
+    repeat match goal with
+      | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
+      | |- (_ =  EmptyString -> False) => intuition; inversion H
+      | |- NoDup nil => apply NoDup_nil
+      | |- NoDup  _  => apply NoDup_cons ; crush
+      | |- ~ In _ _ => intuition
+    end.
