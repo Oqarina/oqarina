@@ -95,6 +95,27 @@ Section WellFormedness_Rules.
   Hint Resolve Well_Formed_Component_Id_dec : core.
   (* end hide *)
 
+  (** ** Well-formedness of component classifiers *)
+
+  (** A component classifier is well-formed iff. the fq_name is well-formed. *)
+
+  Definition Well_Formed_Component_Classifier (c : component) : Prop :=
+    (Well_Formed_fq_name_prop (c->classifier)).
+
+  (** Well_Formed_Component_Id is a decidable property. *)
+
+  Lemma Well_Formed_Component_Classifier_dec : forall c : component,
+    { Well_Formed_Component_Classifier c } + {~ Well_Formed_Component_Classifier c }.
+  Proof.
+    intros.
+
+    unfold Well_Formed_Component_Classifier.
+    apply Well_Formed_fq_name_prop_dec.
+  Qed.
+
+  (* begin hide *)
+  Hint Resolve Well_Formed_Component_Classifier_dec : core.
+  (* end hide *)
 
   (** * AADL legality rules *)
 
@@ -172,6 +193,7 @@ Section WellFormedness_Rules.
 
   Definition Well_Formed_Component (c : component) : Prop :=
    Well_Formed_Component_Id (c) /\
+   Well_Formed_Component_Classifier (c) /\
   (* Well_Formed_Properties (c) /\ *)
    Rule_4_5_N1 (c).
 
@@ -183,6 +205,7 @@ Section WellFormedness_Rules.
     unfold Well_Formed_Component.
 
     (* Apply decidability results *)
+    apply dec_sumbool_and; auto.
     apply dec_sumbool_and; auto.
 
     (* Note: auto requires all theorems to be part of the core hints
@@ -207,7 +230,7 @@ Section WellFormedness_Rules.
     unfold Well_Formed_Component_Hierarchy.
     apply Unfold_Apply_dec.
     apply Well_Formed_Component_dec.
-  Qed.
+  Defined.
 
 (**  This second theorem is the main theorem to assess a component is well-formed. It applies the previous rules on the whole component hierarchy. *)
 
