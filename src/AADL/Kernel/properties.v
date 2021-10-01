@@ -249,4 +249,9 @@ Qed.
 Inductive property_set :=
 | PropertySet (name : identifier) (declarations : list property_set_declaration).
 
+Definition property_set_name (ps : property_set) :=
+  match ps with
+  | PropertySet name _ => name
+  end .
+  
 Definition property_sets := list property_set.
