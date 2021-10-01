@@ -37,8 +37,9 @@ Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.all.
-
+Require Import Oqarina.core.all.
 Require Export Oqarina.AADL.property_sets.aadl_project.
+Require Export Oqarina.AADL.property_sets.deployment_properties.
 Require Export Oqarina.AADL.property_sets.communication_properties.
 Require Export Oqarina.AADL.property_sets.thread_properties.
 Require Export Oqarina.AADL.property_sets.timing_properties.
@@ -48,10 +49,22 @@ Require Export Oqarina.AADL.property_sets.timing_properties.
 
 Definition AADL_Predeclared_Property_Sets :=
     [ AADL_Project_PS ; Communication_Properties_PS ;
-      Thread_Properties_PS ; Timing_Properties_PS ] .
+      Deployment_Properties_PS ;Thread_Properties_PS ; Timing_Properties_PS ] .
 
 Lemma AADL_Predeclared_Properties_PS_Valid :
     typecheck_property_sets AADL_Predeclared_Property_Sets = true.
 Proof.
     trivial.
 Qed.
+
+Fixpoint Get_AADL_Predeclared_Property_Set_Name' (ps : list property_set) (p : identifier) :=
+    match ps with
+    | nil => empty_identifier
+    | h :: t => match in_propertyset p h with
+                | Some _ =>  property_set_name  h
+                | None => Get_AADL_Predeclared_Property_Set_Name' t p
+                end
+    end.
+
+Definition Get_AADL_Predeclared_Property_Set_Name (p : string) :=
+    (Get_AADL_Predeclared_Property_Set_Name' AADL_Predeclared_Property_Sets (Id p))->toString.

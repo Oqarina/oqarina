@@ -49,6 +49,13 @@ Definition AADL_Time : Type := Z.
 Definition AADL_Project_PS :=
     PropertySet (Id "AADL_Project") [
 
+     (* Supported_Scheduling_Protocols:
+      type enumeration (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL); *)
+
+    "Supported_Scheduling_Protocols" :type PT_Enumeration [
+        Id "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
+      ];
+
     (* Supported_Dispatch_Protocols:
        type enumeration (Periodic, Sporadic, Aperiodic, Timed,
                          Hybrid, Background, Interrupt);
