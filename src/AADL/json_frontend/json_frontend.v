@@ -51,6 +51,7 @@ From Oqarina Require Import
     coq_utils.utils
     AADL.Kernel.all
     core.identifiers
+    AADL.property_sets.all
     AADL.instance.all.
 (* end hide *)
 Require Import Coq.Strings.String.
@@ -235,10 +236,17 @@ Fixpoint Map_JSON_To_Property_Value (j : json) : property_value :=
     | _  => PV_Bool false (* error reporting *)
   end.
 
+Definition Map_JSON_To_PSQName (j: json) :=
+  let psqn := parse_psq_name(get_string_from_json "name" j) in
+  match psqn with
+  | PSQN "" s => PSQN (Get_AADL_Predeclared_Property_Set_Name s) s
+  | _ => psqn
+  end.
+
 Fixpoint Map_JSON_To_Property_Association (j : list json) :=
   match j with
       | (JSON__Object o) :: t =>
-        {| P :=  parse_psq_name(get_string_from_json "name" (JSON__Object o)) ; (* XX *)
+        {| P := (Map_JSON_To_PSQName (JSON__Object o)) ;
           PV := (Map_JSON_To_Property_Value (get_json "property_value" (JSON__Object o))) |}
         :: Map_JSON_To_Property_Association  t
       | _ => [  ]
@@ -252,7 +260,7 @@ Fixpoint Map_JSON_To_Component' (fuel : nat) (c : list json) : list component :=
     | (JSON__Object f) :: t =>
        ( Component (get_identifier (JSON__Object f))
                    (Map_JSON_To_ComponentCategory (get_json "category" (JSON__Object f)))
-                   (parse_fq_name (get_string_from_json "classifier" (JSON__Object f)))  (* classifier *)
+                   (parse_fq_name (get_string_from_json "$t" (get_json "classifier" (JSON__Object f))))  (* classifier *)
                    (Map_JSON_To_Feature' m (get_features (JSON__Object f))) (* features *)
                    (Map_JSON_To_Component' m (get_subcomponents (JSON__Object f))) (* subcomponents *)
                    (Map_JSON_To_Property_Association (get_properties (JSON__Object f)))(* properties *)
@@ -304,5 +312,3 @@ match c with
   end
 | _ => nil_component
 end.
-
-
