@@ -58,8 +58,7 @@ Section ASCII_Helpers.
   Definition is_alpha c :=
     ((("a" <=? c) && (c <=? "z")) ||
     (("A" <=? c) && (c <=? "Z")) ||
-    (c =? "_") ||
-    (c =? "."))%char.
+    (c =? "_"))%char.
 
   Definition starts_with_letter s1  :=
     match s1 with
