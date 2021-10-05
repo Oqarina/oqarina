@@ -242,6 +242,8 @@ Definition parse_psq_name (s: string) : ps_qname :=
   end.
 
 (* begin hide *)
+Section Examples.
+
   Example test_split_fq_colons_1 :
     split_fq_colons nil EmptyString "Hello" None = FQN nil (Id "Hello") None.
   Proof.
@@ -275,4 +277,6 @@ Definition parse_psq_name (s: string) : ps_qname :=
   Proof.
     trivial.
   Qed.
-  (* end hide *)
+
+End Examples.
+(* end hide *)

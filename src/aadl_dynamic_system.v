@@ -113,20 +113,23 @@ Inductive system_actions : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
 
 Definition system_inputs : Type := unit.
+Definition system_V : Type := unit.
+Definition system_internal : Type := unit.
+Definition system_state : Type := Actor_State system_states system_V system_internal.
 
-Definition system_Fire (s : system_states) (a : system_actions) : list system_inputs := nil.
+Definition system_Fire (s : system_state) (a : system_actions) : system_state := s.
 
 Definition system_Post_Fire
-    (s : system_states)
-    (a : system_actions) : system_states :=
-    match s, a with
+    (s : system_state)
+    (a : system_actions) : system_state :=
+    match s.(Current_State), a with
         (* capture the transitions of the automata *)
-        | system_offline, start_system => system_starting
-        | system_starting, started_system => system_operational
-        | system_operational, stop_system => system_stoping
-        | system_stoping, stopped_system => system_offline
-        | system_starting, abort_system => system_offline
-        | system_operational, abort_system => system_offline
+        | system_offline, start_system => (Set_State s system_starting)
+        | system_starting, started_system => (Set_State s system_operational)
+        | system_operational, stop_system => (Set_State s system_stoping)
+        | system_stoping, stopped_system => (Set_State s system_offline)
+        | system_starting, abort_system => (Set_State s system_offline)
+        | system_operational, abort_system => (Set_State s system_offline)
         (* any other configuration is invalid *)
         | _, _ => s
         end.
@@ -137,21 +140,26 @@ Definition system_Deadline (s : system_states) (a : system_actions) : Time :=
 Definition system_Time_Update
     (s : system_states)  (a : system_actions) (t : Time) : system_states :=
     s.
-(*
-Definition System_Actor : Actor system_states system_actions system_inputs (*system_inputs*) := {|
+
+Definition System_Actor : Actor system_states system_actions system_V system_internal := {|
     Initial_State := system_offline;
     Fire := system_Fire;
     Post_Fire := system_Post_Fire;
     Deadline := system_Deadline;
     Time_Update := system_Time_Update;
 |}.
-*)
+
 (** * Example *)
 
 (** %\N% From the previous elements, one can step a system *)
-(*
-Definition System_LTS := LTS_Of (System_Actor).
 
-Example f' := step_lts System_LTS (Init System_LTS) (Dis [start_system ; started_system]).
-Compute f'.
-*)
+Definition System_LTS := LTS_Of System_Actor tt.
+
+Definition System_LTS' := step_lts System_LTS
+    (Init System_LTS) (Dis [start_system ; started_system]).
+
+Example System_LTS'_state : Get_State System_LTS' = system_operational.
+Proof.
+    trivial.
+Qed.
+
