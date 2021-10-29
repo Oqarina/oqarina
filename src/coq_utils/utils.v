@@ -187,7 +187,7 @@ Section EqEqb.
 
   Variable T : Type.
   Variable HT : T -> Prop.
-  Hypothesis T_Prop_dec : forall t : T, { HT t} + {~ HT t}.
+  Hypothesis T_Prop_dec : forall t : T, { HT t } + { ~ HT t }.
 
   Fixpoint filter_dec (l:list T) : list T :=
     match l with
