@@ -41,7 +41,7 @@ Require Import Coq.Classes.Morphisms.
 Require Import Oqarina.core.identifiers.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
-
+#[local] Open Scope Z_scope.
 (*! Tests for Type Checking *)
 
 Check [Id "a"; Id "x"; Id "b"].

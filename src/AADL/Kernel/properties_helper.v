@@ -41,6 +41,7 @@ Require Import Oqarina.core.identifiers.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
 Require Import Oqarina.coq_utils.utils.
+#[local] Open Scope Z_scope.
 (* end hide *)
 
 (** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)

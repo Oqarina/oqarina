@@ -44,17 +44,18 @@ From JSON Require Import
     Printer.
 Import
     List
-    ListNotations.
+    ListNotations
+    Strings.String.
+#[local] Open Scope Z_scope.
 
 (** Oqarina library *)
 From Oqarina Require Import
-    coq_utils.utils
+    coq_utils.all
     AADL.Kernel.all
     core.identifiers
     AADL.property_sets.all
     AADL.instance.all.
 (* end hide *)
-Require Import Coq.Strings.String.
 
 (** * Helper functions *)
 
@@ -164,9 +165,8 @@ Definition parse_uint (s : string) :=
 Definition parse_int s :=
   match s with
   | EmptyString => 0 (* XXX should report error*)
-  | String a s' =>
-    if Ascii.eqb a "-" then - (parse_uint s')
-    else (parse_uint s)
+  | String a s' => if Ascii.eqb a "-" then - (parse_uint s')
+                                      else (parse_uint s)
   end.
 
 Definition parse_bool s :=

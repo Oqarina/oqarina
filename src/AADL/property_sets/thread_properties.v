@@ -41,6 +41,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.aadl_project.
+#[local] Open Scope Z_scope.
 (* end hide *)
 
 (** %\N \texttt{thread\_properties}% as Coq/AADL property_types. *)

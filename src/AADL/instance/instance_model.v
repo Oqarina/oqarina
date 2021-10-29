@@ -81,7 +81,7 @@ Section AADL_Instance.
 
     Lemma Well_Formed_Component_Instance_dec :
         forall (c:component),
-            {Well_Formed_Component_Instance c } +
+            { Well_Formed_Component_Instance c } +
             { ~Well_Formed_Component_Instance c }.
     Proof.
         intros.

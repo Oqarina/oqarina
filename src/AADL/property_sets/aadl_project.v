@@ -42,6 +42,7 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
+#[local] Open Scope Z_scope.
 (* end hide *)
 
 Definition AADL_Time : Type := Z.
