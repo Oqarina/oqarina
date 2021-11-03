@@ -16,6 +16,8 @@ jobs:
       matrix:
         coq_version:
           - '8.13'
+          - '8.14'
+          - dev
         ocaml_version:
           - '4.11-flambda'
       max-parallel: 4
@@ -30,9 +32,10 @@ jobs:
         # for details on docker-coq-action's syntax and provided features.
         with:
           # Add extra repository for coq-json ( https://github.com/liyishuai/coq-json )
+          # the || true is required for the dev builds that may have extra repo, see https://github.com/coq-community/docker-coq-action/issues/64
           before_install: |
-            opam repo add  --all-switches --set-default coq-released https://coq.inria.fr/opam/released
-            opam repo add  --all-switches --set-default coq-extra-dev https://coq.inria.fr/opam/extra-dev/
+            opam repo add  --all-switches --set-default coq-released https://coq.inria.fr/opam/released || true
+            opam repo add  --all-switches --set-default coq-extra-dev https://coq.inria.fr/opam/extra-dev/ || true
             opam repo list
         
           opam_file: 'coq-oqarina.opam'
