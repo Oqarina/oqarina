@@ -46,7 +46,7 @@ From Oqarina Require Import
 
 (** ** Testing properties
 
-This example test the correct parsing of several property types.
+This example tests the correct parsing of several property types.
 
 *)
 
@@ -62,7 +62,6 @@ Definition car : string := "{""aadl_xml"": {""components"": {""component"": {""c
 
 Definition car_AADL := Map_JSON_String_To_Component car.
 Compute car_AADL.
-
 
 (** ** RMA example from https://github.com/OpenAADL/AADLib/tree/master/examples/rma *)
 
