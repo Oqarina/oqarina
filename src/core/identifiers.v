@@ -44,15 +44,12 @@ Require Import BinNat Ascii.
 
 (** Oquarina *)
 Require Import Oqarina.coq_utils.utils.
+(* end hide *)
 
 Section ASCII_Helpers.
 
   (* The following adds basic string manipulation functions. We might consider moving them in a separate file. *)
 
-  Definition ascii_eqb c c' := (N_of_ascii c =? N_of_ascii c')%N.
-  Definition ascii_leb c c' := (N_of_ascii c <=? N_of_ascii c')%N.
-
-  Infix "<=?" := ascii_leb : char_scope.
   Definition is_digit c := (("0" <=? c) && (c <=? "9"))%char.
 
   Definition is_alpha c :=
@@ -73,8 +70,6 @@ Section ASCII_Helpers.
     end.
 
 End ASCII_Helpers.
-
-(* end hide *)
 
 (** * Identifier type *)
 
