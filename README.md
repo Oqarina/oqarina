@@ -11,7 +11,7 @@ Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries
 
 ## Required software
 
-Oqarina has been tested using Coq version 8.13.2 and either VSCoq extension for Visual Code or Proof General.
+Oqarina has been tested using Coq version 8.14 and either VSCoq extension for Visual Code or Proof General.
 
 ### Additional packages
 
