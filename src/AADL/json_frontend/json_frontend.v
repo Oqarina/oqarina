@@ -144,36 +144,6 @@ Definition get_properties (j : json) : list json :=
   | _ => []
   end.
 
-Fixpoint parse_uint' acc s :=
-  match s with
-  | String "0" s => parse_uint' (acc*10) s
-  | String "1" s => parse_uint' (acc*10+1) s
-  | String "2" s => parse_uint' (acc*10+2) s
-  | String "3" s => parse_uint' (acc*10+3) s
-  | String "4" s => parse_uint' (acc*10+4) s
-  | String "5" s => parse_uint' (acc*10+5) s
-  | String "6" s => parse_uint' (acc*10+6) s
-  | String "7" s => parse_uint' (acc*10+7) s
-  | String "8" s => parse_uint' (acc*10+8) s
-  | String "9" s => parse_uint' (acc*10+9) s
-  | _ => (acc,s)
-  end.
-
-Definition parse_uint (s : string) :=
-  let (n, s) := parse_uint' 0 s in n.
-
-Definition parse_int s :=
-  match s with
-  | EmptyString => 0 (* XXX should report error*)
-  | String a s' => if Ascii.eqb a "-" then - (parse_uint s')
-                                      else (parse_uint s)
-  end.
-
-Definition parse_bool s :=
-  if eqb "true" s then true
-  else if eqb "false" s then true
-  else false. (* error reporting *)
-
 Definition Map_JSON_To_Property_Value_Abstract (j2 : json) (f : json -> property_value ): property_value :=
   match j2 with
   | JSON__Object j3 => f j2
