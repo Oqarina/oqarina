@@ -81,7 +81,7 @@ Section ThreadStateMonad.
 
 End ThreadStateMonad.
 
-Existing Instance Monad_stateT.
+#[local] Existing Instance Monad_stateT.
 
 Definition run_actions (act : list thread_action) (th_state : thread_state_variable) :=
     evalStateT

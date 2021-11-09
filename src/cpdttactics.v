@@ -125,7 +125,7 @@
 
  (** This one is just so darned useful, let's add it as a hint here. *)
 
- Hint Rewrite app_ass.
+ #[global] Hint Rewrite app_ass.
 
  (** Devious marker predicate to use for encoding state within proof goals *)
 
