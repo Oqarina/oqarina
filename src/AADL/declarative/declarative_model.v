@@ -49,7 +49,7 @@ Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.core.all.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 (* end hide *)
 
 (**

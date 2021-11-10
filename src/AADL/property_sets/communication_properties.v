@@ -40,7 +40,7 @@ Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
 Require Import Oqarina.core.all.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.aadl_project.
 (* end hide *)
@@ -102,7 +102,7 @@ Definition Communication_Properties_PS :=
   Proof.
       trivial.
   Qed.
- 
+
 (** %
   \begin{definition}[Queue\_Size (AADLv2.2 \S XXX]
  TBD

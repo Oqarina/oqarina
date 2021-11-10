@@ -41,9 +41,10 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Bool.Bool.
 Require Import Coq.ZArith.ZArith.
+Import IfNotations.
 
 (** Oqarina library *)
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
@@ -192,6 +193,9 @@ Section AADL_Dispatching.
     apply Feature_In_Dispatch_Trigger_dec.
   Defined.
   (* end hide *)
+
+  Definition Is_Activated_Triggering_Feature_b (p : port_variable)  (d : list feature) :=
+    if Is_Activated_Triggering_Feature_dec p d is (left _) then true else false.
 
   Definition Has_Activated_Triggering_Feature (l : list port_variable) (d : list feature) :=
     All_Or (fun x => (Is_Activated_Triggering_Feature x d)) l.
@@ -385,8 +389,8 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
 
   (** [Enabled_oracle] return a [bool] as a witness, for debugging purposes. *)
 
-  Definition Enabled_oracle (th : thread_state_variable) :=
-    Oracle (Enabled_dec th).
+    Definition Enabled_oracle (th : thread_state_variable) :=
+      if Enabled_dec th is (left _) then true else false.
 
 (* begin hide *)
 End AADL_Dispatching.
@@ -399,7 +403,7 @@ End AADL_Dispatching.
 (** - [Activated_Triggering_Features] returns the list of Activated Triggering Features. *)
 
 Definition Activated_Triggering_Features'  (l : list port_variable) (d : list feature) :=
-  filter (fun x => Oracle (Is_Activated_Triggering_Feature_dec x d) ) l.
+  filter (fun x => Is_Activated_Triggering_Feature_b x d) l.
 
 Definition Activated_Triggering_Features (th : thread_state_variable) :=
   Activated_Triggering_Features' th.(input_ports) th.(dispatch_trigger).

@@ -43,7 +43,7 @@ From Coq Require Import List.
 Require Import BinNat Ascii.
 
 (** Oquarina *)
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 (* end hide *)
 
 Section ASCII_Helpers.

@@ -43,7 +43,7 @@ Require Import Coq.Lists.ListDec.
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.properties.
 (* end hide *)
 
