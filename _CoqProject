@@ -5,6 +5,7 @@ src/cpdttactics.v
 src/coq_utils/utils.v
 src/coq_utils/list_utils.v
 src/coq_utils/parser_utils.v
+src/coq_utils/sumbool_utils.v
 src/coq_utils/all.v
 
 src/core/identifiers.v
