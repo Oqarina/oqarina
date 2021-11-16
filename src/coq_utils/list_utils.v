@@ -97,3 +97,23 @@ Section BoolList.
         end.
 
 End BoolList.
+
+Section NatList.
+
+  (** [list_min] returns the minumum value of a list *)
+
+  Definition list_min (l : list nat) :=
+    match l with
+    | [] => 0
+    | h :: t => fold_left (fun acc x => min acc x) l h
+    end.
+
+  (** [list_max] returns the maximum value of a list *)
+
+  Definition list_max (l : list nat) :=
+    match l with
+    | [] => 0
+    | h :: t => fold_left (fun acc x => max acc x) l h
+    end.
+
+End NatList.
