@@ -38,6 +38,7 @@ Require Import Coq.Init.Peano.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Arith.PeanoNat.
 Require Import Lia.
+Require Import Coq.NArith.Ndist.
 (* end hide *)
 
 (** * AbstractTime
@@ -122,156 +123,82 @@ Module NaturalTime <: AbstractTime.
 
 End NaturalTime.
 
-(** XXX As an exercise, do the same for Decimal, or a similar type. *)
+Module NaturalInfTime <: AbstractTime.
 
-Require Import Compare_dec.
-Require Import OrderedType.
+    Definition Time := natinf.
+    Scheme Equality for natinf.
+    
+    Definition Zero := ni 0.
+    Definition One  := ni 1.
+    Definition tle := ni_le.
+    Definition tlt :=
+        fun t1 t2 => match t1 with
+                    | infty => match t2 with
+                                | infty => True
+                                | ni _ => False
+                                end
+                    | ni n1 => match t2 with
+                                | infty => True
+                                | ni n2 => lt n1 n2
+                                end
+        end.
 
-Section s.
-Variable X : Set.
-Variable P : X -> Prop.
+    Definition tplus :=
+        fun t1 t2 => match t1 with
+                    | infty => infty
+                    | ni n1 => match t2 with
+                                | infty => infty
+                                | ni n2 => ni (n1 + n2)
+                                end
+        end.
 
-Lemma foo: (exists x, ~P x) -> ~(forall x, P x).
-Proof.
-  intros. intro.
-  destruct H.
-  apply H.
-  apply H0.
-Qed.
+    Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
+    Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
+    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
 
-End s.
-
-
-(* In the following, we capture the definition of simulation time as presented in
-
-    J. Nutaro, “Toward a Theory of Superdense Time in Simulation Models,” ACM Trans. Model. Comput. Simul., vol. 30, no. 3, pp. 1–13, Jul. 2020, doi: 10.1145/3379489.
-
-Let [t] a type with the usual defintions for +, −, >, 1, and 0. In other words, [t] is both an ordered type and a number type. In the following, we build [SimulationTime] as an extension of an [UsualOrderedType] to also benefit from results on equality. *)
-
-Require Import Coq.Structures.OrderedTypeEx.
-
-Module Type SimulationTime (Import O : UsualOrderedType).
-
-    Parameter plus: t -> t -> t.
-    Parameter minus: t -> t -> t.
-    Parameter succ: t -> t.
-
-    (* P1 There exists 0 such that, for all t , t + 0 = 0 + t = t. Due to *)
-
-    Parameter Zero: t.
-    Axiom P1 : forall tv:t, plus Zero tv = tv .
-    Axiom P1bis: forall tv : t, {tv = Zero} + {lt Zero tv}.
-
-    (* P2 If h1 < h2 then t + h1 < t + h2 *)
-    Axiom P2: forall tv h1 h2: t, lt h1 h2 -> lt (plus h1 tv) (plus h2 tv).
-
-    (* P3 If h1 ≥ 0 and h2 ≥ 0 then (t + h1) + h2 = t + (h1 + h2) *)
-    Axiom P3: forall tv h1 h2: t, plus (plus tv h1) h2 = plus tv (plus h1 h2).
-
-    (* P4 If t1 < t2 then there exists h > 0 such that t1 + h = t2 *)
-    Axiom P4: forall t1 t2: t, lt t1 t2 -> exists h: t, plus t1 h = t2.
-
-    (* P5 There is a successor function S(t) such that the interval [t,S(t))
-       contains exactly t. *)
-    Parameter One: t.
-    Axiom P5: forall t, minus (succ t) t = One.
-
-    (* Proposition 1. The number 0 is unique. *)
-
-    Lemma Proposition_1'': forall tv h:t, lt Zero h -> plus h tv = tv -> False.
+    Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
     Proof.
-        intros tv h H1 H2.
-
-        enough (H3 : lt Zero h -> lt (plus Zero tv) (plus h tv)).
-        - rewrite H2 in H3.
-          rewrite P1 in H3.
-          apply lt_not_eq in H3.
-          contradict H3. apply eq_refl. auto.
-        - apply P2.
-    Defined.
-
-    Lemma Proposition_1: forall tv h: t,
-         (h = Zero -> plus h tv = tv) /\ (lt Zero h -> plus h tv = tv -> False).
-    Proof.
-        intros.
-        split.
-        - intros. subst. apply P1.
-        - apply Proposition_1''.
-    Defined.
-
-End SimulationTime.
-
-Module NatSimulationTime <: SimulationTime (Nat_as_OT).
-    Import Nat_as_OT.
-
-
-    Definition plus := plus.
-    Definition minus := minus.
-    Definition Zero := 0.
-
-    Lemma P1: forall tv:t, plus Zero tv = tv.
-    Proof.
-        intros.
-        unfold Zero. unfold plus.
-        lia.
+        unfold Zero. unfold "@<".
+        destruct t.
+        - right. auto.
+        - destruct n.
+            * left. auto.
+            * right. intuition.
     Qed.
 
-    Lemma P1bis: forall tv : t, {tv = Zero} + {lt Zero tv}.
+    Lemma Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
     Proof.
-        unfold Zero. unfold lt.
-        apply zerop. (* forall n : nat, {n = 0} + {0 < n} *)
+        repeat decide equality.
     Qed.
 
-   Lemma P2: forall tv h1 h2: t, lt h1 h2 -> lt (plus h1 tv) (plus h2 tv).
-   Proof.
-       unfold lt. unfold plus. intuition.
+    Lemma tle_anti: forall a b, a @<= b -> b @<= a -> a = b.
+    Proof.
+        unfold "@<=". apply ni_le_antisym.
+    Qed.
+
+    Lemma tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
+    Proof.
+        unfold "@<=". apply ni_le_trans.
    Qed.
 
-    Lemma P3: forall tv h1 h2: t, plus (plus tv h1) h2 = plus tv (plus h1 h2).
+   Lemma ni_min_case_sumbool : forall d d':natinf,
+        {ni_min d d' = d} + {ni_min d d' = d'}.
+   Proof.
+     destruct d. right. exact (ni_min_inf_l d').
+     destruct d'. left. exact (ni_min_inf_r (ni n)).
+     unfold ni_min.
+     enough ({min n n0 = n} + {min n n0 = n0}) as [-> | ->].
+     left. reflexivity.
+     right. reflexivity.
+     destruct (Nat.min_dec n n0); [left|right]; assumption.
+   Qed.
+
+    Lemma tle_connexity: forall a b, { a @<= b } + { b @<= a }.
     Proof.
-        unfold plus. intuition.
+        unfold "@<=". unfold ni_le.
+        intros.
+        rewrite (ni_min_comm b a).
+        apply ni_min_case_sumbool.
     Qed.
 
-    Lemma P4: forall t1 t2: t, lt t1 t2 -> exists h: t, plus t1 h = t2.
-    Proof.
-        (* Generic part of the proof *)
-        intros.
-        apply ex_intro with (minus t2 t1).
-
-        (* This part assumes we use natural number *)
-        unfold plus. unfold lt in *. unfold minus.
-        lia.
-    Qed.
-
-    Definition succ := S.
-    Definition One:= 1.
-    Lemma P5: forall t, minus (succ t) t = One.
-    Proof.
-        intros.
-        unfold minus. unfold succ. unfold One.
-        lia.
-    Qed.
-
-    (* XXX It should not be required to copy this, investigate Coq modules *)
-    Lemma Proposition_1'': forall tv h:t, lt Zero h -> plus h tv = tv -> False.
-    Proof.
-        intros tv h H1 H2.
-
-        enough (H3 : lt Zero h -> lt (plus Zero tv) (plus h tv)).
-        - rewrite H2 in H3.
-          rewrite P1 in H3.
-          apply lt_not_eq in H3.
-          contradict H3. apply eq_refl. auto.
-        - apply P2.
-    Defined.
-
-    Lemma Proposition_1: forall tv h: t,
-         (h = Zero -> plus h tv = tv) /\ (lt Zero h -> plus h tv = tv -> False).
-    Proof.
-        intros.
-        split.
-        - intros. subst. apply P1.
-        - apply Proposition_1''.
-    Defined.
-
-End NatSimulationTime.
+End NaturalInfTime.
