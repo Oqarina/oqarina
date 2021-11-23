@@ -72,6 +72,7 @@ generate_latex:     ## Generate LaTeX files from Coq
 		$(COQDOCFLAGS) --latex  \
 		-d latex-src/generated-content -s --body-only -g --interpolate `coqdep -sort $(COQMF_VFILES)`
 		mv latex-src/generated-content/*.sty latex-src/
+	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
 
 pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
