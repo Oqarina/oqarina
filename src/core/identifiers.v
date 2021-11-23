@@ -84,6 +84,18 @@ Definition empty_identifier := Id "".
 
 Scheme Equality for identifier.
 
+Lemma identifier_string_eq (s1 s2 : string) : s1 = s2 <-> Id s1 = Id s2.
+Proof.
+  split.
+  - apply f_equal.
+  - intros H1. injection H1. auto.
+Qed.
+
+Lemma identifier_string_neq (s1 s2 : string) : s1 <> s2 <-> Id s1 <> Id s2.
+Proof.
+  rewrite <- identifier_string_eq. easy.
+Qed.
+
 Definition projectionIdentifierString (i : identifier) : string :=
   match i with
   | Id s => s

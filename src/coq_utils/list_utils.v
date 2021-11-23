@@ -117,3 +117,25 @@ Section NatList.
     end.
 
 End NatList.
+
+Section GenericLists.
+
+  (** [clean_options] turns option elements of [l] into a non-option type, removing all occurences of [None] *)
+
+  Variable T : Type.
+
+  Fixpoint clean_options (l : list (option T)) :=
+    match l with
+    | [] => []
+    | h :: t => match h with
+                | None => clean_options t
+                | Some h' => h' :: clean_options t
+                end
+    end.
+
+  Lemma not_in_car (x a : T): ~ In x [a] <-> x<>a.
+  Proof.
+    simpl. intuition.
+  Qed.
+
+End GenericLists.

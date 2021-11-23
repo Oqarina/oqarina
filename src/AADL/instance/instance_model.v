@@ -47,9 +47,8 @@ Require Import Coq.Bool.Sumbool.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.core.all.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.declarative.all.
-Require Import Oqarina.cpdttactics.
 (* end hide *)
 
 (** * AADL instance model
@@ -100,8 +99,10 @@ Ltac prove_Is_AADL_Instance :=
       | |- Is_AADL_Instance _ => compute; repeat split; auto
       | |- (_ =  EmptyString -> False) => intuition; inversion H
       | |- NoDup nil => apply NoDup_nil
-      | |- NoDup  _  => apply NoDup_cons ; crush
-      | |- ~ In _ _ => intuition
+      | |- NoDup  _  => apply NoDup_cons
+      | |- ~ In _ _ => apply not_in_car
+      | |- Id _ <> Id _ => apply identifier_string_neq; easy
+      | |- ~ In _ [] => apply in_nil
     end.
 
 Ltac prove_Well_Formed_Component_Instance :=
@@ -109,6 +110,8 @@ Ltac prove_Well_Formed_Component_Instance :=
       | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
       | |- (_ =  EmptyString -> False) => intuition; inversion H
       | |- NoDup nil => apply NoDup_nil
-      | |- NoDup  _  => apply NoDup_cons ; crush
-      | |- ~ In _ _ => intuition
+      | |- NoDup  _  => apply NoDup_cons
+      | |- ~ In _ _ => apply not_in_car
+      | |- Id _ <> Id _ => apply identifier_string_neq; easy
+      | |- ~ In _ [] => apply in_nil
     end.
