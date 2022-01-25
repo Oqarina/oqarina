@@ -74,6 +74,32 @@ generate_latex:     ## Generate LaTeX files from Coq
 		mv latex-src/generated-content/*.sty latex-src/
 	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
 
+debug2:
+	echo $(COQMF_VFILES)
+
+COQ_FILES=src/formalisms/lts.v src/formalisms/devs_classic.v src/formalisms/devs_coupled.v
+
+alectryon:
+	DOCUTILSCONFIG=docs/docutils.conf \
+	alectryon --coq-driver sertop -Q src Oqarina \
+		--long-line-threshold 150 \
+		--frontend coq+rst --backend latex  \
+		--output-directory latex-src/generated-content \
+		$(COQ_FILES)
+	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' latex-src/generated-content/*.tex
+
+alectryon2:
+	DOCUTILSCONFIG=docs/docutils.conf \
+	alectryon --coq-driver sertop -Q src Oqarina \
+		--long-line-threshold 150 \
+		--frontend coq+rst --backend rst  \
+		--output-directory docs \
+		$(COQ_FILES)
+	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
+
+html:                ## Build HTML pages
+	( cd docs; make html )
+
 pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
 
