@@ -138,4 +138,27 @@ Section GenericLists.
     simpl. intuition.
   Qed.
 
+(*| :coq:`map2` is equivalent to the default :coq:`map` that applies a function to each element, but of two lists. |*)
+
+  Variables (A : Type) (B : Type) (C : Type).
+  Variable f : A -> B -> C.
+
+  Fixpoint map2 (l:list A) (l2:list B) : list C :=
+      match l, l2 with
+          | a :: t, b :: t' => (f a b) :: (map2 t t')
+          | _, _ => []
+      end.
+
+(*| :coq:`filter2` is equivalent to the default :coq:`filter` that filters
+ elements of a list.  |*)
+
+  Variable g : A -> B -> bool.
+
+  Fixpoint filter2 (l:list A) (l2:list B) : list (A * B) :=
+      match l, l2 with
+          | a :: t, b :: t' => if (g a b) then
+                                  (a, b) :: (filter2 t t') else (filter2 t t')
+          | _, _ => []
+      end.
+
 End GenericLists.
