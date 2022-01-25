@@ -197,7 +197,7 @@ Section Actor_Definition.
         States := Actor_State;
         Init := Set_Initial_Actor_State a Internal;
         Actions := Actor_Action;
-        Steps := fun ast act => Actor_Step a ast act;
+        Step := fun ast act => Actor_Step a ast act;
     |}.
 
     (** * Definition of an actor diagram *)
