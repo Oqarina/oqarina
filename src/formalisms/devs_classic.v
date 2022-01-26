@@ -373,6 +373,11 @@ Inductive DEVS_Simulator_Debug : Type :=
     dbg : Time -> Time -> S ->
         list Synchronization_Message_Type -> DEVS_Simulator_Debug.
 
+Definition Get_S (db : DEVS_Simulator_Debug) :=
+    match db with
+    | dbg _ _ s _ => s
+    end.
+
 Definition Print_DEVS_Simulator (s : DEVS_Simulator) :=
     dbg s.(tla) s.(tn) s.(cs).(st) s.(outputs).
 
@@ -502,6 +507,28 @@ Qed.
 Definition TLC_Step4 := DEVS_Simulation_Step TLC_Step3.
 Lemma TLC_Step4_OK :
     (Print_DEVS_State TLC_Step4) = dbg 6 7 GREEN [].
+Proof.
+    trivial.
+Qed.
+
+(* LTS variant of the Traffic LIght DEVS. We introduce a variant of the step
+function that drops the output to compare the states with the previous
+simulation run.*)
+
+Definition TL_LTS := LTS_Of_DEVS TL_Initial.
+
+Definition step_TL_LTS
+    (m : Synchronization_Message_Type X_tl Y_tl)
+    (s : States TL_LTS) : States TL_LTS
+:=
+    let s := step_lts TL_LTS s m in
+    DEVS_Reset_Outputs s.
+
+Example TL_LTS_1 := iterate (step_TL_LTS (i X_tl Y_tl 0)) 1 (Init TL_LTS).
+Compute Print_DEVS_Simulator TL_LTS_1.
+
+Lemma TL_LTS_1_OK :
+    Print_DEVS_Simulator TL_LTS_1 = Print_DEVS_Simulator TLC_Step1.(astate).
 Proof.
     trivial.
 Qed.

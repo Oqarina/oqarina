@@ -112,3 +112,20 @@ Fixpoint list_alter {A} (pos : nat) (l: list A) (f : A -> A) :=
 (* begin hide *)
 End Lists_Misc.
 (* end hide *)
+
+
+Section Iterate.
+
+(* Function iteration. XXX double check this does not exist in the
+Coq standard library. *)
+
+Variable A : Type.
+Variable f : A -> A.
+
+Fixpoint iterate (n : nat) (a : A) :=
+    match n with
+    | 0 => a
+    | S n' => iterate n' (f a)
+    end.
+
+End Iterate.
