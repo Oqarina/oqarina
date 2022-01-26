@@ -411,7 +411,7 @@ Definition Ping_Pong_Coupled := {|
 
 Definition PP_coupled_atomic := Map_DEVS_Coupled_Model Ping_Pong_Coupled.
 
-(* From this point, we cannow check that the behavior is the one we expect, that is an alternance of Player A and B sending. *)
+(* From this point, we can check that the behavior is the one we expect, that is an alternance of Player A and B sending the ball. *)
 
 Definition PP_coupled_initial :=
     Instantiate_DEVS_Simulator (Id "ping_pong_coupled_instance")
