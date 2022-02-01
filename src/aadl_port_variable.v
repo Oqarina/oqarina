@@ -40,7 +40,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Coq.ZArith.BinInt.
 
 (** Oqarina library *)
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.

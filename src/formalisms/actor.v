@@ -75,7 +75,7 @@ Section Actor_Definition.
     Variable V : Type. (* Values *)
     Variable I : Type. (* private state *)
 
-    (** First, we define [Actor_State] as a placeholder to store the current state of an acort. An [Actor_State] is a tuple that holds [Current_State] which is is the curent state label (i.e. position in the underlying automata). [Actor_State] represents the mutable part of an actor definition. *)
+    (** First, we define [Actor_State] as a placeholder to store the current state of an actor. An [Actor_State] is a tuple that holds [Current_State] which is is the curent state label (i.e. position in the underlying automata), along with a clock variable, the state of inputs and outputs variable and an internal state. [Actor_State] represents the mutable part of an actor definition. *)
 
     Record Actor_State : Type := {
         Current_State : L;
@@ -84,6 +84,18 @@ Section Actor_Definition.
         Outputs : list V;
         Internal : I;
     }.
+
+    Definition Set_State (ast : Actor_State) (l : L) := {|
+        Current_State := l;
+        Clock_Variable := ast.(Clock_Variable);
+        Inputs := ast.(Inputs);
+        Outputs := tl ast.(Outputs);
+        Internal := ast.(Internal);
+
+    |}.
+
+    Definition Get_State (ast : Actor_State) : L :=
+        ast.(Current_State).
 
     (** Then, we define [Actor] as the immutable part of an actor definition. An [Actor] gathers the definition of initial state of an actor, and the definitions of the various operations on a state. *)
 
@@ -99,7 +111,7 @@ Section Actor_Definition.
     }.
     (** * Operations on an actor.
 
-    We provide three accessors for manipulating inputs, outpurs and setting the initial state of an actor. *)
+    We provide three accessors for manipulating inputs, outputs and setting the initial state of an actor. *)
 
     (** - [Fetch_Output] removes one output from an Actor. *)
 
@@ -185,7 +197,7 @@ Section Actor_Definition.
         States := Actor_State;
         Init := Set_Initial_Actor_State a Internal;
         Actions := Actor_Action;
-        Steps := fun ast act => Actor_Step a ast act;
+        Step := fun ast act => Actor_Step a ast act;
     |}.
 
     (** * Definition of an actor diagram *)

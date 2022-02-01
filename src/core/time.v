@@ -37,11 +37,13 @@ Require Import Coq.Logic.Eqdep_dec.
 Require Import Coq.Init.Peano.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Arith.PeanoNat.
+Require Import Lia.
+Require Import Coq.NArith.Ndist.
 (* end hide *)
 
 (** * AbstractTime
 
-    [AbstractTime] is an axiomatization of the notion of time, with elements [0] and [1], the addition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In addition, we assume only positive values for time.
+    [AbstractTime] is an axiomatization of the notion of time, with elements [0] and [1], the plusition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In plusition, we assume only positive values for time.
 
 *)
 
@@ -52,11 +54,11 @@ Module Type AbstractTime.
     Parameter One: Time.
     Parameter tle: Time -> Time -> Prop.
     Parameter tlt: Time -> Time -> Prop.
-    Parameter tadd: Time -> Time -> Time.
+    Parameter tplus: Time -> Time -> Time.
 
     Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
     Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
-    Notation "t1 @+ t2" := (tadd t1 t2) (at level 50, left associativity).
+    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
 
     Axiom tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
     Axiom Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
@@ -88,10 +90,10 @@ Module NaturalTime <: AbstractTime.
     Definition One  := 1.
     Definition tle := le.
     Definition tlt := lt.
-    Definition tadd:= plus.
+    Definition tplus:= plus.
     Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
     Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
-    Notation "t1 @+ t2" := (tadd t1 t2) (at level 50, left associativity).
+    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
 
     Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
     Proof.
@@ -121,4 +123,82 @@ Module NaturalTime <: AbstractTime.
 
 End NaturalTime.
 
-(** XXX As an exercise, do the same for Decimal, or a similar type. *)
+Module NaturalInfTime <: AbstractTime.
+
+    Definition Time := natinf.
+    Scheme Equality for natinf.
+    
+    Definition Zero := ni 0.
+    Definition One  := ni 1.
+    Definition tle := ni_le.
+    Definition tlt :=
+        fun t1 t2 => match t1 with
+                    | infty => match t2 with
+                                | infty => True
+                                | ni _ => False
+                                end
+                    | ni n1 => match t2 with
+                                | infty => True
+                                | ni n2 => lt n1 n2
+                                end
+        end.
+
+    Definition tplus :=
+        fun t1 t2 => match t1 with
+                    | infty => infty
+                    | ni n1 => match t2 with
+                                | infty => infty
+                                | ni n2 => ni (n1 + n2)
+                                end
+        end.
+
+    Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
+    Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
+    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
+
+    Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
+    Proof.
+        unfold Zero. unfold "@<".
+        destruct t.
+        - right. auto.
+        - destruct n.
+            * left. auto.
+            * right. intuition.
+    Qed.
+
+    Lemma Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
+    Proof.
+        repeat decide equality.
+    Qed.
+
+    Lemma tle_anti: forall a b, a @<= b -> b @<= a -> a = b.
+    Proof.
+        unfold "@<=". apply ni_le_antisym.
+    Qed.
+
+    Lemma tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
+    Proof.
+        unfold "@<=". apply ni_le_trans.
+   Qed.
+
+   Lemma ni_min_case_sumbool : forall d d':natinf,
+        {ni_min d d' = d} + {ni_min d d' = d'}.
+   Proof.
+     destruct d. right. exact (ni_min_inf_l d').
+     destruct d'. left. exact (ni_min_inf_r (ni n)).
+     unfold ni_min.
+     enough ({min n n0 = n} + {min n n0 = n0}) as [-> | ->].
+     left. reflexivity.
+     right. reflexivity.
+     destruct (Nat.min_dec n n0); [left|right]; assumption.
+   Qed.
+
+    Lemma tle_connexity: forall a b, { a @<= b } + { b @<= a }.
+    Proof.
+        unfold "@<=". unfold ni_le.
+        intros.
+        rewrite (ni_min_comm b a).
+        apply ni_min_case_sumbool.
+    Qed.
+
+End NaturalInfTime.

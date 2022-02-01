@@ -31,40 +31,40 @@
 ***)
 (* begin hide *)
 (** Coq Library *)
-Require Import Coq.Lists.List.
-Import ListNotations.
+Require Import List.
+Import ListNotations. (* from List *)
+Require Import Coq.Lists.ListDec.
 Require Import Coq.ZArith.ZArith.
 
 (** Oqarina library *)
-Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.core.all.
-Require Export Oqarina.AADL.property_sets.aadl_project.
-Require Export Oqarina.AADL.property_sets.deployment_properties.
-Require Export Oqarina.AADL.property_sets.communication_properties.
-Require Export Oqarina.AADL.property_sets.thread_properties.
-Require Export Oqarina.AADL.property_sets.timing_properties.
+Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.property_sets.aadl_project.
 (* end hide *)
 
-(** [AADL_Predeclared_Property_Sets] lists all predeclared property sets. *)
+(** %\N \texttt{communication\_properties}% as Coq/AADL property_types. *)
 
-Definition AADL_Predeclared_Property_Sets :=
-    [ AADL_Project_PS ; Communication_Properties_PS ;
-      Deployment_Properties_PS ;Thread_Properties_PS ; Timing_Properties_PS ] .
+Definition Deployment_Properties_PS :=
+    PropertySet (Id "Deployment_Properties") [
 
-Lemma AADL_Predeclared_Properties_PS_Valid :
-    typecheck_property_sets AADL_Predeclared_Property_Sets = true.
+    (* 	Actual_Processor_Binding: inherit list of reference (processor, virtual processor, system, device, abstract)
+		applies to (thread, thread group, process, system, virtual processor, device);*)
+
+    "Actual_Processor_Binding" :prop PT_Reference
+      => None applies [CompCat thread ; CompCat threadGroup ; CompCat process ; CompCat system ;
+                       CompCat virtualProcessor ; CompCat device] ;
+
+    (* 	Scheduling_Protocol: inherit list of Supported_Scheduling_Protocols
+		applies to (virtual processor, processor, system);*)
+
+    "Scheduling_Protocol" :prop PT_TypeRef (PSQN "AADL_Project" "Supported_Scheduling_Protocols")
+        => None applies [ CompCat virtualProcessor; CompCat processor ; CompCat system ]
+
+    ].
+
+Lemma Deployment_Properties_PS_Valid :
+  typecheck_property_sets [AADL_Project_PS ; Deployment_Properties_PS] = true.
 Proof.
-    trivial.
+  trivial.
 Qed.
-
-Fixpoint Get_AADL_Predeclared_Property_Set_Name' (ps : list property_set) (p : identifier) :=
-    match ps with
-    | nil => empty_identifier
-    | h :: t => match in_propertyset p h with
-                | Some _ =>  property_set_name  h
-                | None => Get_AADL_Predeclared_Property_Set_Name' t p
-                end
-    end.
-
-Definition Get_AADL_Predeclared_Property_Set_Name (p : string) :=
-    (Get_AADL_Predeclared_Property_Set_Name' AADL_Predeclared_Property_Sets (Id p))->toString.

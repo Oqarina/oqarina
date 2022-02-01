@@ -43,7 +43,7 @@ Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
 
 Require Import Oqarina.core.all.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 (* end hide *)
 
 (** XXX Actually wrong, we must check for the direction of the feature as well *)

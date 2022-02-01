@@ -40,10 +40,36 @@ From Coq Require Import Bool.Bool.
 From Coq Require Import Logic.Decidable.
 From Coq Require Import Logic.Classical_Prop.
 From Coq Require Import List.
+Require Import BinNat Ascii.
 
 (** Oquarina *)
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 (* end hide *)
+
+Section ASCII_Helpers.
+
+  (* The following adds basic string manipulation functions. We might consider moving them in a separate file. *)
+
+  Definition is_digit c := (("0" <=? c) && (c <=? "9"))%char.
+
+  Definition is_alpha c :=
+    ((("a" <=? c) && (c <=? "z")) ||
+    (("A" <=? c) && (c <=? "Z")) ||
+    (c =? "_"))%char.
+
+  Definition starts_with_letter s1  :=
+    match s1 with
+      | EmptyString => false
+      | String head tail => (is_alpha head)
+    end.
+
+  Fixpoint has_only_alphanum s :=
+    match s with
+    | EmptyString => true
+    | String head tail => ((is_alpha head) || (is_digit head)) && (has_only_alphanum tail)
+    end.
+
+End ASCII_Helpers.
 
 (** * Identifier type *)
 
@@ -57,6 +83,18 @@ Inductive identifier : Type :=
 Definition empty_identifier := Id "".
 
 Scheme Equality for identifier.
+
+Lemma identifier_string_eq (s1 s2 : string) : s1 = s2 <-> Id s1 = Id s2.
+Proof.
+  split.
+  - apply f_equal.
+  - intros H1. injection H1. auto.
+Qed.
+
+Lemma identifier_string_neq (s1 s2 : string) : s1 <> s2 <-> Id s1 <> Id s2.
+Proof.
+  rewrite <- identifier_string_eq. easy.
+Qed.
 
 Definition projectionIdentifierString (i : identifier) : string :=
   match i with
@@ -98,6 +136,8 @@ Definition empty_fqname : fq_name := FQN nil empty_identifier None.
 Inductive ps_qname :=
 | PSQN (psname : string) (name : string).
 
+Definition empty_ps_qname := PSQN "" "".
+
 Scheme Equality for ps_qname.
 
 (**
@@ -109,40 +149,141 @@ must be trivially non empty.}
 XXX Actually, we could check for more things like this is ASCII, no whitespace, etc. See https://github.com/clarus/coq-list-string for an API to make this easy.
 
 *)
+  (** [Is_true] defines a mapping from [bool] to [Prop], this mechanism is relevant to build decidable properties out of basic boolean predicates. The [Is_true_dec] tactic expediates the proof of decidability functions based on [Is_true]. *)
+
+Ltac Is_true_dec :=
+  repeat match goal with
+    | |- forall _, { ?T _ } + { ~ ?T _} => intros; unfold T
+    | |- {Is_true (_)} + {~ Is_true (_)}  => destruct (_); simpl; auto
+   end.
+
+  Definition Well_Formed_string_prop (s : string) : Prop :=
+    (s <> EmptyString) /\
+    Is_true (starts_with_letter s &&
+             has_only_alphanum s).
+
+  Lemma Well_Formed_string_prop_dec: forall s : string,
+    { Well_Formed_string_prop s } + { ~ Well_Formed_string_prop s }.
+  Proof.
+    intros.
+    unfold Well_Formed_string_prop.
+    apply dec_sumbool_and.
+    destruct (string_dec s EmptyString); subst; auto.
+    Is_true_dec.
+  Qed.
 
 Definition Well_Formed_Identifier_prop (i : identifier) : Prop :=
-  (i <> empty_identifier).
+  Well_Formed_string_prop (i ->toString).
 
 Lemma Well_Formed_Identifier_prop_dec: forall id: identifier,
   { Well_Formed_Identifier_prop id } + { ~ Well_Formed_Identifier_prop id }.
 Proof.
   intros.
   unfold Well_Formed_Identifier_prop.
-  destruct (identifier_eq_dec id empty_identifier).
-  - subst. auto.
-  - subst. auto.
+  apply Well_Formed_string_prop_dec.
 Qed.
 
-(** * Examples *)
+Definition Well_Formed_ps_qname_prop (ps : ps_qname) :=
+  let (psname, name) := ps in
+    Well_Formed_string_prop psname /\ Well_Formed_string_prop name.
 
-Example A_WFI : identifier :=
-  Id "o<".
-
-Lemma A_WFI_is_well_formed:
-  Well_Formed_Identifier_prop A_WFI.
+Lemma Well_Formed_ps_qname_prop_dec: forall ps : ps_qname,
+  { Well_Formed_ps_qname_prop ps } + { ~ Well_Formed_ps_qname_prop ps }.
 Proof.
-  (* In this "boring" version, we do a manual proof using the
-  previous definitions.
+  intros.
+  unfold Well_Formed_ps_qname_prop.
+  destruct ps.
+  apply dec_sumbool_and; apply Well_Formed_string_prop_dec.
+Defined.
 
-  First, we rewrite the proposition to its simple form *)
-  unfold Well_Formed_Identifier_prop.
-  destruct (identifier_eq_dec A_WFI empty_identifier).
-  inversion e. auto.
-Qed.
+Definition Well_Formed_fq_name_prop (f : fq_name) :=
+  let (path, name, impl_name) := f in
+    All Well_Formed_Identifier_prop path /\
+    Well_Formed_Identifier_prop name /\
+    match impl_name with
+    | None => True
+    | Some s => Well_Formed_Identifier_prop s
+    end.
 
-Lemma Empty_Identifier_is_ill_formed:
-  ~ Well_Formed_Identifier_prop empty_identifier.
+Lemma Well_Formed_fq_name_prop_dec: forall f: fq_name,
+  { Well_Formed_fq_name_prop f } + { ~ Well_Formed_fq_name_prop f }.
 Proof.
-  unfold Well_Formed_Identifier_prop.
-  auto.
-Qed.
+  intros.
+  unfold Well_Formed_fq_name_prop.
+  destruct f.
+  apply dec_sumbool_and.
+  - apply sumbool_All_dec; apply Well_Formed_Identifier_prop_dec.
+  - apply dec_sumbool_and.
+    * apply Well_Formed_Identifier_prop_dec.
+    * destruct impl_name. apply Well_Formed_Identifier_prop_dec. auto.
+Defined.
+
+(** [split_fq_colons] and [split_fq_dot] are helper functions for parsing strings that contain a fully qualitied name in the form "A::B::C.D" *)
+
+Fixpoint split_fq_colons (path : list identifier) (pending : string) (s : string) (after_dot : option identifier) :=
+  match s with
+  | EmptyString => (FQN path (Id pending) after_dot)
+  | String ":" (String ":" tail) => split_fq_colons (path ++ (cons (Id pending) nil)) EmptyString tail after_dot
+  | String " " tail => split_fq_colons path pending tail after_dot
+  | String head tail => split_fq_colons path (pending ++ (String head EmptyString)) tail after_dot
+  end.
+
+Fixpoint split_fq_dot (pending : string) (s : string) :=
+  match s with
+  | EmptyString => split_fq_colons nil EmptyString pending None
+  | String "." tail => split_fq_colons nil EmptyString pending (Some (Id tail))
+  | String head tail => split_fq_dot (pending ++ (String head EmptyString)) tail
+  end.
+
+(** [parse_fq_name] parses the input string and returns a fully qualified name *)
+
+Definition parse_fq_name (s : string) : fq_name := split_fq_dot EmptyString s.
+
+(** [parse_ps_qname] parses the input string and returns a property set qualified name *)
+Definition parse_psq_name (s: string) : ps_qname :=
+  let (path, name, _) := parse_fq_name (s) in
+  match path with
+  | h :: nil => PSQN (h->toString) (name->toString)
+  | nil => PSQN "" (name->toString)
+  | _ => empty_ps_qname
+  end.
+
+(* begin hide *)
+Section Examples.
+
+  Example test_split_fq_colons_1 :
+    split_fq_colons nil EmptyString "Hello" None = FQN nil (Id "Hello") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_split_fq_colons_2:
+    split_fq_colons nil EmptyString "Hello::World" None = FQN (Id "Hello" :: nil) (Id "World") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_split_fq_colons_3:
+    split_fq_colons nil EmptyString "A::B::C::D" None = FQN (Id "A" :: Id "B" :: Id "C" :: nil) (Id "D") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_split_fq_colons_4:
+    split_fq_colons nil EmptyString "" None = FQN nil (Id "") None.
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_parse_fq_name_1 : parse_fq_name "Foo.impl" = FQN nil (Id "Foo") (Some (Id "impl")).
+  Proof.
+    trivial.
+  Qed.
+
+  Example test_parse_fq_name_2 : parse_fq_name "Foo::Bar.impl" = FQN (Id "Foo" :: nil) (Id "Bar") (Some (Id "impl")).
+  Proof.
+    trivial.
+  Qed.
+
+End Examples.
+(* end hide *)

@@ -52,7 +52,7 @@ Definition Timing_Properties_PS :=
 		   applies to (thread, thread group, process, system, device,
                    virtual processor); *)
 
-    "Deadline" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
+    "Deadline" :prop PT_TypeRef (PSQN "AADL_Project" "Time")
         => None applies [ CompCat thread ; CompCat threadGroup ; CompCat process ;
         CompCat system ; CompCat device ; CompCat virtualProcessor ];
 
@@ -60,9 +60,17 @@ Definition Timing_Properties_PS :=
        applies to (thread, thread group, process, system, device,
                    virtual processor); *)
 
-    "Period" :prop PT_TypeRef (PSQN "Timing_Properties" "Time")
+    "Period" :prop PT_TypeRef (PSQN "AADL_Project" "Time")
         => None applies [ CompCat thread ; CompCat threadGroup ; CompCat process ;
-        CompCat system ; CompCat device ; CompCat virtualProcessor ]
+        CompCat system ; CompCat device ; CompCat virtualProcessor ] ;
+
+    (* 	Compute_Execution_Time: Time_Range
+		    applies to (thread, device, subprogram, event port, event data port); *)
+
+    "Compute_Execution_Time" :prop PT_TypeRef (PSQN "AADL_Project" "Time_Range")
+      => None applies [ CompCat thread; CompCat device; CompCat subprogram ;
+      FeatureCat eventPort ; FeatureCat eventDataPort]
+
   ].
 
 Lemma Timing_Properties_PS_Valid :

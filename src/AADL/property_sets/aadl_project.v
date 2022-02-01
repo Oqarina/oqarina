@@ -42,12 +42,20 @@ Require Import Coq.ZArith.ZArith.
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
+#[local] Open Scope Z_scope.
 (* end hide *)
 
 Definition AADL_Time : Type := Z.
 
 Definition AADL_Project_PS :=
     PropertySet (Id "AADL_Project") [
+
+     (* Supported_Scheduling_Protocols:
+      type enumeration (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL); *)
+
+    "Supported_Scheduling_Protocols" :type PT_Enumeration [
+        Id "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
+      ];
 
     (* Supported_Dispatch_Protocols:
        type enumeration (Periodic, Sporadic, Aperiodic, Timed,

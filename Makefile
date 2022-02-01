@@ -65,7 +65,6 @@ validate:           ## Validate all proofs
 .PHONY: html
 html:               ## Generate HTML
 	make -f coq_makefile html
-	cp $(EXTRA_DIR)/resources/* html
 
 generate_latex:     ## Generate LaTeX files from Coq
 	-mkdir latex-src/generated-content
@@ -73,6 +72,33 @@ generate_latex:     ## Generate LaTeX files from Coq
 		$(COQDOCFLAGS) --latex  \
 		-d latex-src/generated-content -s --body-only -g --interpolate `coqdep -sort $(COQMF_VFILES)`
 		mv latex-src/generated-content/*.sty latex-src/
+	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
+
+debug2:
+	echo $(COQMF_VFILES)
+
+COQ_FILES=src/formalisms/lts.v src/formalisms/devs_classic.v src/formalisms/devs_coupled.v
+
+alectryon:
+	DOCUTILSCONFIG=docs/docutils.conf \
+	alectryon --coq-driver sertop -Q src Oqarina \
+		--long-line-threshold 150 \
+		--frontend coq+rst --backend latex  \
+		--output-directory latex-src/generated-content \
+		$(COQ_FILES)
+	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' latex-src/generated-content/*.tex
+
+alectryon2:
+	DOCUTILSCONFIG=docs/docutils.conf \
+	alectryon --coq-driver sertop -Q src Oqarina \
+		--long-line-threshold 150 \
+		--frontend coq+rst --backend rst  \
+		--output-directory docs \
+		$(COQ_FILES)
+	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
+
+html:                ## Build HTML pages
+	( cd docs; make html )
 
 pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
@@ -101,15 +127,16 @@ clean:              ## Clean generated files
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -rf _build
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
-	-( cd latex-src ; latexmk -pdf -C techreport.tex )
+	( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
 	$(MAKE) -C extraction clean
+	$(MAKE) -C src/AADL/atin_frontend clean
 	-rm -rf src/**/*.vo deps.dot* deps.png
 	find . -type f -name '.*.aux' -exec rm {} +
 
 distclean:          ## Distclean
 	$(MAKE) clean
-	-rm -rf html .lia.cache
+	-rm -rf html coq-oqarina.opam .lia.cache
 	-rm extraction/*.ml extraction/*.mli main.ml*
 	-rm -rf coq-ocarina*
 
@@ -134,13 +161,14 @@ deps.dot: _CoqProject
 deps.png: deps.dot
 	dot -T png deps.dot > deps.png
 
+# -----------------------------------------------------------------------------
+# Packaging
+#
+
 PKG_NAME=coq-ocarina-0.0.1
 FILES=$(shell gls --ignore="$(PKG_NAME)*" --ignore=latex-src .)
 
-t:
-	echo $(FILES)
-
-package:
+package:            ## Build package
 	rm -rf mkdir $(PKG_NAME)
 	mkdir $(PKG_NAME)
 	cp -r $(FILES) $(PKG_NAME)

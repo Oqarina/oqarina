@@ -49,7 +49,7 @@ Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.core.all.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 (* end hide *)
 
 (**
@@ -104,7 +104,7 @@ Section AADL_Component_Type.
         apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
         apply Well_Formed_Property_Associations_dec.
-      Qed.
+    Defined.
 
 (* begin hide *)
 End AADL_Component_Type.
@@ -135,19 +135,19 @@ Section AADL_Component_Implementation.
 {An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.}%
 *)
 
-    Definition Well_Formed_Component_Implementation (c: component) :=
+    Definition Well_Formed_Component_Implementation' (c: component) :=
         Is_AADL_Component_Implementation c /\
         Well_Formed_Component_Implementation_Subcomponents c /\
         Well_Formed_Component c /\
         Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
 
-    Lemma Well_Formed_Component_Implementation_dec :
+    Lemma Well_Formed_Component_Implementation'_dec :
     forall (c:component),
-        {Well_Formed_Component_Implementation c} +
-        { ~Well_Formed_Component_Implementation c}.
+        {Well_Formed_Component_Implementation' c} +
+        { ~Well_Formed_Component_Implementation' c}.
     Proof.
         intros.
-        unfold Well_Formed_Component_Implementation.
+        unfold Well_Formed_Component_Implementation'.
         apply dec_sumbool_and.
         apply Is_AADL_Component_Implementation_dec.
         apply dec_sumbool_and.
@@ -155,6 +155,19 @@ Section AADL_Component_Implementation.
         apply dec_sumbool_and.
         apply Well_Formed_Component_dec.
         apply Well_Formed_Property_Associations_dec.
+    Defined.
+
+    Definition Well_Formed_Component_Implementation (c: component) :=
+        Unfold_Apply Well_Formed_Component_Implementation' c.
+
+    Lemma Well_Formed_Component_Implementation_dec :
+        forall (c:component),
+            {Well_Formed_Component_Implementation c} +
+            { ~Well_Formed_Component_Implementation c}.
+    Proof.
+        unfold Well_Formed_Component_Implementation.
+        apply Unfold_Apply_dec.
+        apply Well_Formed_Component_Implementation'_dec.
     Qed.
 
 (* begin hide *)

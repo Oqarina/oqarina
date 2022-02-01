@@ -11,7 +11,7 @@
 
 (package
  (name coq-oqarina)
- (synopsis "mechanization of AADL in Coq.")
+ (synopsis "Oqarina is a mechanization of AADL in Coq.")
  (description "Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.")
  (depends
   (dune (> 2.5))
@@ -21,3 +21,4 @@
   (coq-io-system (>= 2.4.1)) ;; MIT, https://github.com/coq-io/system/blob/master/LICENSE
   (coq-json :dev)            ;; BSD 3-Clause, https://github.com/liyishuai/coq-json/blob/comrade/LICENSE
 ))
+

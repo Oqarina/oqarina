@@ -1,6 +1,12 @@
 -Q src Oqarina
 
+src/cpdttactics.v
+
 src/coq_utils/utils.v
+src/coq_utils/list_utils.v
+src/coq_utils/parser_utils.v
+src/coq_utils/sumbool_utils.v
+src/coq_utils/all.v
 
 src/core/identifiers.v
 src/core/time.v
@@ -9,6 +15,8 @@ src/core/all.v
 
 src/formalisms/lts.v
 src/formalisms/actor.v
+src/formalisms/devs_classic.v
+src/formalisms/devs_coupled.v
 
 src/AADL/Kernel/categories.v
 src/AADL/Kernel/properties.v
@@ -24,6 +32,7 @@ src/AADL/property_sets/aadl_project.v
 src/AADL/property_sets/timing_properties.v
 src/AADL/property_sets/thread_properties.v
 src/AADL/property_sets/communication_properties.v
+src/AADL/property_sets/deployment_properties.v
 src/AADL/property_sets/all.v
 
 src/AADL/legality/categories_wf.v

@@ -45,8 +45,8 @@ Require Import Oqarina.core.identifiers.
 Require Import Oqarina.coq_utils.utils.
 (* end hide *)
 
-Open Scope Z_scope.
-Open Scope string_scope.
+#[local] Open Scope Z_scope.
+#[local] Open Scope string_scope.
 
 Definition INT := Z.
 Definition REAL := Z.
@@ -248,5 +248,10 @@ Qed.
 
 Inductive property_set :=
 | PropertySet (name : identifier) (declarations : list property_set_declaration).
+
+Definition property_set_name (ps : property_set) :=
+  match ps with
+  | PropertySet name _ => name
+  end .
 
 Definition property_sets := list property_set.

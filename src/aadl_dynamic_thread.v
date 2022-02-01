@@ -41,9 +41,10 @@ Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Bool.Bool.
 Require Import Coq.ZArith.ZArith.
+Import IfNotations.
 
 (** Oqarina library *)
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
@@ -192,6 +193,9 @@ Section AADL_Dispatching.
     apply Feature_In_Dispatch_Trigger_dec.
   Defined.
   (* end hide *)
+
+  Definition Is_Activated_Triggering_Feature_b (p : port_variable)  (d : list feature) :=
+    if Is_Activated_Triggering_Feature_dec p d is (left _) then true else false.
 
   Definition Has_Activated_Triggering_Feature (l : list port_variable) (d : list feature) :=
     All_Or (fun x => (Is_Activated_Triggering_Feature x d)) l.
@@ -385,8 +389,8 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
 
   (** [Enabled_oracle] return a [bool] as a witness, for debugging purposes. *)
 
-  Definition Enabled_oracle (th : thread_state_variable) :=
-    Oracle (Enabled_dec th).
+    Definition Enabled_oracle (th : thread_state_variable) :=
+      if Enabled_dec th is (left _) then true else false.
 
 (* begin hide *)
 End AADL_Dispatching.
@@ -399,7 +403,7 @@ End AADL_Dispatching.
 (** - [Activated_Triggering_Features] returns the list of Activated Triggering Features. *)
 
 Definition Activated_Triggering_Features'  (l : list port_variable) (d : list feature) :=
-  filter (fun x => Oracle (Is_Activated_Triggering_Feature_dec x d) ) l.
+  filter (fun x => Is_Activated_Triggering_Feature_b x d) l.
 
 Definition Activated_Triggering_Features (th : thread_state_variable) :=
   Activated_Triggering_Features' th.(input_ports) th.(dispatch_trigger).
@@ -711,8 +715,9 @@ Definition A_Periodic_Thread := Component
 Ltac prove_component_wf :=
   repeat match goal with
     | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
+    | |- (_ =  EmptyString -> False) => intuition; inversion H
     | |- (Id _ = Id _ -> False) => injection; inversion H
-    | |- NoDup [] => apply NoDup_nil
+    | |- NoDup nil => apply NoDup_nil
   end.
 
 Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
@@ -726,9 +731,8 @@ Ltac prove_thread_state_variable_wf :=
     | |- ( _ = Unspecified_Dispatch_Protocol -> False) => discriminate
     | |- ( _ = Unspecified_Overflow_Handling_Protocol -> False) => discriminate
     | |- ( _ = Unspecified_Dequeue_Protocol -> False) => discriminate
-    | |- NoDup [ _ ] => apply NoDup_cons ; auto
-    | |- NoDup [] => apply NoDup_nil
-
+    | |- NoDup  _  => apply NoDup_cons ; auto
+    | |- NoDup nil => apply NoDup_nil
   end.
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).

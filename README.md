@@ -6,15 +6,21 @@ Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries
 
 * `extra` : additional material for producing HTML from Coq
 * `extraction` : wrapper to extract code and compile a binary
+* `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources for AADL mechanization
 
 ## Required software
 
-Oqarina has been tested using Coq version 8.13.2 and either VSCoq extension for Visual Code or Proof General.
+Oqarina has been tested using Coq version 8.14 and either VSCoq extension for Visual Code or Proof General.
 
-## Additional packages
+### Additional packages
 
-Use `make install_deps` (no extraction) or `make install_deps_bin` (extraction) to install required additional packages.
+The following packages should be installed separately using opam:
+
+* `http://coq.io/`: additional elements to read from files, helper for code extractions
+* `https://github.com/liyishuai/coq-json`: JSON manipulation
+
+Use `make install_deps` (no extraction) or `make install_deps_bin` (extraction) to install them.
 
 ## Usage
 

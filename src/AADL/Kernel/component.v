@@ -52,7 +52,7 @@ Require Import Sumbool.
 
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
-Require Import Oqarina.coq_utils.utils.
+Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.categories.
 Require Import Oqarina.AADL.Kernel.properties.
 Open Scope list_scope.
@@ -250,6 +250,11 @@ Section AADL_Accessors.
     | Component _ category _ _ _ _ _ => category
   end.
 
+  Definition projectionComponentClassifier (c:component) : fq_name :=
+    match c with
+    | Component _ _ fq_name _ _ _ _ => fq_name
+  end.
+
   Definition projectionComponentFeatures (c:component) : list feature :=
     match c with
     | Component _ _ _ features _ _ _ => features
@@ -333,6 +338,8 @@ End AADL_Accessors.
 Notation "c '->id' " := (projectionComponentId c)
   (at level 80, right associativity).
 Notation "c '->category' " := (projectionComponentCategory c)
+  (at level 80, right associativity).
+Notation "c '->classifier' " := (projectionComponentClassifier c)
   (at level 80, right associativity).
 Notation "c '->subcomps' " := (projectionComponentSubComponents c)
   (at level 80, right associativity).

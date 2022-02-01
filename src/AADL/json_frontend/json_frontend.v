@@ -44,21 +44,25 @@ From JSON Require Import
     Printer.
 Import
     List
-    ListNotations.
+    ListNotations
+    Strings.String.
+#[local] Open Scope Z_scope.
 
 (** Oqarina library *)
 From Oqarina Require Import
-    Kernel.all
-    core.identifiers.
+    coq_utils.all
+    AADL.Kernel.all
+    core.identifiers
+    AADL.property_sets.all
+    AADL.instance.all.
 (* end hide *)
-Require Import Coq.Strings.String.
 
 (** * Helper functions *)
 
 Definition get_string_from_json (s : string) (j : json) :=
   match get_string s j with
   | Some s' => s'
-  | _ => ""
+  | _ => EmptyString
   end.
 
 (** - [get_identifier] extracts a string object from a JSON object *)
@@ -140,37 +144,6 @@ Definition get_properties (j : json) : list json :=
   | _ => []
   end.
 
-Fixpoint parse_uint' acc s :=
-  match s with
-  | String "0" s => parse_uint' (acc*10) s
-  | String "1" s => parse_uint' (acc*10+1) s
-  | String "2" s => parse_uint' (acc*10+2) s
-  | String "3" s => parse_uint' (acc*10+3) s
-  | String "4" s => parse_uint' (acc*10+4) s
-  | String "5" s => parse_uint' (acc*10+5) s
-  | String "6" s => parse_uint' (acc*10+6) s
-  | String "7" s => parse_uint' (acc*10+7) s
-  | String "8" s => parse_uint' (acc*10+8) s
-  | String "9" s => parse_uint' (acc*10+9) s
-  | _ => (acc,s)
-  end.
-
-Definition parse_uint (s : string) :=
-  let (n, s) := parse_uint' 0 s in n.
-
-Definition parse_int s :=
-  match s with
-  | EmptyString => 0 (* XXX should report error*)
-  | String a s' =>
-    if Ascii.eqb a "-" then - (parse_uint s')
-    else (parse_uint s)
-  end.
-
-Definition parse_bool s :=
-  if eqb "true" s then true
-  else if eqb "false" s then true
-  else false. (* error reporting *)
-
 Definition Map_JSON_To_Property_Value_Abstract (j2 : json) (f : json -> property_value ): property_value :=
   match j2 with
   | JSON__Object j3 => f j2
@@ -233,10 +206,17 @@ Fixpoint Map_JSON_To_Property_Value (j : json) : property_value :=
     | _  => PV_Bool false (* error reporting *)
   end.
 
+Definition Map_JSON_To_PSQName (j: json) :=
+  let psqn := parse_psq_name(get_string_from_json "name" j) in
+  match psqn with
+  | PSQN "" s => PSQN (Get_AADL_Predeclared_Property_Set_Name s) s
+  | _ => psqn
+  end.
+
 Fixpoint Map_JSON_To_Property_Association (j : list json) :=
   match j with
       | (JSON__Object o) :: t =>
-        {| P := PSQN (get_string_from_json "name" (JSON__Object o)) "";
+        {| P := (Map_JSON_To_PSQName (JSON__Object o)) ;
           PV := (Map_JSON_To_Property_Value (get_json "property_value" (JSON__Object o))) |}
         :: Map_JSON_To_Property_Association  t
       | _ => [  ]
@@ -250,7 +230,7 @@ Fixpoint Map_JSON_To_Component' (fuel : nat) (c : list json) : list component :=
     | (JSON__Object f) :: t =>
        ( Component (get_identifier (JSON__Object f))
                    (Map_JSON_To_ComponentCategory (get_json "category" (JSON__Object f)))
-                   (FQN [] (Id (get_string_from_json "classifier" (JSON__Object f))) None)  (* classifier XXX incomplete*)
+                   (parse_fq_name (get_string_from_json "$t" (get_json "classifier" (JSON__Object f))))  (* classifier *)
                    (Map_JSON_To_Feature' m (get_features (JSON__Object f))) (* features *)
                    (Map_JSON_To_Component' m (get_subcomponents (JSON__Object f))) (* subcomponents *)
                    (Map_JSON_To_Property_Association (get_properties (JSON__Object f)))(* properties *)
@@ -293,18 +273,12 @@ Definition Map_JSON_Root_To_Component (AST : option string + json) :=
 Definition Map_JSON_String_To_Component (s : string) :=
     Map_JSON_Root_To_Component (from_string s).
 
-Definition test_properties := "
-{""aadl_xml"": {""components"": {""component"": {""category"": ""system"", ""features"": {}, ""subcomponents"": {""component"": {""category"": ""device"", ""features"": {}, ""subcomponents"": {}, ""identifier"": ""subcomp_subdevice"", ""properties"": {}, ""classifier"": ""subdevice.impl""}}, ""identifier"": ""main.impl"", ""properties"": {""property"": [{""name"": ""Test_Properties::a_record_property"", ""property_value"": {""record"": {""record_field"": [{""integer"": {""value"": ""10""}, ""name"": ""an_integer_field""}, {""name"": ""a_string_field"", ""string"": {""value"": ""test string""}}, {""real_range"": {""value_low"": ""5.0"", ""value_high"": ""10.0""}, ""name"": ""a_real_range_field""}]}}}, {""name"": ""Test_Properties::an_enumeration_property"", ""property_value"": {""enumeration"": {""value"": ""enum2""}}}, {""name"": ""Test_Properties::a_classifier_property"", ""property_value"": {""classifier"": {""value"": ""subdevice""}}}, {""name"": ""Test_Properties::a_reference_property"", ""property_value"": {""reference"": {""value"": ""subcomp_subdevice""}}}, {""name"": ""Test_Properties::a_list_of_list_property"", ""property_value"": {""list"": {""list"": [{""integer"": [{""value"": ""1""}, {""value"": ""2""}]}, {""integer"": [{""value"": ""3""}, {""value"": ""4""}]}]}}}, {""name"": ""Test_Properties::a_boolean_property"", ""property_value"": {""boolean"": {""value"": ""true""}}}, {""name"": ""Test_Properties::a_string_property"", ""property_value"": {""string"": {""value"": ""test string""}}}, {""name"": ""Test_Properties::a_real_range_property"", ""property_value"": {""real_range"": {""value_low"": ""5.0"", ""value_high"": ""10.0""}}}, {""name"": ""Test_Properties::a_real_unit_property"", ""property_value"": {""real_unit"": {""unit"": ""ns"", ""value"": ""10.0""}}}, {""name"": ""Test_Properties::a_negative_real_property"", ""property_value"": {""real"": {""value"": ""-10.0""}}}, {""name"": ""Test_Properties::a_real_property"", ""property_value"": {""real"": {""value"": ""10.0""}}}, {""name"": ""Test_Properties::an_integer_range_property"", ""property_value"": {""integer_range"": {""value_low"": ""5"", ""value_high"": ""10""}}}, {""name"": ""Test_Properties::an_integer_unit_property"", ""property_value"": {""integer_unit"": {""unit"": ""ms"", ""value"": ""10""}}}, {""name"": ""Test_Properties::a_negative_integer_property"", ""property_value"": {""integer"": {""value"": ""-10""}}}, {""name"": ""Test_Properties::an_integer_property"", ""property_value"": {""integer"": {""value"": ""10""}}}]}, ""classifier"": ""main.impl""}}, ""root_system"": ""main.impl""}}
-
-".
-
-Compute from_string test_properties.
-Compute Map_JSON_String_To_Component test_properties.
-
-
-Compute Map_JSON_String_To_Component "XXX".
-
-Definition rma_test := "
-{""aadl_xml"": {""components"": {""component"": {""category"": ""system"", ""features"": {}, ""subcomponents"": {""component"": [{""category"": ""process"", ""features"": {}, ""subcomponents"": {""component"": [{""category"": ""thread"", ""features"": {}, ""subcomponents"": {}, ""identifier"": ""Task1"", ""properties"": {""property"": [{""name"": ""Deadline"", ""property_value"": {""integer_unit"": {""unit"": ""ms"", ""value"": ""1000""}}}, {""name"": ""Compute_Execution_time"", ""property_value"": {""integer_range_unit"": {""value_low"": ""0"", ""value_high"": ""3"", ""unit_high"": ""ms"", ""unit_low"": ""ms""}}}, {""name"": ""Period"", ""property_value"": {""integer_unit"": {""unit"": ""ms"", ""value"": ""1000""}}}, {""name"": ""Priority"", ""property_value"": {""integer"": {""value"": ""1""}}}, {""name"": ""Dispatch_Protocol"", ""property_value"": {""enumeration"": {""value"": ""Periodic""}}}]}, ""classifier"": ""Task.impl_1""}, {""category"": ""thread"", ""features"": {}, ""subcomponents"": {}, ""identifier"": ""Task2"", ""properties"": {""property"": [{""name"": ""Deadline"", ""property_value"": {""integer_unit"": {""unit"": ""ms"", ""value"": ""500""}}}, {""name"": ""Compute_Execution_time"", ""property_value"": {""integer_range_unit"": {""value_low"": ""0"", ""value_high"": ""5"", ""unit_high"": ""ms"", ""unit_low"": ""ms""}}}, {""name"": ""Period"", ""property_value"": {""integer_unit"": {""unit"": ""ms"", ""value"": ""500""}}}, {""name"": ""Priority"", ""property_value"": {""integer"": {""value"": ""2""}}}, {""name"": ""Dispatch_Protocol"", ""property_value"": {""enumeration"": {""value"": ""Periodic""}}}]}, ""classifier"": ""Task.impl_2""}]}, ""identifier"": ""node_a"", ""properties"": {""property"": {""name"": ""Actual_Processor_Binding"", ""property_value"": {""list"": {""reference"": {""value"": ""cpu""}}}}}, ""classifier"": ""node_a.impl""}, {""category"": ""processor"", ""features"": {}, ""subcomponents"": {}, ""identifier"": ""cpu"", ""properties"": {""property"": [{""name"": ""Scheduling_Protocol"", ""property_value"": {""list"": {""enumeration"": {""value"": ""POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL""}}}}, {""name"": ""Processor_properties::Max_Prio_First"", ""property_value"": {""enumeration"": {""value"": ""high""}}}, {""name"": ""Scheduling_Protocol"", ""property_value"": {""list"": {""enumeration"": {""value"": ""POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL""}}}}, {""name"": ""Deployment::Execution_Platform"", ""property_value"": {""enumeration"": {""value"": ""Native""}}}]}, ""classifier"": ""cpu.impl""}]}, ""identifier"": ""rma.impl"", ""properties"": {}, ""classifier"": ""rma.impl""}}, ""root_system"": ""rma.impl""}}".
-
-Compute Map_JSON_String_To_Component rma_test.
+Definition Get_Instance (c : option string + list component) :=
+match c with
+| inr c' =>
+  match c' with
+  | h :: _ =>  h
+  | _ => nil_component
+  end
+| _ => nil_component
+end.
