@@ -4,10 +4,10 @@ Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries
 
 ## Directory structure
 
-* `extra` : additional material for producing HTML from Coq
 * `extraction` : wrapper to extract code and compile a binary
-* `latex-src` : LaTeX source code of the corresponding TR.
 * `src`: Coq sources for AADL mechanization
+* `testsuite`: some tests for the extracted code
+* `tools`: misc. helper scripts for maintenance
 
 ## Required software
 
@@ -17,10 +17,11 @@ Oqarina has been tested using Coq version 8.14 and either VSCoq extension for Vi
 
 The following packages should be installed separately using opam:
 
-* `http://coq.io/`: additional elements to read from files, helper for code extractions
 * `https://github.com/liyishuai/coq-json`: JSON manipulation
+* `https://github.com/Lysxia/coq-simple-io`: IO monad with user-definable primitive operations
+* `https://github.com/coq-community/coq-ext-lib`: Additional theories for Coq
 
-Use `make install_deps` (no extraction) or `make install_deps_bin` (extraction) to install them.
+Use `make install_deps` to install them.
 
 ## Usage
 
@@ -29,21 +30,17 @@ You may either
 
 - play with the Coq files from VSCode. In this case, make sure the Coq directory is the only one in your workspace. Then from the terminal, run
 
-    ```make build_makefile compile ```
+  ```make build_dune```
 
-- extract code, e.g.
+- compile extracted code, e.g.
 
-  ```make build_makefile compile build_bin```
+  ```make build_dune build_bin```
 
   then, run
 
-  ```./extraction/main.native --parse testsuite/car.impl.json```
+  ```./_build/default/extraction/extraction.native  --parse testsuite/car.impl.json```
 
-- build using Dune, in this case no extraction is performed
-
-  ```make build_dune```
-
-- build using provided docker container, no extraction
+- build using provided docker container
 
   ```make test_build_docker```
 

@@ -28,17 +28,15 @@ help:               ## Show this help
 install_deps:       ## Install dependencies (no extraction)
 	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
 	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
-	opam install -y coq-ext-lib menhir coq-menhirlib coq-json
-
-install_deps_bin:   ## Install dependencies (extraction)
-	$(MAKE) install_deps
-	opam install -y coq-io-system
+	opam install -y coq-ext-lib coq-json coq-simple-io
 
 # -----------------------------------------------------------------------------
 # * Build system: we support two approaches
 #   - using _CoqProject, for inclusion with Coq IDE
 #   - using Dune, for packaging
 #
+# _CoqProject build is no longer supported. To resurrect it, copy _CoqProject.
+# legacy to _CoqProject, and eventually manually update any missing elements.
 
 build_makefile:     ## Generate coq makefile
 	coq_makefile -f _CoqProject -o coq_makefile
@@ -46,14 +44,14 @@ build_makefile:     ## Generate coq makefile
 install:            ## Install Oqarina as a stand alone Coq library
 	make -f coq_makefile install
 
-compile:            ## Compile Coq files
+compile:
 	make -f coq_makefile
 
-dune_build:         ## Build using dune
+dune_build:         ## Build (requires dune)
 	dune build
 
-build_bin:          ## Build Oqarina binary
-	make -C extraction
+build_bin:          ## Build Oqarina binary, after dune_build
+	( cd _build/default/extraction  ; ocamlbuild extraction.native -lib unix )
 
 validate:           ## Validate all proofs
 	make -f coq_makefile validate
@@ -117,7 +115,7 @@ build_docker:	    ## Build docker image for testing
 
 test_build_docker:  ## Test build using docker
 	$(MAKE) clean distclean
-	docker run -ti  -v `pwd`:/work safir/coq make generate_parser dune_build
+	docker run -ti  -v `pwd`:/work oqarina/oqarina make dune_build
 
 # -----------------------------------------------------------------------------
 # Cleaning rules
@@ -127,11 +125,11 @@ clean:              ## Clean generated files
 	-rm -f coq_makefile* coq_resources coqdoc.sty *~ .*.aux
 	-rm -rf _build
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
-	( cd latex-src ; latexmk -pdf -C techreport.tex )
+	-( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
 	$(MAKE) -C extraction clean
 	$(MAKE) -C src/AADL/atin_frontend clean
-	-rm -rf src/**/*.vo deps.dot* deps.png
+	-rm -rf src/**/*.vo deps.dot* deps.png **/.*.aux
 	find . -type f -name '.*.aux' -exec rm {} +
 
 distclean:          ## Distclean
