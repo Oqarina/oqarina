@@ -10,7 +10,8 @@
  (theories Oqarina))
 
 ;; Define the executable from this module
-(executable
- (name main)
- (public_name main)
- (libraries lwt io-system))
+;; XXX This part is disabled for now, dune does not find all dependencies while ocamlbuild does. To be investigated.
+;;(executable
+;; (name main)
+;; (public_name main)
+;; (libraries unix))

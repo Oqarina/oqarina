@@ -29,34 +29,36 @@
  *
  * DM21-0762
 ***)
-(* extraction.v *)
-
-(* Code extraction towards OCaml.
-
-  Note: we rely on Coq.IO library to extract code. This library provides additional elements to read from files, print strings etc.
-
-*)
 
 (* Coq library *)
-Require Import Coq.Lists.List.
-Require Import Coq.Strings.String.
+
+From Coq Require Import
+     Strings.String
+     Lists.List.
 Import ListNotations.
 
-(* Coq.IO and Coq.ListString libraries *)
-Require Import Io.All.
-Require Import Io.System.All.
-Require Import ListString.All.
-Import C.Notations.
+From Coq.extraction Require Import
+     ExtrOcamlIntConv.
 
-(* Suppress warnings on accessing opaque elements*)
+(* begin hide *)
 Set Warnings "-extraction-opaque-accessed,-extraction".
+(* end hide *)
 
 (* List of modules we want to generate *)
 From Oqarina Require Import
-  coq_utils.utils
+  coq_utils.all
   AADL.Kernel.all
   AADL.json_frontend.json_frontend
   AADL.instance.all.
+
+  From SimpleIO Require Import
+  IO_Sys
+  IO_RawChar
+  IO_Monad
+  IO_Stdlib.
+Import IO.Notations.
+
+Open Scope string_scope.
 
 (** * Default tool commands *)
 
@@ -69,13 +71,13 @@ Then, we provide various basic utility functions.
 Record tool_cmd : Type := {
   flag : string ;
   help_string : string ;
-  cmd : list LString.t -> C.t System.effect unit ;
+  cmd : list string -> IO unit ;
 }.
 
 (** - [show_version] display version information *)
 
-Definition show_version (argv : list LString.t) : C.t System.effect unit :=
-  System.log (LString.s "Oqarina version 0.1").
+Definition show_version (argv : list string) : IO unit :=
+  print_endline (to_ostring "Oqarina version 0.1").
 
 Definition version_cmd := {|
   flag := "--version" ;
@@ -85,27 +87,35 @@ Definition version_cmd := {|
 
 (** * - [parse_aadl_json_file] : parse an AADL JSON file *)
 
-Definition validate_AADL_root (c : list component) : C.t System.effect unit :=
+Definition validate_AADL_root (c : list component) : IO unit :=
   let AADL_Root := hd nil_component c in
   let AADL_Root_Valid := Oracle (Well_Formed_Component_Instance_dec AADL_Root) in
-  if AADL_Root_Valid then System.log (LString.s "well-formed success")
-  else System.log (LString.s "well-formed failure").
+  if AADL_Root_Valid then print_endline (to_ostring "well-formed success")
+                     else print_endline (to_ostring "well-formed failure").
 
-Definition parse_aadl_json_file (argv : list LString.t) : C.t System.effect unit :=
+Definition read_file (filename : string) :=
+  ch <- open_in (to_ostring filename) ;;
+  ch_len <- in_channel_length ch ;;
+  s <- really_input_string ch ch_len ;;
+  _ <- close_in ch ;;
+  IO.ret s.
+
+Definition process_aadl_content (m : string) :=
+  let AADL_Root := Map_JSON_String_To_Component m in
+  match AADL_Root with
+  | inl _ => print_endline "parse error"
+  | inr AADL_Root' => print_endline "parsing success"
+  end.
+
+Definition parse_aadl_json_file (argv : list string) : IO unit :=
   match argv with
   | [_; _; file_name] =>
-    let! content := System.read_file file_name in
-    match content with
-    | None => System.log (LString.s "Cannot read file")
-    | Some content => let AADL_Root := Map_JSON_String_To_Component (Conversion.to_string content) in
-      match AADL_Root with
-      | inl _ => System.log (LString.s "parse error")
-      | inr AADL_Root'    => do! System.log (LString.s "parsing success") in
-                validate_AADL_root AADL_Root'
-      end
-    end
-  | _ => System.log (LString.s "Expected one parameter.")
-  end.
+    content <- read_file file_name ;;
+    component <- process_aadl_content (from_ostring content) ;;
+    IO.ret tt
+
+  | _ => print_endline "expected filename"
+  end ;;  IO.ret tt.
 
 Definition parse_cmd := {|
   flag := "--parse" ;
@@ -115,16 +125,18 @@ Definition parse_cmd := {|
 
 (** - [show_help] display help information *)
 
-Fixpoint show_help_ (cmd: list tool_cmd) :=
+Fixpoint show_help_ (cmd: list tool_cmd) : IO unit :=
   match cmd with
-  | h :: t => do! System.log (LString.s (h.(flag) ++ " " ++ h.(help_string))) in show_help_ (t)
-  | _ => ret tt
+  | h :: t => print_endline
+                 (h.(flag) ++ " " ++ h.(help_string)) ;;
+    show_help_ (t)
+  | _ => IO.ret tt
   end.
 
-Definition show_help (argv : list LString.t) : C.t System.effect unit :=
-  do! System.log (LString.s "Usage: oqarina [switches] <files>") in
-  do! show_help_ ([version_cmd; parse_cmd]) in
-  System.log (LString.s "--help show help").
+Definition show_help (argv : list string) : IO unit :=
+  print_endline (to_ostring "Usage: oqarina [switches] <files>") ;;
+  show_help_ [version_cmd ; parse_cmd] ;;
+  print_endline (to_ostring "--help show help").
 
 Definition help_cmd := {|
   flag := "--help" ;
@@ -134,44 +146,47 @@ Definition help_cmd := {|
 
 (** * Argument processing *)
 
-Definition Oqarina_Cmd : list tool_cmd := [ version_cmd ; help_cmd ; parse_cmd ].
+Definition Oqarina_Cmd : list tool_cmd :=
+  [ version_cmd ; help_cmd ; parse_cmd ].
 
-Fixpoint parse_argument (arg : LString.t) (cmd : list tool_cmd) : list tool_cmd :=
+Fixpoint parse_argument (arg : string) (cmd : list tool_cmd) : list tool_cmd :=
   match cmd with
     | h :: t =>
-      if LString.eqb arg (LString.s h.(flag))
+      if eqb arg h.(flag)
         then [ h ] else parse_argument arg t
     | nil => nil
    end.
 
-Fixpoint parse_arguments (argv : list LString.t) : list tool_cmd :=
+Fixpoint parse_arguments (argv : list string) : list tool_cmd :=
   match argv with
-  | h :: t => (parse_argument h Oqarina_Cmd) ++ (parse_arguments t )
+  | h :: t => (parse_argument h Oqarina_Cmd) ++ (parse_arguments t)
   | _ => nil
   end.
 
 Fixpoint process_arguments
-  (argv : list LString.t) (l : list tool_cmd) : C.t System.effect unit :=
+  (argv : list string) (l : list tool_cmd) : IO unit :=
     match l with
-    | h :: t => do! (h.(cmd) argv) in process_arguments argv t
-    | nil => ret tt
+    | h :: t => (h.(cmd) argv) ;; process_arguments argv t
+    | nil => IO.ret tt
     end.
 
 (** * Main entrypoint for Oqarina *)
 
-Definition Oqarina_main (argv : list LString.t) : C.t System.effect unit :=
+Definition Oqarina_main (argv : list string) : IO unit :=
   let action_todo := parse_arguments (argv) in
   match action_todo with
-  | nil => show_help argv
-  | _ =>  process_arguments argv action_todo
+    | nil => show_help argv
+    | _   => process_arguments argv action_todo
   end.
 
-(* Move to "extraction/generated-src" directory, deprecated since we now use Dune to build *)
-(*Cd "extraction/generated-src".*)
+Definition main' : IO unit :=
+  args <- OSys.argv ;;
+  Oqarina_main (map from_ostring args).
 
-(** Extract the program to `extraction/main.ml`. *)
-Definition main := Extraction.launch Oqarina_main.
-Extraction "main" main.
-(*
-Cd "../..". (* move back to original directory, to avoid errors like "cannot generate extraction.vo" *)
-*)
+Definition main : io_unit := IO.unsafe_run main'.
+
+Extraction Blacklist Char.
+(* It seems coq-ext-lib hides this definition. Hence, we instruct the extraction mechanism to handle this conflict. See https://coq.zulipchat.com/#narrow/stream/237977-Coq-users/topic/.E2.9C.94.20Unbound.20value.20Char.2Echr.20when.20compiling.20extracted.20code.3A *)
+
+(*Extraction "main" main. *)
+Separate Extraction main.

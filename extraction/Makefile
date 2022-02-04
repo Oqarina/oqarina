@@ -1,5 +1,5 @@
 build:
-	ocamlbuild main.native -I generated-src -use-ocamlfind -package io-system
+	ocamlbuild main.native -lib unix
 
 clean:
 	ocamlbuild -clean
