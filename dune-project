@@ -17,8 +17,7 @@
   (dune (> 2.5))
   (coq (and :dev (>= 8.13))) ;; LGPLv2.1, https://github.com/coq/coq/blob/master/LICENSE
   (coq-ext-lib :dev)         ;; BSD 2-Clause, https://github.com/coq-community/coq-ext-lib/blob/master/LICENSE
-  (coq-io (>= 4.0.0))        ;; MIT, https://github.com/coq-io/io/blob/master/LICENSE
-  (coq-io-system (>= 2.4.1)) ;; MIT, https://github.com/coq-io/system/blob/master/LICENSE
+  (coq-simple-io (>= 1.6.0))        ;; MIT, https://github.com/Lysxia/coq-simple-io/blob/master/LICENSE
   (coq-json :dev)            ;; BSD 3-Clause, https://github.com/liyishuai/coq-json/blob/comrade/LICENSE
 ))
 
