@@ -266,7 +266,7 @@ Definition Map_JSON_Root_To_Component (AST : option string + json) :=
       let aadl_xml := get_json "aadl_xml" (JSON__Object l) in
       let comps := get_json "components" aadl_xml in
         inr (Map_JSON_To_Component ([get_json "component" comps]))
-    | inr _ =>  inl (Some "Invalid JSON Object")
+    | inr _ => inl (Some "Invalid JSON Object")
     | inl x => inl x
   end.
 
