@@ -12,8 +12,7 @@ depends: [
   "dune" {>= "2.8" & > "2.5"}
   "coq" {dev & >= "8.13"}
   "coq-ext-lib" {dev}
-  "coq-io" {>= "4.0.0"}
-  "coq-io-system" {>= "2.4.1"}
+  "coq-simple-io" {>= "1.6.0"}
   "coq-json" {dev}
   "odoc" {with-doc}
 ]
