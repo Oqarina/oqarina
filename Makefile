@@ -22,13 +22,12 @@ help:               ## Show this help
 # * Management of dependencies: Coq libraries can be installed through
 #   opam. We provide two targets:
 #   - install_deps installs required libraries to use Oqarina from a Coq IDE
-#   - install_deps_bin instalels additional libraries for code extraction
 #
 
 install_deps:       ## Install dependencies (no extraction)
 	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
 	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
-	opam install -y coq-ext-lib coq-json coq-simple-io
+	opam install --deps-only .
 
 # -----------------------------------------------------------------------------
 # * Build system: we support two approaches
