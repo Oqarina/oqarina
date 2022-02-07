@@ -21,7 +21,9 @@ the name of such derived product, nor shall “Carnegie Mellon
 University,” "SEI” and/or “Software Engineering Institute" be used to
 endorse or promote products derived from this software without prior
 written permission. For written permission, please contact
-permission@sei.cmu.edu.  ACKNOWLEDGMENTS AND DISCLAIMERS:
+permission@sei.cmu.edu.
+
+ACKNOWLEDGMENTS AND DISCLAIMERS:
 
 Oqarina includes and/or can make use of certain third party software
 ("Third Party Software"). The Third Party Software that is used by
