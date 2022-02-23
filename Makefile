@@ -130,8 +130,7 @@ clean:              ## Clean generated files
 	-( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
 	$(MAKE) -C extraction clean
-	$(MAKE) -C src/AADL/atin_frontend clean
-	-rm -rf src/**/*.vo deps.dot* deps.png **/.*.aux
+	-rm -rf src/**/*.vo deps.dot* deps.png
 	find . -type f -name '.*.aux' -exec rm {} +
 
 distclean:          ## Distclean
