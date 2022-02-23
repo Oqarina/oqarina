@@ -55,6 +55,9 @@ build_bin:          ## Build Oqarina binary, after dune_build
 validate:           ## Validate all proofs
 	make -f coq_makefile validate
 
+test:               ## Run testsuite
+	make -C testsuite test
+
 # -----------------------------------------------------------------------------
 # Documentation generation
 #
