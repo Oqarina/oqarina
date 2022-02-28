@@ -58,7 +58,6 @@ Inductive S_pp' := Wait | Send.
 
 Scheme Equality for S_pp'.
 
-
 Record S_pp := { s_pp : S_pp'; sigma : Time }.
 
 Definition Q_pp : Type := Q S_pp.

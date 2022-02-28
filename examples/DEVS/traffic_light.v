@@ -192,8 +192,8 @@ End Traffic_Light.
 Section Traffic_Light_Coupled.
 (*
 
-Traffic Light example
-=====================
+Traffic Light couple example
+============================
 
 In this section, we build a naive coupled DEVS model out of the Traffic Light example. The coupled model is made of a single node. We use this as a first verification step that the coupled DEVS model made of one atonmic model has the same behavior.
 

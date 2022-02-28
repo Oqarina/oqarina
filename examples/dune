@@ -1,5 +1,5 @@
 (coq.theory
- (name Oqarina_tests)
+ (name Oqarina_examples)
   (theories Oqarina)
 )
 
