@@ -96,7 +96,7 @@ Section AADL_Definitions.
                 list feature ->        (* features *)
                 list component ->      (* subcomponents *)
                 list property_association -> (* properties *)
-                list connection ->
+                list connection -> (* XXX change order *)
                 component
     with feature :=
       | Feature : identifier -> (* its unique identifier *)
@@ -107,8 +107,8 @@ Section AADL_Definitions.
                   feature
     with connection :=
     | Connection : identifier ->
-                   list identifier -> (* path to the source feature *)
-                   list identifier -> (* path to the destination feature *)
+                   feature_ref -> (* path to the source feature *)
+                   feature_ref -> (* path to the destination feature *)
                    connection.
 
   (** Definition of an empty component *)
@@ -134,10 +134,10 @@ End AADL_Definitions.
 
 (** - Definition of a component type and implementation *)
 
-Definition A_Component := Component (Id "a_component") (abstract)
+Example A_Component := Component (Id "a_component") (abstract)
   (FQN [Id "pack1" ] (Id "foo_classifier") None) nil nil nil nil.
 
-Definition A_Component_Impl :=
+Example A_Component_Impl :=
   Component (Id "a_component_impl")
   (abstract)
   (FQN [Id "pack1" ] (Id "foo_classifier") (Some (Id "impl")))  nil
@@ -145,7 +145,7 @@ Definition A_Component_Impl :=
 
 (** - Definition of a feature *)
 
-Definition A_Feature := Feature (Id "a_feature") inF eventPort nil_component.
+Example A_Feature := Feature (Id "a_feature") inF eventPort nil_component.
 
 (** * Decidability of equality
 
@@ -310,6 +310,9 @@ Section AADL_Accessors.
 
   Definition Features_Components (l : list feature) : list component :=
     map (fun x => projectionFeatureComponent x) l.
+
+  Definition Features_Identifiers (l : list feature) : list identifier :=
+    map (fun x => projectionFeatureIdentifier x) l.
 
   (** [Components\_Identifiers] return the list of identifiers in l. *)
 

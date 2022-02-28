@@ -42,9 +42,10 @@ Require Import Coq.Lists.ListDec.
 
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.component.
-Require Import Oqarina.core.identifiers.
+Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.properties.
+Require Import Oqarina.AADL.legality.features_wf.
 (* end hide *)
 
 (**
@@ -117,7 +118,31 @@ Section WellFormedness_Rules.
   Hint Resolve Well_Formed_Component_Classifier_dec : core.
   (* end hide *)
 
+  Definition Well_Formed_Component_Features (c : component) : Prop :=
+    Well_Formed_Features (c->features).
+
+  Lemma Well_Formed_Component_Features_dec : forall c : component,
+    { Well_Formed_Component_Features c } + {~ Well_Formed_Component_Features c }.
+  Proof.
+    intros.
+
+    unfold Well_Formed_Component_Features.
+    apply Well_Formed_Features_dec.
+  Qed.
+
+  (* begin hide *)
+  Hint Resolve Well_Formed_Component_Features_dec : core.
+  (* end hide *)
+
   (** * AADL legality rules *)
+
+(*| Naming rule 4.3 (N2)
+
+(N2)	Each component type has a local namespace for defining identifiers of prototypes, features, modes, mode transitions, and flow specifications. That is, defining prototype, defining feature, defining modes and mode transitions, and defining flow specification identifiers must be unique in the component type namespace.
+
+|*)
+
+
 
   (** ** Naming rule 4.5 (N1) *)
   (** 4.5 (N1) The defining identifier of a subcomponent declaration placed in a
@@ -130,18 +155,18 @@ Section WellFormedness_Rules.
 
   *)
 
-  Definition Subcomponents_Identifiers_Are_Well_Formed (l : list component) : Prop :=
+  Definition Subcomponents_Identifiers_Are_Unique (l : list component) : Prop :=
     (NoDup (Components_Identifiers l)).
 
-  Lemma Subcomponents_Identifiers_Are_Well_Formed_dec :
+  Lemma Subcomponents_Identifiers_Are_Unique_dec :
     forall l : list component,
-      dec_sumbool (Subcomponents_Identifiers_Are_Well_Formed l).
+      dec_sumbool (Subcomponents_Identifiers_Are_Unique l).
   Proof.
     intros.
 
     (* unfold the various definitions *)
     unfold dec_sumbool.
-    unfold Subcomponents_Identifiers_Are_Well_Formed.
+    unfold Subcomponents_Identifiers_Are_Unique.
 
     apply NoDup_dec. (* NoDup is decidable, from Coq.Lists.ListDec *)
 
@@ -153,14 +178,14 @@ Section WellFormedness_Rules.
   (** We can now "implement" the predicate for rule 4.5 (N1) *)
 
   Definition Rule_4_5_N1 (c : component) : Prop :=
-    Subcomponents_Identifiers_Are_Well_Formed (c->subcomps).
+    Subcomponents_Identifiers_Are_Unique (c->subcomps).
 
   Lemma Rule_4_5_N1_dec :
     forall c : component, { Rule_4_5_N1 c } + { ~ Rule_4_5_N1 c } .
   Proof.
     unfold Rule_4_5_N1.
     intros.
-    apply Subcomponents_Identifiers_Are_Well_Formed_dec.
+    apply Subcomponents_Identifiers_Are_Unique_dec.
   Qed.
 
   (* begin hide *)
@@ -194,6 +219,7 @@ Section WellFormedness_Rules.
   Definition Well_Formed_Component (c : component) : Prop :=
    Well_Formed_Component_Id (c) /\
    Well_Formed_Component_Classifier (c) /\
+   Well_Formed_Component_Features (c) /\
   (* Well_Formed_Properties (c) /\ *)
    Rule_4_5_N1 (c).
 
@@ -203,10 +229,8 @@ Section WellFormedness_Rules.
     (* Unfold all definitions *)
     intros.
     unfold Well_Formed_Component.
-
-    (* Apply decidability results *)
-    apply dec_sumbool_and; auto.
-    apply dec_sumbool_and; auto.
+    unfold dec_sumbool.
+    repeat (apply dec_sumbool_and; auto).
 
     (* Note: auto requires all theorems to be part of the core hints
     database, see above "Hint Resolve Rule_4_5_N1_dec : core."  *)

@@ -38,6 +38,7 @@ Import ListNotations. (* from List *)
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.legality.features_wf.
 (* end hide *)
 
 (**

@@ -42,49 +42,11 @@ Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
 
+Require Import Oqarina.AADL.Kernel.features_helper.
+
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 (* end hide *)
-
-(** XXX Actually wrong, we must check for the direction of the feature as well *)
-
-Fixpoint Valid_Features_Category
-(l : list feature) (lcat : list FeatureCategory) :=
-    match l with
-    | nil => True
-    | h :: t => In (projectionFeatureCategory  h) lcat /\
-                Valid_Features_Category t lcat
-    end.
-
-Lemma Valid_Features_Category_dec :
-    forall (l:list feature) (lcat :list FeatureCategory),
-        { Valid_Features_Category l lcat } +
-        { ~Valid_Features_Category l lcat }.
-Proof.
-    intros.
-    unfold Valid_Features_Category.
-    induction l.
-    auto.
-    apply dec_sumbool_and.
-    - apply In_dec; apply FeatureCategory_eq_dec.
-    - auto.
-Qed.
-
-Definition Well_Formed_Component_Interface
-    (c: component) (l : list FeatureCategory) :=
-        Valid_Features_Category (c->features) l.
-
-Lemma Well_Formed_Component_Interface_dec :
-    forall (c:component) (lcat :list FeatureCategory),
-        {Well_Formed_Component_Interface c lcat} +
-        { ~Well_Formed_Component_Interface c lcat}.
-Proof.
-    intros.
-    unfold Well_Formed_Component_Interface.
-    apply Valid_Features_Category_dec.
-Qed.
-
-(** XXX Actually wrong, we must check for the direction of the feature as well *)
 
 Fixpoint Valid_Subcomponents_Category
     (l : list component) (lcat : list ComponentCategory) :=
