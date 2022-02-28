@@ -131,6 +131,14 @@ Defined.
 
 Definition empty_fqname : fq_name := FQN nil empty_identifier None.
 
+(** [feature_ref] defines a feature reference, e.g. "comp.feature" *)
+
+Inductive feature_ref := | FREF (compname : string) (featurename : string).
+
+Definition empty_feature_ref := FREF "" "".
+
+Scheme Equality for feature_ref.
+
 (** [ps_qname] defines a qualified name for property related construct, e.g.  "foo::bar" *)
 
 Inductive ps_qname :=
@@ -145,8 +153,6 @@ Scheme Equality for ps_qname.
 \textit{Rationale: an identifier being used to identify a model element, it
 must be trivially non empty.}
 }%
-
-XXX Actually, we could check for more things like this is ASCII, no whitespace, etc. See https://github.com/clarus/coq-list-string for an API to make this easy.
 
 *)
   (** [Is_true] defines a mapping from [bool] to [Prop], this mechanism is relevant to build decidable properties out of basic boolean predicates. The [Is_true_dec] tactic expediates the proof of decidability functions based on [Is_true]. *)
@@ -246,6 +252,18 @@ Definition parse_psq_name (s: string) : ps_qname :=
   | h :: nil => PSQN (h->toString) (name->toString)
   | nil => PSQN "" (name->toString)
   | _ => empty_ps_qname
+  end.
+
+(** [parse_feature_ref_name] parses the input string and returns a feautre reference name *)
+Definition parse_feature_ref_name (s : string) : feature_ref :=
+  let (path, name, f) := parse_fq_name (s) in
+  match path with
+  | nil =>
+      match f with
+      | Some id => FREF (name->toString) (id->toString)
+      | None => FREF (name->toString) EmptyString
+      end
+  | _ => empty_feature_ref
   end.
 
 (* begin hide *)
