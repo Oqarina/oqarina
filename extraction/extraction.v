@@ -31,7 +31,6 @@
 ***)
 
 (* Coq library *)
-
 From Coq Require Import
      Strings.String
      Lists.List.
@@ -51,7 +50,7 @@ From Oqarina Require Import
   AADL.json_frontend.json_frontend
   AADL.instance.all.
 
-  From SimpleIO Require Import
+From SimpleIO Require Import
   IO_Sys
   IO_RawChar
   IO_Monad

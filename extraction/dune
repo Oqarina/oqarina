@@ -10,7 +10,7 @@
  (theories Oqarina))
 
 ;; Define the executable from this module
-;; XXX This part is disabled for now, dune does not find all dependencies while ocamlbuild does. To be investigated.
+;; XXX This part is disabled for now, dune does not find all dependencies while ocamlbuild does. This is a documented limit of dune.
 ;;(executable
 ;; (name main)
 ;; (public_name main)
