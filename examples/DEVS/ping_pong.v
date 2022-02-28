@@ -173,7 +173,7 @@ Proof.
     trivial.
 Qed.
 
-Definition PPCC_Step1 := DEVS_Simulation_Step PPCC_Step0.
+Definition PPCC_Step1 := DEVS_Simulation_Step PPCC_Step0 None.
 Lemma PPCC_Step1_OK :
     Print_DEVS_Simulator PPCC_Step1.(astate) =
     dbg 0 1
@@ -183,7 +183,7 @@ Proof.
     trivial.
 Qed.
 
-Definition PPCC_Step2 := DEVS_Simulation_Step PPCC_Step1.
+Definition PPCC_Step2 := DEVS_Simulation_Step PPCC_Step1 None.
 Lemma PPCC_Step2_OK :
     Print_DEVS_Simulator PPCC_Step2.(astate) =
     dbg 1 2
@@ -193,7 +193,7 @@ Proof.
     trivial.
 Qed.
 
-Definition PPCC_Step3 := DEVS_Simulation_Step PPCC_Step2.
+Definition PPCC_Step3 := DEVS_Simulation_Step PPCC_Step2 None.
 Lemma PPCC_Step3_OK :
     Print_DEVS_Simulator PPCC_Step3.(astate) =
     dbg 2 3
@@ -203,7 +203,7 @@ Proof.
     trivial.
 Qed.
 
-Definition PPCC_Step4 := DEVS_Simulation_Step PPCC_Step3.
+Definition PPCC_Step4 := DEVS_Simulation_Step PPCC_Step3 None.
 Lemma PPCC_Step4_OK :
     Print_DEVS_Simulator PPCC_Step4.(astate) =
     dbg 3 4
@@ -213,7 +213,7 @@ Proof.
     trivial.
 Qed.
 
-Definition PPCC_Step5 := DEVS_Simulation_Step PPCC_Step4.
+Definition PPCC_Step5 := DEVS_Simulation_Step PPCC_Step4 None.
 Lemma PPCC_Step5_OK :
     Print_DEVS_Simulator PPCC_Step5.(astate) =
     dbg 4 5

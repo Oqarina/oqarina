@@ -136,28 +136,28 @@ Definition TL_Initial := Instantiate_DEVS_Simulator
 
 Definition TL_Coordinator := Iniitialize_DEVS_Root_Coordinator TL_Initial.
 
-Definition TLC_Step1 := DEVS_Simulation_Step TL_Coordinator.
+Definition TLC_Step1 := DEVS_Simulation_Step TL_Coordinator None.
 Lemma TLC_Step1_OK :
     (Print_DEVS_State TLC_Step1) = dbg 0 1 GREEN [].
 Proof.
     trivial.
 Qed.
 
-Definition TLC_Step2 := DEVS_Simulation_Step TLC_Step1.
+Definition TLC_Step2 := DEVS_Simulation_Step TLC_Step1 None.
 Lemma TLC_Step2_OK :
     (Print_DEVS_State TLC_Step2) = dbg 1 3 YELLOW [].
 Proof.
     trivial.
 Qed.
 
-Definition TLC_Step3 := DEVS_Simulation_Step TLC_Step2.
+Definition TLC_Step3 := DEVS_Simulation_Step TLC_Step2 None.
 Lemma TLC_Step3_OK :
     (Print_DEVS_State TLC_Step3) = dbg 3 6 RED [].
 Proof.
     trivial.
 Qed.
 
-Definition TLC_Step4 := DEVS_Simulation_Step TLC_Step3.
+Definition TLC_Step4 := DEVS_Simulation_Step TLC_Step3 None.
 Lemma TLC_Step4_OK :
     (Print_DEVS_State TLC_Step4) = dbg 6 7 GREEN [].
 Proof.
@@ -215,7 +215,7 @@ Definition TL_coupled_initial :=
 
 Definition TL_Coordinator_coupled := Iniitialize_DEVS_Root_Coordinator TL_coupled_initial.
 
-Definition TLCC_Step1 := DEVS_Simulation_Step TL_Coordinator_coupled.
+Definition TLCC_Step1 := DEVS_Simulation_Step TL_Coordinator_coupled None.
 Lemma TLCC_Step1_OK :
     (Print_DEVS_Simulator TLCC_Step1.(astate)) =
         dbg 0 1 [{| st := GREEN; e := 0 |}] [].
@@ -223,7 +223,7 @@ Proof.
     trivial.
 Qed.
 
-Definition TLCC_Step2 := DEVS_Simulation_Step TLCC_Step1.
+Definition TLCC_Step2 := DEVS_Simulation_Step TLCC_Step1 None.
 Lemma TLCC_Step2_OK :
     (Print_DEVS_Simulator TLCC_Step2.(astate)) =
     dbg 1 3 [{| st := YELLOW; e := 0 |}] [].
@@ -231,7 +231,7 @@ Proof.
     trivial.
 Qed.
 
-Definition TLCC_Step3 := DEVS_Simulation_Step TLCC_Step2.
+Definition TLCC_Step3 := DEVS_Simulation_Step TLCC_Step2 None.
 Lemma TLCC_Step3_OK :
     (Print_DEVS_Simulator TLCC_Step3.(astate)) =
     dbg 3 6 [{| st := RED; e := 0 |}] [].
@@ -239,7 +239,7 @@ Proof.
     trivial.
 Qed.
 
-Definition TLCC_Step4 := DEVS_Simulation_Step TLCC_Step3.
+Definition TLCC_Step4 := DEVS_Simulation_Step TLCC_Step3 None.
 Lemma TLCC_Step4_OK :
     (Print_DEVS_Simulator TLCC_Step4.(astate)) =
     dbg 6 7 [{| st := GREEN; e := 0 |}] [].

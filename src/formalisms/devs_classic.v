@@ -123,7 +123,6 @@ Definition Set_Q_Init (d : DEVS_Atomic_Model) (q : Q) := {|
     δext := d.(δext);
 |}.
 
-
 (*|
 
 ====================
@@ -355,7 +354,7 @@ end.
 
 (*| :coq:`DEVS_Simulation_Step` runs one step of the DEVS, i.e. runs computations until the Done message is received. |*)
 
-Definition DEVS_Simulation_Step (r : DEVS_Root_Coordinator)
+Definition DEVS_Simulation_Step (r : DEVS_Root_Coordinator) ( m : option Synchronization_Message_Type)
 : DEVS_Root_Coordinator
 :=
     let '(status', cstime', r') :=
@@ -363,8 +362,10 @@ Definition DEVS_Simulation_Step (r : DEVS_Root_Coordinator)
             | Init_Coordinator =>
                 DEVS_Wait_For_Done r (i 0) 10
             | Step_Coordinator =>
-                DEVS_Wait_For_Done r (step r.(cstime)) 10
-        end in
+                match m with
+                | None => DEVS_Wait_For_Done r (step r.(cstime)) 10
+                | Some m' => DEVS_Wait_For_Done r m' 10
+        end end in
     Build_DEVS_Root_Coordinator status' cstime' Step_Coordinator
         r'.(astate) r'.(event_queue).
 
