@@ -30,8 +30,83 @@
  * DM21-0762
 ***)
 
+Require Import Coq.Strings.String.
+Require Import Oqarina.core.all.
+
 Require Export Oqarina.AADL.Kernel.all.
 Require Export Oqarina.AADL.legality.all.
 Require Export Oqarina.AADL.declarative.all.
 Require Export Oqarina.AADL.instance.all.
 Require Export Oqarina.AADL.property_sets.all.
+
+Module AADL_Notations.
+
+(*| Notation for component features (partial XXX) |*)
+
+Notation "'feature:' 'in_event' x" := (Feature (Id x) inF eventPort nil_component nil) (at level 200).
+
+Notation "'feature:' 'out_event' x" := (Feature (Id x) outF eventPort nil_component nil) (at level 200).
+
+(*| Properties |*)
+
+Notation "'property:' x ==> y" := {| P := x ; PV := y|} (at level 200).
+
+(*| Connections |*)
+
+Definition Build_Connection (id : string) (source : string) (destination : string) : connection :=
+    Connection (Id id) (parse_feature_ref_name source) (parse_feature_ref_name destination).
+
+Notation "'connection:' id '#' src --> dst" :=
+    (Build_Connection id src dst) (at level 200).
+
+(*| Notation for AADL component categories |*)
+
+Definition Build_Component
+    (id : string) (cat : ComponentCategory)
+    (classifier : string) (features : list feature) (subcomponents : list component) (connections : list connection) (properties : list property_association): component :=
+    Component (Id id) (cat)
+    (parse_fq_name classifier) features subcomponents properties connections.
+
+Notation "'abstract:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id abstract classifier lf ls lc lp) (at level 200).
+
+Notation "'system:' id ->| classifier features: lf ubcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id system classifier lf ls lc lp) (at level 200).
+
+Notation "'process:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id process classifier lf ls lc lp) (at level 200).
+
+Notation "'thread:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id thread classifier lf ls lc lp) (at level 200).
+
+Notation "'threadGroup:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id threadGroup classifier lf ls lc lp) (at level 200).
+
+Notation "'subprogram' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id subprogram classifier lf ls lc lp) (at level 200).
+
+Notation "'subprogramGroup' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id subprogramGroup classifier lf ls lc lp) (at level 200).
+
+Notation "'data:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id data classifier lf ls lc lp) (at level 200).
+
+Notation "'processor:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id processor classifier lf ls lc lp) (at level 200).
+
+Notation "'virtualProcessor:' id ->| classifier features: lf subcomponents: ls  connections: lc properties: lp" :=
+    (Build_Component id virtualProcessor classifier lf ls lc lp) (at level 200).
+
+Notation "'memory:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id memory classifier lf ls lc lp) (at level 200).
+
+Notation "'device:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id device classifier lf ls lc lp) (at level 200).
+
+Notation "'bus:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+    (Build_Component id bus classifier lf ls lc lp) (at level 200).
+
+Notation "'virtualBus:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
+(Build_Component id virtualBus classifier lf ls lc lp) (at level 200).
+
+End AADL_Notations.
