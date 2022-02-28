@@ -103,11 +103,9 @@ html:                ## Build HTML pages
 pdf:                ## Build tech report
 	( cd latex-src ; latexmk -pdf techreport.tex )
 
+COQ_FILES = $(shell find src/ -type f -name '*.v')
 sloc:               ## Get SLOCs
-	cloc src extraction
-
-debug:
-	echo $(COQMF_VFILES)
+	@coqwc $(COQ_FILES)
 
 world:              ## All of the above
 	$(MAKE) clean distclean build_makefile compile generate_latex pdf
