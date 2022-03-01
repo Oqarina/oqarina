@@ -37,7 +37,7 @@ Import ListNotations. (* from List *)
 Require Import Coq.ZArith.ZArith.
 Open Scope Z_scope.
 
-(* Oquarina *)
+(* Oqarina *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.all.
