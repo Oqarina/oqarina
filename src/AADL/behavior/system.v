@@ -96,7 +96,6 @@ Set Implicit Arguments.
 
 %\N% The following provides a Coq mechanization of the previous automata using the actor formalism. *)
 
-
 (** [X_system] represents the set of actions that a system may perform, as per the hybrid automata defined in AADLv2.2 \S 13.3. *)
 
 Inductive X_system : Set :=

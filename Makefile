@@ -24,7 +24,7 @@ help:               ## Show this help
 #   - install_deps installs required libraries to use Oqarina from a Coq IDE
 #
 
-install_deps:       ## Install dependencies (no extraction)
+install_deps:       ## Install dependencies
 	opam repo add coq-released --all-switches https://coq.inria.fr/opam/released
 	opam repo add coq-extra-dev --all-switches https://coq.inria.fr/opam/extra-dev
 	opam install --deps-only .
@@ -46,14 +46,11 @@ install:            ## Install Oqarina as a stand alone Coq library
 compile:
 	make -f coq_makefile
 
-dune_build:         ## Build (requires dune)
+build:              ## Build 
 	dune build
 
-build_bin:          ## Build Oqarina binary, after dune_build
+build_bin:          ## Build Oqarina binary
 	( cd _build/default/extraction  ; ocamlbuild extraction.native -lib unix )
-
-validate:           ## Validate all proofs
-	make -f coq_makefile validate
 
 test:               ## Run testsuite
 	make -C testsuite test
@@ -94,10 +91,10 @@ alectryon2:
 		$(ALECTRYON_FILES)
 	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
 
-html:                ## Build HTML pages
+html:               ## Build HTML documentation
 	( cd docs; make html )
 
-pdf:                ## Build tech report
+pdf:                ## Build LaTeX documentation
 	( cd latex-src ; latexmk -pdf techreport.tex )
 
 COQ_FILES = $(shell find src/ -type f -name '*.v')

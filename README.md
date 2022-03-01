@@ -4,7 +4,7 @@ Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries
 
 ## Directory structure
 
-* `examples`: tutorial and examples to illustrate Oqarina 
+* `examples`: tutorial and examples to illustrate Oqarina
 * `extraction` : wrapper to extract code and compile a binary
 * `src`: Coq sources for AADL mechanization
 * `testsuite`: some tests for the extracted code
@@ -31,11 +31,11 @@ You may either
 
 - play with the Coq files from VSCode. In this case, make sure the Coq directory is the only one in your workspace. Then from the terminal, run
 
-  ```make build_dune```
+  ```make build```
 
 - compile extracted code, e.g.
 
-  ```make build_dune build_bin```
+  ```make build build_bin```
 
   then, run
 

@@ -108,7 +108,6 @@ Record DEVS_Atomic_Model : Type := {
     λ : S -> Y_output;  (* Output Function *)
     δext : Q -> X -> S; (* External Transition *) }.
 
-
 Instance DEVS_Atomic_Model' : Generic_Model DEVS_Atomic_Model := {
     get_id := devs_atomic_id
 }.

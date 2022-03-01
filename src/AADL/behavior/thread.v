@@ -131,6 +131,16 @@ TBD
 End Thread_State_Variable.
 (* end hide*)
 
+Ltac prove_thread_state_variable_wf :=
+  repeat match goal with
+    | |- thread_state_variable_wf _ => compute; repeat split; auto
+    | |- ( _ = Unspecified_Dispatch_Protocol -> False) => discriminate
+    | |- ( _ = Unspecified_Overflow_Handling_Protocol -> False) => discriminate
+    | |- ( _ = Unspecified_Dequeue_Protocol -> False) => discriminate
+    | |- NoDup  _  => apply NoDup_cons ; auto
+    | |- NoDup nil => apply NoDup_nil
+  end.
+
 (** * Thread Dispatching
 
 %\N% This section captures the content of %\S 5.4.2 of \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the [Enabled] function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define the [Enabled] function. *)
@@ -712,28 +722,10 @@ Definition A_Periodic_Thread := Component
   nil
   [ A_Priority_Value ; Periodic_Dispatch ; A_Period ] nil.
 
-Ltac prove_component_wf :=
-  repeat match goal with
-    | |- Well_Formed_Component_Instance _ => compute; repeat split; auto
-    | |- (_ =  EmptyString -> False) => intuition; inversion H
-    | |- (Id _ = Id _ -> False) => injection; inversion H
-    | |- NoDup nil => apply NoDup_nil
-  end.
-
 Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
 Proof.
-  prove_component_wf.
+  prove_Well_Formed_Component_Instance.
 Qed.
-
-Ltac prove_thread_state_variable_wf :=
-  repeat match goal with
-    | |- thread_state_variable_wf _ => compute; repeat split; auto
-    | |- ( _ = Unspecified_Dispatch_Protocol -> False) => discriminate
-    | |- ( _ = Unspecified_Overflow_Handling_Protocol -> False) => discriminate
-    | |- ( _ = Unspecified_Dequeue_Protocol -> False) => discriminate
-    | |- NoDup  _  => apply NoDup_cons ; auto
-    | |- NoDup nil => apply NoDup_nil
-  end.
 
 Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
 
@@ -797,7 +789,7 @@ Definition A_Sporadic_Thread_State := update_thread_state A_Sporadic_Thread_Stat
 
 (** - Initially, the sporadic thread is not enabled *)
 
-Lemma Sporatic_tO_not_enabled : Enabled_oracle (A_Sporadic_Thread_State) = false.
+Lemma Sporadic_tO_not_enabled : Enabled_oracle (A_Sporadic_Thread_State) = false.
 Proof.
   trivial.
 Qed.
