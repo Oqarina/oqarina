@@ -124,6 +124,7 @@ clean:              ## Clean generated files
 	-rm -f latex-src/generated-content/* latex-src/coqdoc.sty
 	-( cd latex-src ; latexmk -pdf -C techreport.tex )
 	-( cd latex-src ; rm techreport.bbl)
+	-(cd docs ; rm *.v.rst* *,bak )
 	$(MAKE) -C extraction clean
 	-rm -rf src/**/*.vo deps.dot* deps.png
 	find . -type f -name '.*.aux' -exec rm {} +
