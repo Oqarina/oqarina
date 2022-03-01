@@ -29,6 +29,13 @@
  *
  * DM21-0762
 ***)
+(*| .. coq:: none |*)
+Require Import Coq.Lists.List.
+Import ListNotations. (* from List *)
+Require Import Coq.Relations.Relation_Definitions.
+Require Import Coq.Classes.RelationClasses.
+(*| .. coq:: |*)
+
 (*|
 
 **************************************
@@ -38,11 +45,6 @@ Labelled Transitionsition System (LTS)
 In this chapter, we define Labelled Transition Systems (or LTS). This definition
 follows the canonical definition of a *deterministic* LTS, see :math:`\cite{gorrieriLabeledTransitionSystems2017a}` for details. |*)
 
-(*| .. coq:: none |*)
-Require Import Coq.Lists.List.
-Import ListNotations. (* from List *)
-Require Import Coq.Relations.Relation_Definitions.
-Require Import Coq.Classes.RelationClasses.
 
 Section LTS_Definition.
 (*| .. coq:: no-out |*)
@@ -140,7 +142,8 @@ Lemma Bisimilar_Refl : reflexive (States L) (Bisimilar L).
 Proof.
   intros.
 
-  (* To prove this lemma, we build a trivial bisimulation relation: the identity. *)
+  (* To prove this lemma, we build a trivial bisimulation relation:
+    the identity. *)
   exists (fun (p q : States L) => p = q). trivial.
   split; intros.
 
@@ -155,8 +158,8 @@ Proof.
   unfold symmetric.
   intros ; elim H; intros.
 
-  (* To prove this lemma, we propose the R' relation, which
-    is the symetric of R and reduce all terms *)
+  (* To prove this lemma, we propose the R' relation,
+    which is the symetric of R and reduce all terms *)
   exists (fun p q : States L => R q p); trivial.
   red in |- *; intros.
 
@@ -168,11 +171,13 @@ Lemma Bisimilar_Trans : transitive (States L) (Bisimilar L).
 Proof.
   unfold transitive.
 
-  (* introduce all variable. We turn Bisimilar predicates into Bisimulation *)
+  (* introduce all variable. We turn Bisimilar predicates
+    into Bisimulation *)
   intros p q r H1 H2. case H1. case H2. clear H1 H2. intros.
 
-  (* the previous steps introduced relations R0 between p and q, and R between
-     q and r. We use them to build a new relation that relates p and r*)
+  (* the previous steps introduced relations R0 between p and q,
+    and R between q and r. We use them to build a new relation
+    that relates p and r*)
   exists (fun p r : States L => exists2 q : States L, R0 p q & R q r).
   - exists q; auto.
   - red in |- *; intros.

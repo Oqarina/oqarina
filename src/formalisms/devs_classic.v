@@ -30,16 +30,6 @@
  * DM21-0762
 ***)
 
-(*|
-
-************
-Classic DEVS
-************
-
-In this section, we provide a mechanization of the DEVS formalism. We first define the various data types forming the Classic DEVS formalism, then the simulation algorithms for atomic and coupled DEVS models. We follow the conventions from :math:`\cite{vantendelooIntroductionClassicDEVS2018}`.
-
-|*)
-
 (*| .. coq:: none |*)
 Require Import Coq.Init.Datatypes.
 Require Import Coq.ZArith.ZArith.
@@ -55,7 +45,19 @@ Require Import Oqarina.formalisms.lts.
 
 #[local] Open Scope bool_scope.
 Set Implicit Arguments.
+(*| .. coq:: |*)
 
+(*|
+
+************
+Classic DEVS
+************
+
+In this section, we provide a mechanization of the DEVS formalism. We first define the various data types forming the Classic DEVS formalism, then the simulation algorithms for atomic and coupled DEVS models. We follow the conventions from :math:`\cite{vantendelooIntroductionClassicDEVS2018}`.
+
+|*)
+
+(*| .. coq:: none |*)
 Section DEVS.
 (*| .. coq:: |*)
 (*|
@@ -204,7 +206,8 @@ Instance DEVS_Simulator' : Generic_Model DEVS_Simulator := {
     get_id := devs_simulator_id
 }.
 
-Definition Instantiate_DEVS_Simulator (i : identifier) (d : DEVS_Atomic_Model) :=
+Definition Instantiate_DEVS_Simulator
+    (i : identifier) (d : DEVS_Atomic_Model) :=
     Build_DEVS_Simulator i 0 0 (Build_Q d.(Q_init).(st) 0) [] d.
 
 Definition DEVS_Reset_Outputs (s : DEVS_Simulator) :=
@@ -225,7 +228,7 @@ Definition DEVS_Simulation_microStep
     match m with
     | i t => (* if receive (i, from,t) message then *)
         let tla' := t in (* tl ← t - e *)
-        let tn' := tla' + s.(d).(ta) (st s.(cs)) in (* tn ← tl + ta(s) *)
+        let tn' := tla' + s.(d).(ta) (st s.(cs)) in (* tn ← tl + ta(s)*)
         let outputs' :=
             DEVS_Add_Output [done (From empty_identifier) Parent tn']
             s.(outputs) in (* send (done, self, tn) to parent *)
@@ -244,7 +247,8 @@ Definition DEVS_Simulation_microStep
                     [ done (From empty_identifier) Parent tn' ;
                       ys (From empty_identifier) Parent tn' y ]
                      s.(outputs) in
-            Build_DEVS_Simulator (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
+            Build_DEVS_Simulator
+                (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
         else s
 
     | xs _ _ t x' =>
@@ -259,7 +263,8 @@ Definition DEVS_Simulation_microStep
             (* send(done, self, tn) to parent *)
                 [done (From empty_identifier) Parent tn']
                 s.(outputs) in
-            Build_DEVS_Simulator (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
+            Build_DEVS_Simulator
+                (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
 
         else s (* XXX must address synchronization errors *)
 
@@ -338,7 +343,7 @@ Fixpoint DEVS_Wait_For_Done
     | Datatypes.S n =>
         (* Run microstep *)
         let astate' := DEVS_Simulation_microStep r.(astate) m in
-        (* Propagate outputs from the DEVS instance to its coordinator *)
+        (* Propagate outputs from the DEVS instance to its coordinator*)
         let r' := DEVS_Propagate_Output r astate' in
         (* Check for the Done message *)
         let has_done := Has_Done r'.(event_queue) in
@@ -354,8 +359,10 @@ end.
 
 (*| :coq:`DEVS_Simulation_Step` runs one step of the DEVS, i.e. runs computations until the Done message is received. |*)
 
-Definition DEVS_Simulation_Step (r : DEVS_Root_Coordinator) ( m : option Synchronization_Message_Type)
-: DEVS_Root_Coordinator
+Definition DEVS_Simulation_Step
+    (r : DEVS_Root_Coordinator)
+    (m : option Synchronization_Message_Type)
+    : DEVS_Root_Coordinator
 :=
     let '(status', cstime', r') :=
         match r.(cstate) with

@@ -57,7 +57,7 @@ Coupled models
 
 Coupled models represent a hierarchy of DEVS model.
 
-A coupled DEVS model is an 8-tuple :math:`$M=<X,Y,D,\{M_{i}\},Z_{{i, self}},Select>$` where
+A coupled DEVS model is an 8-tuple :math:`M=<X,Y,D,\{M_{i}\},Z_{{i, self}},Select>` where
 
     * X is the set of input events;
     * Y is the set of output events;
@@ -111,8 +111,6 @@ From a coupled model, one can build the corresponding atomic model using the "cl
 
 |*)
 
-
-
 Definition e_init (l : list (DEVS_Simulator S X Y)) :=
     let e_init_l := map (fun x =>  x.(d).(Q_init).(e)) l in
         list_min e_init_l.
@@ -133,8 +131,6 @@ Definition ta_combined
 Definition IMM (l : list (DEVS_Simulator S X Y)) (sc : S_Combined) :=
     let ta_v := ta_combined l sc in
         filter2 (fun a b => (sigma a.(d) b) =? ta_v) l sc.
-
-Check IMM.
 
 Definition λ_combined
     (l : list (DEVS_Simulator S X Y))
@@ -161,8 +157,8 @@ Definition δint_combined
     match i_star with
     | None => sc (* should not happen *)
     | Some i_star' =>
-
-        let i_star_id := (fst i_star').(devs_simulator_id) (* XXX use get_id*) in
+        let i_star_id := (fst i_star').(devs_simulator_id) (* XXX use get_id*)
+        in
         let I_star := I i_star_id in
 
         let dispatch :=
@@ -170,14 +166,16 @@ Definition δint_combined
                 if (identifier_beq x.(devs_simulator_id) i_star_id)
                     then Build_Q (x.(d).(δint) s.(st)) 0
 
-                else if existsb (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
+                else if existsb
+                    (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
                     then Build_Q
-                        (x.(d).(δext) (Build_Q s.(st) (s.(e) + ta_combined l sc))             (Z_f i_star_id ((fst i_star').(d).(λ) (snd i_star').(st))))
-                    0
+                         (x.(d).(δext)
+                            (Build_Q s.(st) (s.(e) + ta_combined l sc))
+                            (Z_f i_star_id ((fst i_star').(d).(λ)
+                                            (snd i_star').(st))))
+                         0
 
-                else Build_Q s.(st) (s.(e) + ta_combined l sc)
-
-            )
+                else Build_Q s.(st) (s.(e) + ta_combined l sc))
         in
 
     (* Main processing of δint_combined *)
@@ -202,9 +200,13 @@ Definition δext_combined
 
         let dispatch :=
             (fun (s : Q S) (x : DEVS_Simulator S X Y)  =>
-                if existsb (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
+                if existsb
+                    (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
                     then Build_Q
-                        (x.(d).(δext) (Build_Q s.(st) (s.(e) + qc.(e)))             (Z_f i_star_id ((fst i_star').(d).(λ) (snd i_star').(st))))
+                        (x.(d).(δext)
+                        (Build_Q s.(st) (s.(e) + qc.(e)))
+                        (Z_f i_star_id ((fst i_star').(d).(λ)
+                                        (snd i_star').(st))))
                     0
 
                 else Build_Q s.(st) (s.(e) + qc.(e))
@@ -219,7 +221,8 @@ Definition δext_combined
 (*| Hence, one can now build an atomic DEVS from a coupled DEVS using
 :coq:`Maps_DEVS_Coupled_Model`. |*)
 
-Definition Map_DEVS_Coupled_Model (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model S_Combined X Y :=
+Definition Map_DEVS_Coupled_Model
+    (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model S_Combined X Y :=
     {|
         devs_atomic_id := dc.(devs_coupled_model_id);
         Q_init := Build_Q_init_Combined dc.(D);
