@@ -63,8 +63,6 @@ test:               ## Run testsuite
 #
 
 .PHONY: html
-html:               ## Generate HTML
-	make -f coq_makefile html
 
 generate_latex:     ## Generate LaTeX files from Coq
 	-mkdir latex-src/generated-content
@@ -74,10 +72,9 @@ generate_latex:     ## Generate LaTeX files from Coq
 		mv latex-src/generated-content/*.sty latex-src/
 	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
 
-debug2:
-	echo $(COQMF_VFILES)
-
-COQ_FILES=src/formalisms/lts.v src/formalisms/devs_classic.v src/formalisms/devs_coupled.v
+ALECTRYON_FILES=src/formalisms/lts.v \
+	src/formalisms/devs_classic.v \
+	src/formalisms/devs_coupled.v
 
 alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \
@@ -90,11 +87,11 @@ alectryon:
 
 alectryon2:
 	DOCUTILSCONFIG=docs/docutils.conf \
-	alectryon --coq-driver sertop -Q src Oqarina \
+	alectryon --coq-driver sertop -Q _build/default/src Oqarina \
 		--long-line-threshold 150 \
 		--frontend coq+rst --backend rst  \
 		--output-directory docs \
-		$(COQ_FILES)
+		$(ALECTRYON_FILES)
 	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
 
 html:                ## Build HTML pages
