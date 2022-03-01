@@ -72,7 +72,7 @@ Definition Build_Component
 Notation "'abstract:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
     (Build_Component id abstract classifier lf ls lc lp) (at level 200).
 
-Notation "'system:' id ->| classifier features: lf ubcomponents: ls connections: lc properties: lp" :=
+Notation "'system:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
     (Build_Component id system classifier lf ls lc lp) (at level 200).
 
 Notation "'process:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
