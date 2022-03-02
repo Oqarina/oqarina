@@ -136,12 +136,9 @@ Definition Z_Function_pp : Z_Function X_pp Y_pp :=
 (* Player A is sending to Player B and vice versa. *)
 
 Definition I_pp : I_Function :=
-    fun (x : identifier) =>
-    match x with
-        | (Id "playerA"%string) => [ Id "playerB"%string ]
-        | (Id "playerB"%string) => [ Id "playerA"%string ]
-        | _ => [empty_identifier]
-    end.
+    (Id "playerA"%string) !-> [ Id "playerB"%string ] ;
+    (Id "playerB"%string) !-> [ Id "playerA"%string ] ;
+    _ !-> [ empty_identifier ].
 
 (* Definition of the coupled DEVS, derivation of the corresponding
 atomic DEVS. *)

@@ -112,6 +112,14 @@ Proof.
   - apply internal_identifier_dec_lb.
 Qed.
 
+Lemma identifier_beq_neq: forall id1 id2,
+    identifier_beq id1 id2 = false <-> id1 <> id2.
+Proof.
+  intros.
+  rewrite <- identifier_beq_eq.
+  rewrite not_true_iff_false. reflexivity.
+Qed.
+
 Lemma id_beqP :  forall id1 id2,
     reflect (id1 = id2) (identifier_beq id1 id2).
 Proof.
