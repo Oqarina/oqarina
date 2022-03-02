@@ -107,7 +107,8 @@ Record DEVS_Coupled_Model := {
 Closure under coupling
 ----------------------
 
-From a coupled model, one can build the corresponding atomic model using the "closure under coupling" approach.
+From a coupled model, one can build the corresponding atomic model using the
+ "closure under coupling" approach.
 
 |*)
 

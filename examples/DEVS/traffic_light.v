@@ -174,7 +174,7 @@ Definition step_TL_LTS
     (m : Synchronization_Message_Type X_tl Y_tl)
     (s : States TL_LTS) : States TL_LTS
 :=
-    let s := step_lts TL_LTS s m in
+    let s := step_lts s m in
     DEVS_Reset_Outputs s.
 
 Example TL_LTS_1 := iterate (step_TL_LTS (i X_tl Y_tl 0)) 1 (Init TL_LTS).

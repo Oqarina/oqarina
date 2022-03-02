@@ -76,7 +76,7 @@ Definition of a LTS
 
 (*| :coq:`step_lts` performs one step of the LTS. |*)
 
-  Definition step_lts (A_LTS : LTS_struct)
+  Definition step_lts {A_LTS : LTS_struct}
                       (state: States A_LTS)
                       (action : Actions A_LTS) :=
     (Step A_LTS) state action.
@@ -241,7 +241,7 @@ Definition LTS_Test : LTS_struct := {|
   Step := AB_Steps;
 |}.
 
-Example f' := step_lts LTS_Test (Init LTS_Test) ReadA.
+Example f' := step_lts (Init LTS_Test) ReadA.
 Lemma test : f' = B.
 Proof.
   auto.
