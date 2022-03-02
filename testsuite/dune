@@ -1,0 +1,6 @@
+(coq.theory
+ (name Oqarina_tests)
+  (theories Oqarina)
+)
+
+(include_subdirs qualified)
