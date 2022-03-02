@@ -84,15 +84,14 @@ Definition version_cmd := {|
   cmd := show_version ;
 |}.
 
-(** * - [parse_aadl_json_file] : parse an AADL JSON file *)
-
 Definition validate_AADL_root (c : list component) : IO unit :=
   let AADL_Root := hd nil_component c in
   let AADL_Root_Valid := Oracle (Well_Formed_Component_Instance_dec AADL_Root) in
-  if AADL_Root_Valid then print_endline (to_ostring "well-formed success")
-                     else print_endline (to_ostring "well-formed failure").
+  if AADL_Root_Valid then print_endline (" * well-formed success")
+                     else print_endline (" * well-formed failure").
 
 Definition read_file (filename : string) :=
+  print_endline ("Processing " ++ filename) ;;
   ch <- open_in (to_ostring filename) ;;
   ch_len <- in_channel_length ch ;;
   s <- really_input_string ch ch_len ;;
@@ -102,15 +101,20 @@ Definition read_file (filename : string) :=
 Definition process_aadl_content (m : string) :=
   let AADL_Root := Map_JSON_String_To_Component m in
   match AADL_Root with
-  | inl _ => print_endline "parse error"
-  | inr AADL_Root' => print_endline "parsing success"
+  | inl _ => print_endline " * parse error" ;;
+             IO.ret [ nil_component ]
+  | inr AADL_Root' => print_endline " * parsing success" ;;
+                      IO.ret AADL_Root'
   end.
+
+(** * - [parse_aadl_json_file] : parse an AADL JSON file *)
 
 Definition parse_aadl_json_file (argv : list string) : IO unit :=
   match argv with
   | [_; _; file_name] =>
     content <- read_file file_name ;;
-    component <- process_aadl_content (from_ostring content) ;;
+    components <- process_aadl_content (from_ostring content) ;;
+    validate_AADL_root components ;;
     IO.ret tt
 
   | _ => print_endline "expected filename"
