@@ -212,6 +212,12 @@ Definition Instantiate_DEVS_Simulator
 Definition DEVS_Reset_Outputs (s : DEVS_Simulator) :=
     Build_DEVS_Simulator (get_id s) s.(tla) s.(tn) s.(cs) nil s.(d).
 
+Definition DEVS_Filter_Out_Done (s : DEVS_Simulator) :=
+    let outputs' :=
+    filter (fun x => match x with | done _ _ _ => false
+    | _ => true end) s.(outputs) in
+    Build_DEVS_Simulator (get_id s) s.(tla) s.(tn) s.(cs) outputs' s.(d).
+
 (*|
 
 DEVS Simulation Algortihm #1
@@ -276,7 +282,9 @@ Definition LTS_Of_DEVS (ds : DEVS_Simulator) : LTS_struct := {|
     States := DEVS_Simulator;
     Actions := Synchronization_Message_Type ;
     Init := Instantiate_DEVS_Simulator (get_id ds) ds.(d);
-    Step := fun ds m => DEVS_Simulation_microStep ds m;
+    Step := fun ds m =>
+                let ds' := DEVS_Simulation_microStep ds m in
+                DEVS_Filter_Out_Done ds';
     |}.
 
 (*|

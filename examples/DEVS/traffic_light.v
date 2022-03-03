@@ -170,14 +170,7 @@ simulation run.*)
 
 Definition TL_LTS := LTS_Of_DEVS TL_Initial.
 
-Definition step_TL_LTS
-    (m : Synchronization_Message_Type X_tl Y_tl)
-    (s : States TL_LTS) : States TL_LTS
-:=
-    let s := step_lts s m in
-    DEVS_Reset_Outputs s.
-
-Example TL_LTS_1 := iterate (step_TL_LTS (i X_tl Y_tl 0)) 1 (Init TL_LTS).
+Example TL_LTS_1 := step_lts (Init TL_LTS) (i X_tl Y_tl 0) .
 Compute Print_DEVS_Simulator TL_LTS_1.
 
 Lemma TL_LTS_1_OK :
