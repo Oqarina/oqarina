@@ -108,7 +108,7 @@ Closure under coupling
 ----------------------
 
 From a coupled model, one can build the corresponding atomic model using the
- "closure under coupling" approach.
+ "closure under coupling" approach. See chapter 7.2 of Theory of Modeling and Simulation
 
 |*)
 
@@ -126,7 +126,7 @@ Definition Build_Q_init_Combined
 Definition ta_combined
     (l : list (DEVS_Simulator S X Y)) (sc : S_Combined) : Time :=
     let ta_combined_v :=
-        map2 (fun a b => (a.(d).(ta) b.(st) - a.(d).(Q_init).(e))) l sc in
+        map2 (fun a b => (a.(d).(ta) b.(st) - b.(e))) l sc in
         list_min ta_combined_v.
 
 Definition IMM (l : list (DEVS_Simulator S X Y)) (sc : S_Combined) :=
@@ -163,14 +163,14 @@ Definition δint_combined
         let I_star := I i_star_id in
 
         let dispatch :=
-            (fun (s : Q S) (x : DEVS_Simulator S X Y)  =>
-                if (identifier_beq x.(devs_simulator_id) i_star_id)
-                    then Build_Q (x.(d).(δint) s.(st)) 0
+            (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+                if (identifier_beq ds.(devs_simulator_id) i_star_id)
+                    then Build_Q (ds.(d).(δint) s.(st)) 0
 
                 else if existsb
-                    (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
+                    (fun y => (identifier_beq ds.(devs_simulator_id) y)) I_star
                     then Build_Q
-                         (x.(d).(δext)
+                         (ds.(d).(δext)
                             (Build_Q s.(st) (s.(e) + ta_combined l sc))
                             (Z_f i_star_id ((fst i_star').(d).(λ)
                                             (snd i_star').(st))))
@@ -188,7 +188,8 @@ Definition δext_combined
     (select : Select_Function)
     (I : I_Function)
     (Z_f : Z_Function)
-    (qc : Q_Combined) (x : X): S_Combined
+    (qc : Q_Combined) (x : X)
+    : S_Combined
 :=
     let imm := IMM l qc.(st) in
     let i_star := select imm in
@@ -200,14 +201,12 @@ Definition δext_combined
         let I_star := I i_star_id in
 
         let dispatch :=
-            (fun (s : Q S) (x : DEVS_Simulator S X Y)  =>
+            (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
                 if existsb
-                    (fun y => (identifier_beq x.(devs_simulator_id) y)) I_star
+                    (fun y => (identifier_beq ds.(devs_simulator_id) y))  ( I (Id "_self") )
                     then Build_Q
-                        (x.(d).(δext)
-                        (Build_Q s.(st) (s.(e) + qc.(e)))
-                        (Z_f i_star_id ((fst i_star').(d).(λ)
-                                        (snd i_star').(st))))
+                        (ds.(d).(δext) (Build_Q s.(st) (s.(e) + qc.(e)))
+                         x (* should be Zself,i*))
                     0
 
                 else Build_Q s.(st) (s.(e) + qc.(e))
@@ -230,7 +229,7 @@ Definition Map_DEVS_Coupled_Model
         ta := ta_combined dc.(D);
         δint := δint_combined dc.(D) dc.(Select) dc.(I) dc.(Z_f) ;
         λ := λ_combined dc.(D) dc.(Select) ;
-        δext := δext_combined  dc.(D) dc.(Select) dc.(I) dc.(Z_f) ;
+        δext := δext_combined dc.(D) dc.(Select) dc.(I) dc.(Z_f) ;
     |}.
 
 (*| .. coq:: none |*)
