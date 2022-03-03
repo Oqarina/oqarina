@@ -37,11 +37,12 @@ Import ListNotations. (* from List *)
 
 Require Import Oqarina.core.all.
 Import NaturalTime.
-Require Import Oqarina.AADL.property_sets.all.
-Require Import Oqarina.formalisms.devs_classic.
-Require Import Oqarina.formalisms.devs_coupled.
 Require Import Oqarina.coq_utils.all.
-Require Import Oqarina.formalisms.lts.
+Require Import Oqarina.formalisms.all.
+Require Import Oqarina.AADL.Kernel.all.
+Import AADL_Notations.
+Require Import Oqarina.AADL.property_sets.all.
+
 Set Implicit Arguments.
 (* end hide *)
 
@@ -101,9 +102,9 @@ Set Implicit Arguments.
 Inductive X_system : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
 
-(** [Y_system] is the internal state of a system, for the moment empty *)
+(** [Y_system] XXX *)
 
-Definition Y_system : Type := unit.
+Definition Y_system : Type := X_system.
 
 Definition Synchronization_Message_Type_system :=
     Synchronization_Message_Type X_system Y_system.
@@ -137,7 +138,10 @@ Definition δext_system (s : Q_system) (x : X_system) : S_system :=
 Definition Y_output_system : Type := Y_output Y_system.
 
 Definition λ_system (s : S_system) : Y_output_system :=
-    no_output Y_system.
+    match s with
+    | system_starting => (y start_system)
+    | _ => no_output Y_system
+    end.
 
 Definition ta_system (s : S_system) : Time := 1.
 
@@ -188,3 +192,152 @@ most certainly it is an internal event after all subcomponents have finished
 
 Definition SC_Step3 := DEVS_Simulation_Step SC_Step2 None.
 Compute Print_DEVS_State SC_Step3.
+
+(* Let's try with a LTS instead *)
+
+Definition System_LTS := LTS_Of_DEVS (System_Initial).
+
+Example System_LTS_1 :=
+    step_lts (Init System_LTS) (i X_system Y_system 0).
+Compute Print_DEVS_Simulator System_LTS_1.
+
+Example System_LTS_2 :=
+    step_lts System_LTS_1 m_start_system.
+Compute Print_DEVS_Simulator System_LTS_2.
+
+Lemma System_LTS_2_OK :
+    Print_DEVS_Simulator System_LTS_2 =  dbg 1 2 system_starting [].
+Proof. trivial. Qed.
+
+(* Map a complete system hierarchy to a DEVS *)
+
+Definition An_AADL_System :=
+    system: "a_system" ->| "pack::a_system_classifier"
+    features: nil
+    subcomponents: [
+        system: "a_subsystem" ->| "pack::a_system_classifier"
+            features: nil
+            subcomponents: nil
+            connections: nil
+            properties: nil ;
+        system: "a_subsystem2" ->| "pack::a_system_classifier"
+            features: nil
+            subcomponents: nil
+            connections: nil
+            properties: nil
+    ]
+    connections: nil
+    properties: nil.
+
+(* Map a system component and system subcomponents into a list of DEVS system*)
+
+Definition Map_AADL_System_DEVS_System (c : component) :=
+    map (fun s => Instantiate_DEVS_Simulator (s->id) system_DEVS)
+     (Unfold c).
+
+(* Let's map a system hierarchy into a coupled DEVS ! *)
+
+Definition list_identifiers_map := total_map (list identifier).
+
+Definition empty_list_identifiers_map : list_identifiers_map :=
+    (_ !-> []) .
+
+Definition Z_Function_system : Z_Function X_system Y_system :=
+    fun (id : identifier) (y : Y_output Y_system)  =>
+    start_system. (* XXX temporary *)
+
+Definition Select_Function_systems :
+    Select_Function S_system X_system Y_system
+:=
+    @Default_Select_Function S_system X_system Y_system.
+
+(* For a list of components, we define the map of influenced
+components as follows:
+-  A influences B if B is a subcomponent of A
+- others XXX TBD e.g. modes, EMV2 state machine, etc.
+*)
+
+Fixpoint Build_Influenced' (lc : list component) :=
+    match lc with
+    | [] => empty_list_identifiers_map
+    | h :: t =>  (h->id) !-> Components_Identifiers (h->subcomps) ;
+                 (Build_Influenced' t)
+    end.
+
+(* For a component hierarchy, we build the *)
+
+(* Note to self: coupled models are only for one layer !
+To have more layers, one needs to build the devs coupled differently
+see figure in da book ! *)
+
+Definition Build_Influenced (c : component) :=
+    (Id "_self") !-> [c->id] ;
+    Build_Influenced' [c]. (* add I_self as the root !*)
+
+Example I' : I_Function := Build_Influenced An_AADL_System.
+Fact I'_OK :
+    I' (Id "_self") = [ Id "a_system" ] /\
+    I' (Id "a_system") = [Id "a_subsystem" ; Id "a_subsystem2" ] /\
+    I' (Id "a_subsystem") = [  ].
+Proof. auto. Qed.
+
+Definition Map_AADL_Root_System_to_Coupled_DEVS (c : component) := {|
+    devs_coupled_model_id := c->id ;
+    D := Map_AADL_System_DEVS_System c ;
+    Select := Select_Function_systems ;
+    Z_f := Z_Function_system ;
+    I := Build_Influenced c ;
+|}.
+
+Definition Map_AADL_Root_to_DEVS (c : component) :=
+    Instantiate_DEVS_Simulator (Id "root")
+    (Map_DEVS_Coupled_Model
+    (Map_AADL_Root_System_to_Coupled_DEVS c)).
+
+(* Map An_AADL_System to an LTS *)
+
+Definition An_AADL_System_Coupled_Model :=
+    Map_AADL_Root_System_to_Coupled_DEVS An_AADL_System.
+(* Keep for debugging purposes *)
+
+Example An_AADL_System_LTS :=
+    LTS_Of_DEVS (Map_AADL_Root_to_DEVS An_AADL_System).
+
+Example An_AADL_System_LTS_1 :=
+    step_lts (Init An_AADL_System_LTS) (i X_system Y_system 0).
+
+Compute Print_DEVS_Simulator An_AADL_System_LTS_1.
+(* After initialization, both system are offline *)
+Fact Am_AADL_System_LTS_1_OK :
+    Print_DEVS_Simulator An_AADL_System_LTS_1 =
+    dbg 0 1
+         [{| st := system_offline; e := 0 |};
+         {| st := system_offline; e := 0 |};
+         {| st := system_offline; e := 0 |}] [].
+Proof. trivial. Qed.
+
+Example An_AADL_System_LTS_2 :=
+    step_lts An_AADL_System_LTS_1 m_start_system.
+Compute Print_DEVS_Simulator An_AADL_System_LTS_2.
+(* After the first step, the first system is starting *)
+Fact Am_AADL_System_LTS_2_OK :
+    Print_DEVS_Simulator An_AADL_System_LTS_2 =
+    dbg 1 2
+         [{| st := system_starting; e := 0 |};
+         {| st := system_offline; e := 0 |};
+         {| st := system_offline; e := 0 |}] [].
+Proof. trivial. Qed.
+
+Example An_AADL_System_LTS_3 :=
+    step_lts An_AADL_System_LTS_2 (step X_system Y_system 2).
+Compute Print_DEVS_Simulator An_AADL_System_LTS_3.
+
+(* After the second step, both systems are in the starting state *)
+Fact Am_AADL_System_LTS_3_OK :
+    Print_DEVS_Simulator An_AADL_System_LTS_3 =
+    dbg 2 3
+         [{| st := system_starting; e := 0 |};
+         {| st := system_starting; e := 0 |};
+         {| st := system_starting; e := 0 |}]
+         [ys X_system (From (Id "")) Parent 3 (y start_system)].
+Proof. trivial. Qed.
