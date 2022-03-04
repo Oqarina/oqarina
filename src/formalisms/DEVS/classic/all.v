@@ -30,4 +30,5 @@
  * DM21-0762
 ***)
 
-Require Export Oqarina.formalisms.lts.
+Require Export Oqarina.formalisms.DEVS.classic.devs.
+Require Export Oqarina.formalisms.DEVS.classic.coupled.

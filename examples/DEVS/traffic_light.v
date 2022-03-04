@@ -36,8 +36,7 @@ Import ListNotations. (* from List *)
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Import NaturalTime.
-Require Import Oqarina.formalisms.devs_classic.
-Require Import Oqarina.formalisms.devs_coupled.
+Require Import Oqarina.formalisms.DEVS.classic.all.
 Require Import Oqarina.formalisms.lts.
 
 Section Traffic_Light.

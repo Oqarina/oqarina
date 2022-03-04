@@ -43,7 +43,7 @@ Import NaturalTime.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.formalisms.lts.
-Require Import Oqarina.formalisms.devs_classic.
+Require Import Oqarina.formalisms.DEVS.classic.devs.
 #[local] Open Scope bool_scope.
 Set Implicit Arguments.
 
