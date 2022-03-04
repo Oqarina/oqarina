@@ -99,3 +99,10 @@ Proof.
     remember (identifier_beq x x') as eqb.
     induction eqb ; trivial.
 Qed.
+
+(* Collection of maps used accross Oqarina *)
+
+Definition list_identifiers_map := total_map (list identifier).
+
+Definition empty_list_identifiers_map : list_identifiers_map :=
+    (_ !-> nil).
