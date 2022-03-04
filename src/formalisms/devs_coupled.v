@@ -129,6 +129,12 @@ Definition ta_combined
         map2 (fun a b => (a.(d).(ta) b.(st) - b.(e))) l sc in
         list_min ta_combined_v.
 
+Definition sigma_combined (* debugging *)
+    (l : list (DEVS_Simulator S X Y))
+    (sc : S_Combined)
+:=
+    map2 (fun a b => (sigma a.(d) b)) l sc.
+
 Definition IMM (l : list (DEVS_Simulator S X Y)) (sc : S_Combined) :=
     let ta_v := ta_combined l sc in
         filter2 (fun a b => (sigma a.(d) b) =? ta_v) l sc.
@@ -231,6 +237,17 @@ Definition Map_DEVS_Coupled_Model
         λ := λ_combined dc.(D) dc.(Select) ;
         δext := δext_combined dc.(D) dc.(Select) dc.(I) dc.(Z_f) ;
     |}.
+
+Inductive DEVS_Coupled_Debug : Type :=
+    dbg_coupled  : identifier ->  Q S -> DEVS_Coupled_Debug.
+
+Definition Print_DEVS_Coupled_Debug
+    (dc : DEVS_Coupled_Model )
+    (dc_sim : DEVS_Simulator S_Combined X Y )
+:=
+    let devs_names := map (fun x => x.(devs_simulator_id)) dc.(D) in
+    let devs_dbg : list (Q S) := dc_sim.(cs).(st) in
+    map2 (fun x y =>  dbg_coupled x y) devs_names devs_dbg.
 
 (*| .. coq:: none |*)
 End DEVS_Coupled.

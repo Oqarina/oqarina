@@ -113,7 +113,7 @@ Instance DEVS_Atomic_Model' : Generic_Model DEVS_Atomic_Model := {
 }.
 
 Definition sigma (d : DEVS_Atomic_Model) (q : Q): Time :=
-    d.(ta) q.(st) - q.(e).
+    (d.(ta) q.(st)) - q.(e).
 
 Definition Set_Q_Init (d : DEVS_Atomic_Model) (q : Q) := {|
     devs_atomic_id := d.(devs_atomic_id);
@@ -235,7 +235,7 @@ Definition DEVS_Simulation_microStep
         let tla' := t in (* tl ← t - e *)
         let tn' := tla' + s.(d).(ta) (st s.(cs)) in (* tn ← tl + ta(s)*)
         let outputs' :=
-            DEVS_Add_Output [done (From empty_identifier) Parent tn']
+            DEVS_Add_Output [done (From s.(devs_simulator_id)) Parent tn']
             s.(outputs) in (* send (done, self, tn) to parent *)
         Build_DEVS_Simulator (get_id s) tla' tn' s.(cs) outputs' s.(d)
 
@@ -248,9 +248,9 @@ Definition DEVS_Simulation_microStep
             let tn' := tla' + s.(d).(ta) cs' in (* tn ← tl + ta(s)*)
             let outputs' := DEVS_Add_Output
             (* send(y, self, t) to parent *)
-            (* send(done, self, tn) to parent *)
-                    [ done (From empty_identifier) Parent tn' ;
-                      ys (From empty_identifier) Parent tn' y ]
+            (* send(done, self, tn) to parent *) (* correct from *)
+                    [ done (From s.(devs_simulator_id)) Parent tn' ;
+                      ys (From s.(devs_simulator_id)) Parent tn' y ]
                      s.(outputs) in
             Build_DEVS_Simulator
                 (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
@@ -266,7 +266,7 @@ Definition DEVS_Simulation_microStep
             let tn' := tla' + s.(d).(ta) cs'  in (* tn ← tl + ta(s)*)
             let outputs' := DEVS_Add_Output
             (* send(done, self, tn) to parent *)
-                [done (From empty_identifier) Parent tn']
+                [done (From s.(devs_simulator_id)) Parent tn']
                 s.(outputs) in
             Build_DEVS_Simulator
                 (get_id s) tla' tn' (Build_Q cs' te') outputs' s.(d)
