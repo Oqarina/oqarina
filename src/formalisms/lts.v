@@ -43,9 +43,9 @@ Labelled Transitionsition System (LTS)
 **************************************
 
 In this chapter, we define Labelled Transition Systems (or LTS). This definition
-follows the canonical definition of a *deterministic* LTS, see :math:`\cite{gorrieriLabeledTransitionSystems2017a}` for details. |*)
+follows the canonical definition of a *deterministic* LTS, see :cite:t:`gorrieriLabeledTransitionSystems2017a` for details. |*)
 
-
+(*| .. coq:: none |*)
 Section LTS_Definition.
 (*| .. coq:: no-out |*)
 
@@ -77,8 +77,7 @@ Definition of a LTS
 (*| :coq:`step_lts` performs one step of the LTS. |*)
 
   Definition step_lts {A_LTS : LTS_struct}
-                      (state: States A_LTS)
-                      (action : Actions A_LTS) :=
+    (state: States A_LTS) (action : Actions A_LTS) :=
     (Step A_LTS) state action.
 
 (*| .. coq:: none |*)
