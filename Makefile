@@ -3,16 +3,6 @@
 ## ------------------------------------------------------------------------
 ##
 
-EXTRA_DIR:=extra
-
-COQDOCFLAGS:= \
-  --toc --toc-depth 2 --html --interpolate \
-  --index indexpage --no-lib-name --parse-comments \
-  --with-header $(EXTRA_DIR)/header.html --with-footer $(EXTRA_DIR)/footer.html
-export COQDOCFLAGS
-
--include coq_makefile.conf
-
 all: help
 
 help:               ## Show this help
@@ -37,11 +27,11 @@ install_deps:       ## Install dependencies
 # _CoqProject build is no longer supported. To resurrect it, copy _CoqProject.
 # legacy to _CoqProject, and eventually manually update any missing elements.
 
-build_makefile:     ## Generate coq makefile
+build_makefile:
 	coq_makefile -f _CoqProject -o coq_makefile
 
 install:            ## Install Oqarina as a stand alone Coq library
-	make -f coq_makefile install
+	dune install
 
 compile:
 	make -f coq_makefile
@@ -61,22 +51,16 @@ test:               ## Run testsuite
 
 .PHONY: html
 
-generate_latex:     ## Generate LaTeX files from Coq
-	-mkdir latex-src/generated-content
-	coqdoc \
-		$(COQDOCFLAGS) --latex  \
-		-d latex-src/generated-content -s --body-only -g --interpolate `coqdep -sort $(COQMF_VFILES)`
-		mv latex-src/generated-content/*.sty latex-src/
-	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
-
 # We use alectryon ( https://github.com/cpitclaudel/alectryon ) to
-# generate documentation from the Coq code base.
+# generate documentation from a subset of the Coq code base. Alectryon supports
+# rst syntax which provides more flexibilty to generate either a PDF or HTML
+# pages
 
 ALECTRYON_FILES=src/formalisms/lts.v \
 	src/formalisms/DEVS/classic/devs.v \
 	src/formalisms/DEVS/classic/coupled.v
 
-alectryon2:
+alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \
 	alectryon --coq-driver sertop -Q _build/default/src Oqarina \
 		--long-line-threshold 150 \
@@ -96,7 +80,7 @@ sloc:               ## Get SLOCs
 	@coqwc $(COQ_FILES)
 
 world:              ## All of the above
-	$(MAKE) clean distclean build_makefile compile generate_latex pdf
+	$(MAKE) clean distclean build alectryon html pdf
 
 build_docker:	    ## Build docker image for testing
 	docker build -t safir/coq .
