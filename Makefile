@@ -46,7 +46,7 @@ install:            ## Install Oqarina as a stand alone Coq library
 compile:
 	make -f coq_makefile
 
-build:              ## Build 
+build:              ## Build
 	dune build
 
 build_bin:          ## Build Oqarina binary
@@ -69,18 +69,12 @@ generate_latex:     ## Generate LaTeX files from Coq
 		mv latex-src/generated-content/*.sty latex-src/
 	( cd latex-src/generated-content ; gsed -i.bak -e 1,218d *.tex )
 
-ALECTRYON_FILES=src/formalisms/lts.v \
-	src/formalisms/devs_classic.v \
-	src/formalisms/devs_coupled.v
+# We use alectryon ( https://github.com/cpitclaudel/alectryon ) to
+# generate documentation from the Coq code base.
 
-alectryon:
-	DOCUTILSCONFIG=docs/docutils.conf \
-	alectryon --coq-driver sertop -Q src Oqarina \
-		--long-line-threshold 150 \
-		--frontend coq+rst --backend latex  \
-		--output-directory latex-src/generated-content \
-		$(COQ_FILES)
-	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' latex-src/generated-content/*.tex
+ALECTRYON_FILES=src/formalisms/lts.v \
+	src/formalisms/DEVS/classic/devs.v \
+	src/formalisms/DEVS/classic/coupled.v
 
 alectryon2:
 	DOCUTILSCONFIG=docs/docutils.conf \
@@ -89,13 +83,13 @@ alectryon2:
 		--frontend coq+rst --backend rst  \
 		--output-directory docs \
 		$(ALECTRYON_FILES)
-	gsed -i.bak -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
+	gsed -i -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
 
 html:               ## Build HTML documentation
 	( cd docs; make html )
 
 pdf:                ## Build LaTeX documentation
-	( cd latex-src ; latexmk -pdf techreport.tex )
+	( cd docs ; make latexpdf )
 
 COQ_FILES = $(shell find src/ -type f -name '*.v')
 sloc:               ## Get SLOCs
