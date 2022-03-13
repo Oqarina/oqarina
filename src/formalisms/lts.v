@@ -134,6 +134,15 @@ Inductive Bisimilar (L : LTS_struct) (p q : States L) : Prop :=
 
 (*| .. coq:: none |*)
 Section Results.
+(*| 
+
+====================================
+Bisimilar as an equivalence relation
+====================================
+
+In the following, we show that :coq:`bisimilar` is an equivalence relation.
+
+|*)
 
 Variable L : LTS_struct.
 
