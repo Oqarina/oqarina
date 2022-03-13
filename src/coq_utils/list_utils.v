@@ -133,6 +133,12 @@ Section GenericLists.
                 end
     end.
 
+  Definition is_nil (l : list T) : bool :=
+    match l with
+    | nil => true
+    | _ => false
+    end.
+
   Lemma not_in_car (x a : T): ~ In x [a] <-> x<>a.
   Proof.
     simpl. intuition.
