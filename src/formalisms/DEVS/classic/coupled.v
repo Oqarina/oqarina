@@ -51,9 +51,9 @@ Section DEVS_Coupled.
 (*| .. coq:: |*)
 
 (*|
-
+==============
 Coupled models
---------------
+==============
 
 Coupled models represent a hierarchy of DEVS model.
 
@@ -104,11 +104,11 @@ Record DEVS_Coupled_Model := {
 }.
 
 (*|
+======================
 Closure under coupling
-----------------------
+======================
 
-From a coupled model, one can build the corresponding atomic model using the
- "closure under coupling" approach. See chapter 7.2 of Theory of Modeling and Simulation
+From a coupled model, one can build the corresponding atomic model using the "closure under coupling" approach. See chapter 7.2 of Theory of Modeling and Simulation
 
 |*)
 
@@ -173,12 +173,12 @@ Definition δint_combined
                 if (identifier_beq ds.(devs_simulator_id) i_star_id)
                     then Build_Q (ds.(d).(δint) s.(st)) 0
 
-                else if existsb
-                    (fun y => (identifier_beq ds.(devs_simulator_id) y)) I_star
+                else if id_in ds.(devs_simulator_id) I_star
                     then Build_Q
                          (ds.(d).(δext)
                             (Build_Q s.(st) (s.(e) + ta_combined l sc))
                             (Z_f i_star_id ((fst i_star').(d).(λ)
+                            (* XXX only iff λ produce a valid message *)
                                             (snd i_star').(st))))
                          0
 
@@ -208,8 +208,7 @@ Definition δext_combined
 
         let dispatch :=
             (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
-                if existsb
-                    (fun y => (identifier_beq ds.(devs_simulator_id) y))  ( I (Id "_self") )
+                if id_in ds.(devs_simulator_id) (I (Id "_self"))
                     then Build_Q
                         (ds.(d).(δext) (Build_Q s.(st) (s.(e) + qc.(e)))
                          x (* should be Zself,i*))
@@ -219,7 +218,7 @@ Definition δext_combined
 
             ) in
 
-        (* Main processing of δint_combined *)
+        (* Main processing of δext_combined *)
         map2 dispatch qc.(st) l
 
     end.
@@ -228,8 +227,7 @@ Definition δext_combined
 :coq:`Maps_DEVS_Coupled_Model`. |*)
 
 Definition Map_DEVS_Coupled_Model
-    (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model S_Combined X Y :=
-    {|
+    (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model S_Combined X Y := {|
         devs_atomic_id := dc.(devs_coupled_model_id);
         Q_init := Build_Q_init_Combined dc.(D);
         ta := ta_combined dc.(D);
@@ -242,8 +240,8 @@ Inductive DEVS_Coupled_Debug : Type :=
     dbg_coupled  : identifier ->  Q S -> DEVS_Coupled_Debug.
 
 Definition Print_DEVS_Coupled_Debug
-    (dc : DEVS_Coupled_Model )
-    (dc_sim : DEVS_Simulator S_Combined X Y )
+    (dc : DEVS_Coupled_Model)
+    (dc_sim : DEVS_Simulator S_Combined X Y)
 :=
     let devs_names := map (fun x => x.(devs_simulator_id)) dc.(D) in
     let devs_dbg : list (Q S) := dc_sim.(cs).(st) in
