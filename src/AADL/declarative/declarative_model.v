@@ -84,6 +84,8 @@ Section AADL_Component_Type.
 %\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.}%
 *)
 
+Hint Resolve Is_AADL_Component_Type_dec : aadl_wf.
+
     Definition Well_Formed_Component_Type (c: component) :=
             Is_AADL_Component_Type c /\
             Well_Formed_Component_Type_Interface c /\
@@ -97,13 +99,7 @@ Section AADL_Component_Type.
     Proof.
         intros.
         unfold Well_Formed_Component_Type.
-        apply dec_sumbool_and.
-        apply Is_AADL_Component_Type_dec.
-        apply dec_sumbool_and.
-        apply Well_Formed_Component_Type_Interface_dec.
-        apply dec_sumbool_and.
-        apply Well_Formed_Component_dec.
-        apply Well_Formed_Property_Associations_dec.
+        repeat (apply dec_sumbool_and ; auto with aadl_wf).
     Defined.
 
 (* begin hide *)
@@ -130,6 +126,9 @@ Section AADL_Component_Implementation.
         auto.
     Defined.
 
+
+Hint Resolve Is_AADL_Component_Implementation_dec : aadl_wf.
+
 (**
 %\wfrule{AADL component implementation well-formedness}{}
 {An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.}%
@@ -148,13 +147,7 @@ Section AADL_Component_Implementation.
     Proof.
         intros.
         unfold Well_Formed_Component_Implementation'.
-        apply dec_sumbool_and.
-        apply Is_AADL_Component_Implementation_dec.
-        apply dec_sumbool_and.
-        apply Well_Formed_Component_Implementation_Subcomponents_dec.
-        apply dec_sumbool_and.
-        apply Well_Formed_Component_dec.
-        apply Well_Formed_Property_Associations_dec.
+        repeat (apply dec_sumbool_and ; auto with aadl_wf).
     Defined.
 
     Definition Well_Formed_Component_Implementation (c: component) :=
