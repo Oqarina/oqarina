@@ -2,5 +2,7 @@
  (name Oqarina_examples)
   (theories Oqarina)
 )
-
 (include_subdirs qualified)
+
+;; ignore examples in 3rd-party
+(data_only_dirs 3rd-party)
