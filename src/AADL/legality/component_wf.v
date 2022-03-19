@@ -46,6 +46,8 @@ Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.legality.features_wf.
+Require Import Oqarina.AADL.legality.properties_wf.
+
 (* end hide *)
 
 (**

@@ -84,54 +84,41 @@ Proof.
     apply Valid_Subcomponents_Category_dec.
 Qed.
 
- (** ** Properties type checking rules *)
+(* Resolve component "name" in the subcomponents of c *)
 
- Definition Property_Correctly_Applies_To (c : component) (ps : property_sets) (p : property_association) :=
-     let p_decl := resolve_property_decl ps p.(P) in
-     match p_decl with
-        | Some p_decl' => In (CompCat (c->category)) (Applicable_ComponentCategory p_decl')
-        | None => False
-     end.
+Definition Resolve_Subcomponent_In_Component
+    (name : identifier)
+    (c : component)
+    : option component
+:=
+    let results := filter (fun x => identifier_beq name (x->id)) (c->subcomps) in
+    hd_error results.
 
-  Lemma Property_Correctly_Applies_To_dec :
-    forall (p : property_association) (ps : property_sets) (c : component),
-        { Property_Correctly_Applies_To c ps p  } + { ~ Property_Correctly_Applies_To c ps p } .
-  Proof.
-    intros p ps c.
-    unfold Property_Correctly_Applies_To.
-    destruct (resolve_property_decl ps (P p)).
-    apply in_dec.
-    apply AppliesToCategory_eq_dec.
-    auto.
-  Qed.
+(* Auxiliary function to resolve a subcomponnet in a hierarchy, starting from root. *)
 
-Fixpoint Property_Correctly_Applies_To_list (c : component) (ps : property_sets) (p : list property_association) :=
-    match p with
-    | [] => True
-    | h :: t => Property_Correctly_Applies_To c ps h /\
-        Property_Correctly_Applies_To_list c ps t
+Fixpoint Resolve_Subcomponent'
+    (root : component)
+    (path : list identifier)
+    (name : identifier)
+    (impl_name : option identifier)
+
+    : option component
+:=
+    match path with
+    | [] => Resolve_Subcomponent_In_Component name root
+    | h :: t =>
+        let node := Resolve_Subcomponent_In_Component h root in
+            match node with
+            | None => None
+            | Some c => Resolve_Subcomponent' c t name impl_name
+            end
     end.
 
-Lemma Property_Correctly_Applies_To_list_dec :
-forall (c : component) (ps : property_sets) (p : list property_association),
-    { Property_Correctly_Applies_To_list c ps p  } + { ~ Property_Correctly_Applies_To_list c ps p } .
-Proof.
-    intros c ps.
-    unfold Property_Correctly_Applies_To_list.
-    induction p.
-    - auto.
-    - apply dec_sumbool_and. apply Property_Correctly_Applies_To_dec. apply IHp.
-Qed.
-
-Definition Well_Formed_Property_Associations (c : component) (ps : property_sets) :=
-    Property_Correctly_Applies_To_list c ps (projectionComponentProperties c).
-
-Lemma Well_Formed_Property_Associations_dec : forall (ps : property_sets) (c : component),
-    { Well_Formed_Property_Associations c ps } +
-    { ~ Well_Formed_Property_Associations c ps }.
-Proof.
-    unfold Well_Formed_Property_Associations.
-    intros.
-    destruct (c ->properties);
-    apply Property_Correctly_Applies_To_list_dec.
-Qed.
+Definition Resolve_Subcomponent
+    (root : component)
+    (fqn : fq_name)
+    : option component
+:=
+    match fqn with
+    | FQN path name impl => Resolve_Subcomponent' root path name impl
+    end.

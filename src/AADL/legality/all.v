@@ -31,3 +31,19 @@
 ***)
 Require Export Oqarina.AADL.legality.categories_wf.
 Require Export Oqarina.AADL.legality.component_wf.
+Require Export Oqarina.AADL.legality.connections_wf.
+Require Export Oqarina.AADL.legality.features_wf.
+Require Export Oqarina.AADL.legality.properties_wf.
+
+Create HintDb aadl_wf.
+
+Global Hint Resolve
+    Well_Formed_Component_Type_Interface_dec
+    Well_Formed_Component_dec
+    Well_Formed_Component_Id_dec
+    Well_Formed_Component_Classifier_dec
+    Well_Formed_Component_Features_dec
+    Well_Formed_Property_Associations_dec
+    Rule_4_5_N1_dec
+: aadl_wf.
+
