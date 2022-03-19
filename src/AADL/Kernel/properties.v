@@ -89,7 +89,7 @@ Inductive property_type :=
             (units: option property_type)
 | PT_Range (p : property_type) (* must be numeric *)
 | PT_Classifier (* TBD *)
-| PT_Reference (* TBD *)
+| PT_Reference 
 | PT_Record (fields: list field_decl)
 | PT_List (of: property_type) (* not allowed in named types in AADL2 (why???) *)
 | PT_TypeRef (qname : ps_qname)

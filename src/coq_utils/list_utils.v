@@ -82,6 +82,22 @@ Section All.
         * apply IHlt.
     Qed.
 
+    Lemma All_In :
+      forall (l : list T),
+        (forall x, In x l -> P x) <-> All l.
+    Proof.
+      intros.
+      split.
+      induction l.
+      + intros. simpl ; auto.
+      + intros. simpl. split. apply H. apply in_eq.
+        apply IHl. intros. apply H. right. apply H0.
+      + intros H. induction l.
+        - intros. simpl. induction H0.
+        - intros. simpl. destruct H0 as [H1 | ]. destruct H as [H2 H3].
+          rewrite <- H1. assumption. destruct H as [H2 H3]. apply IHl ; auto.
+    Qed.
+
 (* begin hide*)
 End All.
 (* end hide *)
