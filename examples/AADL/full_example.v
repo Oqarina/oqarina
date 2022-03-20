@@ -94,11 +94,12 @@ Qed.
 (* Some subcomponent resolution *)
 
 Lemma Resolva_A_Processor:
-    Resolve_Subcomponent A_System (FQN [] (Id "a_processor") None) = Some A_Processor.
-Proof.
-    trivial.
-Qed.
+    Resolve_Subcomponent
+        A_System (FQN [] (Id "a_processor") None) = Some A_Processor.
+Proof. trivial. Qed.
 
 Lemma Resolve_A_Periodic_Thread:
-    Resolve_Subcomponent A_System (FQN [ Id "a_process" ] (Id "a_periodic_thread") None) = Some A_Periodic_Thread.
+    Resolve_Subcomponent
+        A_System (FQN [ Id "a_process" ] (Id "a_periodic_thread") None) =
+        Some A_Periodic_Thread.
 Proof. trivial. Qed.
