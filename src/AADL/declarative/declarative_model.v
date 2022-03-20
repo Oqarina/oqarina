@@ -75,9 +75,7 @@ Section AADL_Component_Type.
         forall c : component, { Is_AADL_Component_Type c } +
                               { ~Is_AADL_Component_Type c }.
     Proof.
-        unfold Is_AADL_Component_Type.
-        intros.
-        repeat apply dec_sumbool_and; auto.
+        prove_dec.
     Defined.
 
 (**
@@ -120,11 +118,8 @@ Section AADL_Component_Implementation.
         forall c : component, { Is_AADL_Component_Implementation c } +
                               { ~Is_AADL_Component_Implementation c}.
     Proof.
-        unfold Is_AADL_Component_Implementation.
-        auto.
+        prove_dec.
     Defined.
-
-Hint Resolve Is_AADL_Component_Implementation_dec : aadl_wf.
 
 (**
 %\wfrule{AADL component implementation well-formedness}{}
@@ -209,12 +204,7 @@ Section AADL_Package.
     Lemma Well_Formed_Package_dec :
         forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
     Proof.
-        intros.
-        unfold Well_Formed_Package.
-        apply dec_sumbool_and.
-        apply Well_Formed_Identifier_prop_dec.
-        apply sumbool_All_dec.
-        apply Well_Formed_Component_dec.
+        prove_dec.
     Qed.
 
 (** At this stage, we simply have collection of well-formed packages. But this is not enough to guarantee the model is correct. We need to add some typing rules that assess all elements are properly resolved. This is addressed in the next sections. *)

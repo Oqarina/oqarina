@@ -34,3 +34,7 @@ Require Export Oqarina.core.queue.
 Require Export Oqarina.core.maps.
 Require Export Oqarina.core.time.
 Require Export Oqarina.core.tactics.
+
+Global Hint Resolve
+    Well_Formed_Identifier_prop_dec
+: well_know_wf_dec.
