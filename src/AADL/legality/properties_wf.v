@@ -93,3 +93,64 @@ Proof.
     destruct (c ->properties);
     apply Property_Correctly_Applies_To_list_dec.
 Qed.
+
+
+Definition Well_Formed_Property_Value
+    (c : component)
+    (pa : property_association)
+:=
+    match pa.(PV) with
+        | PV_ModelRef _ => let c := Resolve_PV_ModelRef c pa in
+            match c with | Some _ => True | _ => False end
+        | _ => True
+    end.
+
+Lemma Well_Formed_Property_Value_dec :
+    forall (c : component) (pa : property_association),
+        { Well_Formed_Property_Value  c pa } + { ~ Well_Formed_Property_Value  c pa  }.
+Proof.
+    prove_dec2.
+    destruct (PV pa); auto.
+    destruct (Resolve_PV_ModelRef c pa); auto.
+Qed.
+
+Global Hint Resolve Well_Formed_Property_Value_dec : well_know_wf_dec.
+
+Definition Well_Formed_Property_Values'
+    (parent : component)
+    (c : component)
+:=
+    All (fun x => Well_Formed_Property_Value parent x)
+        (projectionComponentProperties c).
+
+Lemma Well_Formed_Property_Values'_dec:
+    forall (parent : component) (c : component),
+        { Well_Formed_Property_Values'  parent c } +
+        { ~ Well_Formed_Property_Values'  parent c }.
+Proof.
+    prove_dec2.
+Qed.
+
+Global Hint Resolve Well_Formed_Property_Values'_dec : well_know_wf_dec.
+
+Definition Well_Formed_Property_Values'' (c: component) :=
+    All (fun x => Well_Formed_Property_Values' c x) (c->subcomps).
+
+Lemma Well_Formed_Property_Values''_dec :
+    forall (c : component),
+        { Well_Formed_Property_Values''  c } +
+        { ~ Well_Formed_Property_Values''  c }.
+Proof.
+    prove_dec.
+Qed.
+
+Definition Well_Formed_Property_Values (c: component) :=
+    All Well_Formed_Property_Values'' (Unfold c).
+
+Lemma Well_Formed_Property_Values_dec :
+    forall (c : component),
+        { Well_Formed_Property_Values  c } +
+        { ~ Well_Formed_Property_Values  c  }.
+Proof.
+    prove_dec.
+Qed.

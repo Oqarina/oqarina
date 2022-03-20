@@ -38,8 +38,11 @@ Import ListNotations.
 
 (** Oqarina library *)
 Require Import Oqarina.core.identifiers.
+Require Import Oqarina.AADL.Kernel.component.
+Require Import Oqarina.AADL.Kernel.components_helper.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
+
 Require Import Oqarina.coq_utils.all.
 #[local] Open Scope Z_scope.
 (* end hide *)
@@ -119,3 +122,23 @@ Fixpoint Get_Record_Member (pv : list field_value) (name : identifier) :=
                                                      else Get_Record_Member t name
         end
       end.
+
+
+(* ModelRef_to_fqname transforms a PV_Model_Ref (i.e a reference
+to some component, presented as a path) into a proper fqname *)
+
+Definition ModelRef_to_fqname (l : list identifier) :=
+  let rev_path := rev l in
+  FQN (rev (tl rev_path)) (hd empty_identifier rev_path) (None).
+
+(* Resolve a PV_ModelRef in the context of component c.
+ Note: c is usually the parent of the subcomponent defining this property. *)
+
+Definition Resolve_PV_ModelRef
+  (c: component)
+  (pa : property_association)
+:=
+  match pa.(PV) with
+  | PV_ModelRef path => Resolve_Subcomponent c (ModelRef_to_fqname path)
+  | _ => None
+  end.

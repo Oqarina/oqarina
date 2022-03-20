@@ -84,7 +84,7 @@ Section AADL_Component_Type.
 %\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.}%
 *)
 
-Hint Resolve Is_AADL_Component_Type_dec : aadl_wf.
+    Hint Resolve Is_AADL_Component_Type_dec : well_know_wf_dec.
 
     Definition Well_Formed_Component_Type (c: component) :=
             Is_AADL_Component_Type c /\
@@ -97,9 +97,7 @@ Hint Resolve Is_AADL_Component_Type_dec : aadl_wf.
             {Well_Formed_Component_Type c} +
             { ~Well_Formed_Component_Type c}.
     Proof.
-        intros.
-        unfold Well_Formed_Component_Type.
-        repeat (apply dec_sumbool_and ; auto with aadl_wf).
+        prove_dec.
     Defined.
 
 (* begin hide *)
@@ -126,7 +124,6 @@ Section AADL_Component_Implementation.
         auto.
     Defined.
 
-
 Hint Resolve Is_AADL_Component_Implementation_dec : aadl_wf.
 
 (**
@@ -138,16 +135,15 @@ Hint Resolve Is_AADL_Component_Implementation_dec : aadl_wf.
         Is_AADL_Component_Implementation c /\
         Well_Formed_Component_Implementation_Subcomponents c /\
         Well_Formed_Component c /\
-        Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
+        Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets /\
+        Well_Formed_Property_Values'' c.
 
     Lemma Well_Formed_Component_Implementation'_dec :
     forall (c:component),
         {Well_Formed_Component_Implementation' c} +
         { ~Well_Formed_Component_Implementation' c}.
     Proof.
-        intros.
-        unfold Well_Formed_Component_Implementation'.
-        repeat (apply dec_sumbool_and ; auto with aadl_wf).
+        prove_dec.
     Defined.
 
     Definition Well_Formed_Component_Implementation (c: component) :=
@@ -158,7 +154,7 @@ Hint Resolve Is_AADL_Component_Implementation_dec : aadl_wf.
             {Well_Formed_Component_Implementation c} +
             { ~Well_Formed_Component_Implementation c}.
     Proof.
-        unfold Well_Formed_Component_Implementation.
+        prove_dec.
         apply Unfold_Apply_dec.
         apply Well_Formed_Component_Implementation'_dec.
     Qed.
