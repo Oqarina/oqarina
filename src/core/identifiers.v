@@ -278,5 +278,3 @@ Definition parse_feature_ref_name (s : string) : feature_ref :=
       end
   | _ => empty_feature_ref
   end.
-
-
