@@ -222,7 +222,6 @@ Section WellFormedness_Rules.
    Well_Formed_Component_Id (c) /\
    Well_Formed_Component_Classifier (c) /\
    Well_Formed_Component_Features (c) /\
-  (* Well_Formed_Properties (c) /\ *)
    Rule_4_5_N1 (c).
 
   Lemma Well_Formed_Component_dec :
