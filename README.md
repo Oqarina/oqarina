@@ -1,6 +1,8 @@
-# Oqarina -- Coq mechanization of AADL
+# Oqarina -- Coq mechanization of AADL ![GitHub Action](https://github.com/Oqarina/Oqarina/actions/workflows/main.yml/badge.svg)
 
 Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.
+
+
 
 ## Directory structure
 
