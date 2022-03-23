@@ -101,7 +101,6 @@ Fixpoint Resolve_Subcomponent'
     (path : list identifier)
     (name : identifier)
     (impl_name : option identifier)
-
     : option component
 :=
     match path with
