@@ -94,7 +94,6 @@ Proof.
     apply Property_Correctly_Applies_To_list_dec.
 Qed.
 
-
 Definition Well_Formed_Property_Value
     (c : component)
     (pa : property_association)
