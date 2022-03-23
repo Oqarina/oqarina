@@ -74,3 +74,6 @@ Definition Get_Input_Features (l : list feature) :=
 
 Definition Get_Output_Features (l : list feature) :=
   filter Is_Output_Port l.
+
+Definition Feature_Classifier (f : feature) :=
+  projectionComponentClassifier (projectionFeatureComponent f).

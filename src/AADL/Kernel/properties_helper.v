@@ -37,7 +37,7 @@ Require Import Coq.Lists.List.
 Import ListNotations.
 
 (** Oqarina library *)
-Require Import Oqarina.core.identifiers.
+Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.AADL.Kernel.components_helper.
 Require Import Oqarina.AADL.Kernel.properties.
@@ -48,28 +48,22 @@ Require Import Oqarina.coq_utils.all.
 (* end hide *)
 
 (** [Is_Property_Name] returns [true] iff [pa] has name [name]. This functions allows on to filter property associations by name. *)
-Definition Is_Property_Name (name : ps_qname) (pa : property_association) :=
+Definition Is_Property_Name
+  (name : ps_qname) (pa : property_association) :=
   ps_qname_beq pa.(P) name.
 
 (** [Is_Property_Defined] returns [True] iff property [name] is defined. *)
 
-Fixpoint Is_Property_Defined (name : ps_qname) (pa : list property_association) :=
-  match pa with
-  | [] => False
-  | h :: t => (name = h.(P)) \/ (Is_Property_Defined name t)
-  end.
+Definition Is_Property_Defined
+  (name : ps_qname) (pa : list property_association) :=
+  In name (map (fun x => x.(P)) pa).
 
 Lemma Is_Property_Defined_dec :
   forall (name:ps_qname) (pa: list property_association),
     {Is_Property_Defined name pa} + {~ Is_Property_Defined name pa}.
 Proof.
-  intros.
-  unfold Is_Property_Defined.
-  induction pa.
-  auto.
-  apply dec_sumbool_or.
+  prove_dec2.
   apply ps_qname_eq_dec.
-  apply IHpa.
 Qed.
 
 (** [Map_PV_Int] maps a property value to an integer. *)
@@ -122,7 +116,6 @@ Fixpoint Get_Record_Member (pv : list field_value) (name : identifier) :=
                                                      else Get_Record_Member t name
         end
       end.
-
 
 (* ModelRef_to_fqname transforms a PV_Model_Ref (i.e a reference
 to some component, presented as a path) into a proper fqname *)

@@ -30,6 +30,7 @@
  * DM21-0762
 ***)
 
+Require Import List.
 Require Export Oqarina.coq_utils.all.
 
 (*| We define general tactics to prove basic decidability results. It is
@@ -44,6 +45,7 @@ Create HintDb well_know_wf_dec.
 Ltac prove_dec :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros
+    | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
     | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
     | [ |- {?X _} + {~ ?X _} ] =>
         try auto with well_know_wf_dec ; unfold X
@@ -53,6 +55,7 @@ Ltac prove_dec :=
 Ltac prove_dec2 :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros
+    | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
