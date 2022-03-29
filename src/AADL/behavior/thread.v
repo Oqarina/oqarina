@@ -162,10 +162,7 @@ Section AADL_Dispatching.
   Lemma Is_Feature_Activated_dec :
     forall (p : port_variable), dec_sumbool (Is_Feature_Activated p).
   Proof.
-    intros.
-    unfold dec_sumbool.
-    unfold Is_Feature_Activated.
-    apply dec_sumbool_not.
+    prove_dec.
     apply PortQueue.Is_Empty_dec.
   Defined.
   (* end hide *)
@@ -178,10 +175,7 @@ Section AADL_Dispatching.
     forall (p : port_variable) (d : list feature),
       dec_sumbool (Feature_In_Dispatch_Trigger p d).
   Proof.
-    unfold Feature_In_Dispatch_Trigger.
-    unfold dec_sumbool.
-    intros.
-    apply In_dec.
+    prove_dec2.
     apply feature_eq_dec.
   Defined.
   (* end hide *)
@@ -196,11 +190,9 @@ Section AADL_Dispatching.
     forall (p : port_variable)  (d : list feature),
       dec_sumbool (Is_Activated_Triggering_Feature p d).
   Proof.
-    intros.
-    unfold Is_Activated_Triggering_Feature.
-    apply dec_sumbool_and.
+    prove_dec2.
     apply Is_Feature_Activated_dec.
-    apply Feature_In_Dispatch_Trigger_dec.
+    apply feature_eq_dec.
   Defined.
   (* end hide *)
 
@@ -256,9 +248,7 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Thread_Dispatchable_dec:
     forall (th : thread_state_variable), dec_sumbool (Thread_Dispatchable th).
   Proof.
-    unfold dec_sumbool.
-    unfold Thread_Dispatchable.
-    intros.
+    prove_dec.
     apply bool_dec.
   Defined.
 
@@ -269,10 +259,7 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Periodic_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Periodic_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Periodic_Enabled.
-    intros.
-    apply dec_sumbool_and.
+    prove_dec.
     apply Thread_Dispatchable_dec.
     apply Z.eq_dec.
   Defined.
@@ -286,10 +273,7 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Aperiodic_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Aperiodic_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Aperiodic_Enabled.
-    intros.
-    apply dec_sumbool_and.
+    prove_dec.
     apply Thread_Dispatchable_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
@@ -304,13 +288,9 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Sporadic_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Sporadic_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Sporadic_Enabled.
-    intros.
-    apply dec_sumbool_and.
+    prove_dec.
     apply Thread_Dispatchable_dec.
-    apply dec_sumbool_and.
-    apply Z_le_dec. (* {period th <= clock th} + {~ period th <= clock th} *)
+    apply Z_le_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
   (* end hide *)
@@ -324,12 +304,8 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Timed_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Timed_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Timed_Enabled.
-    intros.
-    apply dec_sumbool_and.
+    prove_dec.
     apply Thread_Dispatchable_dec.
-    apply dec_sumbool_or.
     apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
@@ -343,12 +319,8 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Hybrid_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Hybrid_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Hybrid_Enabled.
-    intros.
-    apply dec_sumbool_and.
+    prove_dec.
     apply Thread_Dispatchable_dec.
-    apply dec_sumbool_and.
     apply Z.eq_dec.
     apply Thread_Has_Activated_Triggering_Feature_dec.
   Defined.
@@ -361,8 +333,7 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   Lemma Background_Enabled_dec:
     forall (th : thread_state_variable), dec_sumbool (Background_Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Background_Enabled.
+    prove_dec.
     apply Thread_Dispatchable_dec.
   Defined.
   (* end hide *)
@@ -383,9 +354,7 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
   (* begin hide *)
   Lemma Enabled_dec: forall (th : thread_state_variable), dec_sumbool (Enabled th).
   Proof.
-    unfold dec_sumbool.
-    unfold Enabled.
-    intros.
+    prove_dec.
     destruct (dispatch_protocol th).
     auto.
     apply Periodic_Enabled_dec.
@@ -399,8 +368,8 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
 
   (** [Enabled_oracle] return a [bool] as a witness, for debugging purposes. *)
 
-    Definition Enabled_oracle (th : thread_state_variable) :=
-      if Enabled_dec th is (left _) then true else false.
+  Definition Enabled_oracle (th : thread_state_variable) :=
+    if Enabled_dec th is (left _) then true else false.
 
 (* begin hide *)
 End AADL_Dispatching.
@@ -449,12 +418,10 @@ Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) : Pr
        ~ (Feature_In_Dispatch_Trigger p th.(dispatch_trigger)).
 
 (* begin hide *)
-Definition Dispatch_Frozen_dec:
+Lemma Dispatch_Frozen_dec:
   forall p th, { Dispatch_Frozen p th } + { ~ Dispatch_Frozen p th }.
 Proof.
-  intros.
-  unfold Dispatch_Frozen.
-  apply dec_sumbool_or.
+  prove_dec2.
   apply port_variable_eq_dec.
   apply dec_sumbool_not.
   apply Feature_In_Dispatch_Trigger_dec.

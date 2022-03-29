@@ -45,8 +45,11 @@ Create HintDb well_know_wf_dec.
 Ltac prove_dec :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros
+    | [ |- dec_sumbool _ ] => unfold dec_sumbool
     | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
+    | [ |- { _ -> False } + { (_ -> False) -> False} ] => apply dec_sumbool_not
     | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
+    | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
     | [ |- {?X _} + {~ ?X _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
@@ -55,7 +58,11 @@ Ltac prove_dec :=
 Ltac prove_dec2 :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros
+    | [ |- dec_sumbool _ ] => unfold dec_sumbool
     | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
+    | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
+    | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
+    | [ |- { _ -> False } + { (_ -> False) -> False} ] => apply dec_sumbool_not
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
