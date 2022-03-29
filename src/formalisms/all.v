@@ -30,4 +30,20 @@
  * DM21-0762
 ***)
 
+(*| .. coq:: none |*)
 Require Export Oqarina.formalisms.lts.
+(*| .. coq:: |*)
+
+(*|
+
+==========
+Formalisms
+==========
+
+.. toctree::
+   :maxdepth: 2
+
+   formalisms__DEVS_classic_all.v.rst
+   formalisms__lts.v.rst
+
+|*)

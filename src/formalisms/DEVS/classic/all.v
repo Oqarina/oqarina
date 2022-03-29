@@ -30,5 +30,14 @@
  * DM21-0762
 ***)
 
+(*| .. coq:: none |*)
 Require Export Oqarina.formalisms.DEVS.classic.devs.
 Require Export Oqarina.formalisms.DEVS.classic.coupled.
+(*| .. coq:: |*)
+
+(*|
+
+.. include:: formalisms__DEVS_classic_devs.v.rst
+.. include:: formalisms__DEVS_classic_coupled.v.rst
+
+|*)

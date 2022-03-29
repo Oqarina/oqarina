@@ -402,9 +402,5 @@ Definition Print_DEVS_State (r : DEVS_Root_Coordinator) :=
 (*| .. coq:: none |*)
 End DEVS.
 
-(*|
 
-.. include:: coupled.v.rst
-
-|*)
 

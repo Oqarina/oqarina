@@ -56,18 +56,21 @@ test:               ## Run testsuite
 # rst syntax which provides more flexibilty to generate either a PDF or HTML
 # pages
 
-ALECTRYON_FILES=src/formalisms/lts.v \
+ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
+	src/formalisms/DEVS/classic/all.v \
 	src/formalisms/DEVS/classic/devs.v \
-	src/formalisms/DEVS/classic/coupled.v
+	src/formalisms/DEVS/classic/coupled.v \
+	examples/AADL/full_example.v
 
 alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \
 	alectryon --coq-driver sertop -Q _build/default/src Oqarina \
 		--long-line-threshold 150 \
 		--frontend coq+rst --backend rst  \
-		--output-directory docs \
 		$(ALECTRYON_FILES)
-	gsed -i -e '/(\*\*\*/,/\*\*\*)/d' docs/*.rst
+	(cd src ; find */ -type f  -name "*.v.rst" -exec bash -c 'file=$${1#./}; mv "$$file" ../docs/coq/"$${file//\//_}"' _ '{}' \; )
+	(cd examples ; find */ -type f  -name "*.v.rst" -exec bash -c 'file=$${1#./}; mv "$$file" ../docs/coq/"$${file//\//_}"' _ '{}' \; )
+	gsed -i -e '/(\*\*\*/,/\*\*\*)/d' docs/coq/*.v.rst
 
 html:               ## Build HTML documentation
 	( cd docs; make html )
