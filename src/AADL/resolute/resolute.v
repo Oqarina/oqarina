@@ -185,6 +185,24 @@ Lemma is_processor_dec: forall (c : component),
     { is_processor c} + {~ is_processor c }.
 Proof. prove_dec. Qed.
 
+Definition is_processorb (c : component) :=
+    ComponentCategory_beq (c->category) processor.
+
+Definition processor_set (c: component) :=
+    filter is_processorb (Unfold c).
+
+Definition is_thread (c: component) := c->category = thread.
+
+Lemma is_thread_dec: forall (c : component),
+    { is_thread c} + {~ is_thread c }.
+Proof. prove_dec. Defined.
+
+Definition is_threadb (c : component) :=
+    ComponentCategory_beq (c->category) thread.
+
+Definition thread_set (c: component) :=
+    filter is_threadb (Unfold c).
+
 (*|
 
 6.5 Built-in Functions for Features
@@ -219,9 +237,21 @@ Proof. prove_dec. Qed.
 Definition is_data_port (f : feature) :=
     In (projectionFeatureCategory f) [ dataPort ; eventDataPort ].
 
+Lemma is_data_port_dec: forall (f: feature),
+    { is_data_port f} + {~ is_data_port f}.
+Proof. prove_dec. Qed.
+
 Definition is_port (f : feature) :=
     In (projectionFeatureCategory f)
         [ dataPort ; eventDataPort ; eventDataPort ].
 
+Lemma is_port_dec: forall (f: feature),
+    { is_port f} + {~ is_port f}.
+Proof. prove_dec. Qed.
+
 Definition is_abstract_feature (f : feature) :=
     In (projectionFeatureCategory f) [ abstractFeature ].
+
+Lemma is_abstract_feature_dec: forall (f: feature),
+    { is_abstract_feature f} + {~ is_abstract_feature f}.
+Proof. prove_dec. Qed.
