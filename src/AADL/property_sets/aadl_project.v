@@ -105,8 +105,11 @@ Qed.
 
 Definition Time_Range := (prod AADL_Time AADL_Time).
 
-Definition Map_Time_Ramge (pv : property_value) : Time_Range :=
+Definition Null_Time_Range : Time_Range := (0, 0).
+
+Definition Map_Time_Range (pv : property_value) : Time_Range :=
   match pv with
     | PV_IntRange (PV_Int min) (PV_Int max) => (min, max)
-    | _ => (0, 0)
+    | PV_IntRange (PV_IntU min _) (PV_IntU max _) => (min, max)
+    | _ => Null_Time_Range
   end.

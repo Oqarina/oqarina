@@ -189,7 +189,7 @@ Definition Map_IO_Time_Spec (pv : property_value) :=
     let offset := Get_Record_Member l (Id "Offset") in
     match offset with
       | None => Unspecified_IO_Time_Spec
-      | Some (FieldVal _ pv) =>  Start (Map_Time_Ramge pv)
+      | Some (FieldVal _ pv) =>  Start (Map_Time_Range pv)
     end
     | _ => Unspecified_IO_Time_Spec
     end

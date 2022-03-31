@@ -104,3 +104,20 @@ Definition Is_Deadline (pa : property_association) :=
 
 Definition Map_Deadline (pa : list property_association) : Z :=
   Map_PV_Int_List pa (PV_Int 0%Z) Is_Deadline.
+
+Definition Compute_Execution_Time_Name := PSQN "Timing_Properties" "Compute_Execution_Time".
+
+Definition Is_Compute_Execution_Time (pa : property_association) :=
+  Is_Property_Name Compute_Execution_Time_Name pa.
+
+Definition Map_PV_Time_Range_List
+  (pa : list property_association)
+  (name : property_association -> bool)
+:=
+  match filter name pa with
+    | nil => Null_Time_Range
+    | v :: _ => Map_Time_Range v.(PV)
+    end.
+
+Definition Map_Compute_Execution_Time (pa : list property_association) :=
+  Map_PV_Time_Range_List pa Is_Compute_Execution_Time.

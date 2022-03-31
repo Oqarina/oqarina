@@ -132,7 +132,7 @@ Definition Map_Urgency (pa : list property_association) : Z :=
 
 Definition Dispatch_Protocol_Name := PSQN "Thread_Properties" "Dispatch_Protocol".
 
-Definition Is_Scheduling_Protocol (pa : property_association) :=
+Definition Is_Dispatch_Protocol (pa : property_association) :=
     Is_Property_Name Dispatch_Protocol_Name pa.
 
 Inductive Dispatch_Protocol :=
@@ -140,7 +140,7 @@ Inductive Dispatch_Protocol :=
 
 Scheme Equality for Dispatch_Protocol.
 
-Definition Map_Scheduling_Protocol_pv (pa : property_association) : Dispatch_Protocol :=
+Definition Map_Dispatch_Protocol_pv (pa : property_association) : Dispatch_Protocol :=
   match pa.(PV) with
     | (PV_Enum (Id "Periodic")) => Periodic
     | (PV_Enum (Id "Sporadic")) => Sporadic
@@ -151,10 +151,10 @@ Definition Map_Scheduling_Protocol_pv (pa : property_association) : Dispatch_Pro
     | _ => Unspecified_Dispatch_Protocol
   end.
 
-Definition Map_Scheduling_Protocol (pa : list property_association) : Dispatch_Protocol :=
-  match filter Is_Scheduling_Protocol pa with
+Definition Map_Dispatch_Protocol (pa : list property_association) : Dispatch_Protocol :=
+  match filter Is_Dispatch_Protocol pa with
   | nil => Unspecified_Dispatch_Protocol
-  | v :: _ => Map_Scheduling_Protocol_pv v
+  | v :: _ => Map_Dispatch_Protocol_pv v
   end.
 
 (** %

@@ -73,3 +73,25 @@ Definition Actual_Processor_Binding_Name := PSQN "Deployment_Properties" "Actual
 
 Definition Is_Actual_Processor_Binding (pa : property_association) :=
   Is_Property_Name Actual_Processor_Binding_Name pa.
+
+Definition Scheduling_Protocol_Name := PSQN "Deployment_Properties" "Scheduling_Protocol".
+
+Definition Is_Scheduling_Protocol (pa : property_association) :=
+  Is_Property_Name Scheduling_Protocol_Name pa.
+
+Inductive Scheduling_Protocol :=
+  Unspecified_Scheduling_Protocol | POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL.
+
+Scheme Equality for Scheduling_Protocol.
+
+Definition Map_Scheduling_Protocol_pv (pv : property_value) : Scheduling_Protocol :=
+  match pv with
+    | (PV_Enum (Id "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL")) => POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL
+    | _ => Unspecified_Scheduling_Protocol
+  end.
+
+Definition Map_Scheduling_Protocol (pa : list property_association) :=
+  match filter Is_Scheduling_Protocol pa with
+  | nil => Unspecified_Scheduling_Protocol
+  | v :: _ => Map_Scheduling_Protocol_pv v.(PV)
+  end.
