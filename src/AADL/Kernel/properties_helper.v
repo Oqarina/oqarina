@@ -64,7 +64,7 @@ Lemma Is_Property_Defined_dec :
 Proof.
   prove_dec2.
   apply ps_qname_eq_dec.
-Qed.
+Defined.
 
 (** [Map_PV_Int] maps a property value to an integer. *)
 

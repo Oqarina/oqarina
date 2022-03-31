@@ -111,7 +111,8 @@ Ltac prove_Well_Formed_Component_Instance :=
       | |- (_ =  EmptyString -> False) => intuition; inversion H
       | |- NoDup nil => apply NoDup_nil
       | |- NoDup  _  => apply NoDup_cons
-      | |- ~ In _ _ => apply not_in_car
+      | |- ~ In _ _ => apply not_in_cons
+      | |- _ /\ _ => split
       | |- Id _ <> Id _ => apply identifier_string_neq; easy
       | |- ~ In _ [] => apply in_nil
     end.
