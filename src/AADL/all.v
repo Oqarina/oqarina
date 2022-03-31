@@ -35,3 +35,4 @@ Require Export Oqarina.AADL.legality.all.
 Require Export Oqarina.AADL.declarative.all.
 Require Export Oqarina.AADL.instance.all.
 Require Export Oqarina.AADL.property_sets.all.
+Require Export Oqarina.AADL.resolute.all.
