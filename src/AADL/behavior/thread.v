@@ -94,7 +94,7 @@ TBD
   }.
 
   Definition mk_thread_state_variable (t : component) : thread_state_variable := {|
-    dispatch_protocol := Map_Scheduling_Protocol (t->properties);
+    dispatch_protocol := Map_Dispatch_Protocol (t->properties);
     period := Map_Period (t->properties);
     priority := Map_Priority (t->properties);
     deadline := Map_Deadline (t->properties);
