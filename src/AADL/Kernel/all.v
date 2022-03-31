@@ -43,15 +43,17 @@ Require Export Oqarina.AADL.Kernel.features_helper.
 
 Module AADL_Notations.
 
+Declare Scope aadl_scope.
+
 (*| Notation for component features (partial XXX) |*)
 
-Notation "'feature:' 'in_event' x" := (Feature (Id x) inF eventPort nil_component nil) (at level 200).
+Notation "'feature:' 'in_event' x" := (Feature (Id x) inF eventPort nil_component nil) (at level 200) : aadl_scope.
 
 Notation "'feature:' 'out_event' x" := (Feature (Id x) outF eventPort nil_component nil) (at level 200).
 
 (*| Properties |*)
 
-Notation "'property:' x ==> y" := {| P := x ; PV := y|} (at level 200).
+Notation "'property:' x ==>| y" := {| P := x ; PV := y|} (at level 200) : aadl_scope.
 
 (*| Connections |*)
 

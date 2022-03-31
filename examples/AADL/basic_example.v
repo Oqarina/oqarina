@@ -42,6 +42,7 @@ Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.all.
 Import AADL_Notations.
+Open Scope aadl_scope.
 
 Example A_Component_2 :=
     abstract: "a_component" ->| "pack1::foo_classifier"
@@ -69,9 +70,9 @@ Definition A_Sporadic_Thread' :=
         subcomponents: nil
         connections: nil
         properties: [
-            property: Priority_Name ==> PV_Int 42 ;
-            property: Dispatch_Protocol_Name ==> PV_Enum (Id "Sporadic") ;
-            property: Period_Name ==> PV_IntU 3 (PV_Unit (Id "ms"))
+            property: Priority_Name ==>| PV_Int 42 ;
+            property: Dispatch_Protocol_Name ==>| PV_Enum (Id "Sporadic") ;
+            property: Period_Name ==>| PV_IntU 3 (PV_Unit (Id "ms"))
         ].
 
 Lemma a_sporadic_thread_wf :

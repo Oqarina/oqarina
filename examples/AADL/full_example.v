@@ -68,6 +68,7 @@ Require Import Oqarina.AADL.all. (* AADL formalization. *)
 the construction of AADL model elements. |*)
 
 Import AADL_Notations.
+Open Scope aadl_scope.
 
 (*| An AADL component instance is defined as an inductive type. It loosely follows the AADLv2 instance metamodel concepts. Some aspects are currently not addressed such as modes, others do not belong to the instance model such as arrays. |*)
 
@@ -83,16 +84,14 @@ Definition A_Periodic_Thread :=
         subcomponents: nil
         connections: nil
         properties: [
-            property: Priority_Name ==> PV_Int 42 ;
-            property: Dispatch_Protocol_Name ==> PV_Enum (Id "Periodic") ;
-            property: Period_Name ==> PV_IntU 3 (PV_Unit (Id "ms"))
+            property: Priority_Name ==>| PV_Int 42 ;
+            property: Dispatch_Protocol_Name ==>| PV_Enum (Id "Periodic") ;
+            property: Period_Name ==>| PV_IntU 3 (PV_Unit (Id "ms"))
         ].
 
 (*| *Note:* Coq notations cannot overload existing symbols such as :coq:`->` or :coq:`=>`. So we use variations of these symbols here. |*)
 
 (*| :coq:`A_Periodic_Thread` represents a periodic thread of period 3 ms, and priority 42. Oqarina provides a definition for a subset of AADL predeclared property sets. Coq provides the mechanism to review and locate these. |*)
-
-
 
 Print AADL_Predeclared_Property_Sets.
 Locate AADL_Predeclared_Property_Sets.
@@ -105,7 +104,7 @@ Definition A_Process :=
     subcomponents: [ A_Periodic_Thread ]
     connections: nil
     properties: [
-        property: Actual_Processor_Binding_Name ==>
+        property: Actual_Processor_Binding_Name ==>|
             PV_ModelRef [ Id "a_processor" ]
     ].
 
