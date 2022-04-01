@@ -31,3 +31,5 @@
 ***)
 
 Require Export Oqarina.AADL.resolute.resolute.
+
+Global Hint Resolve has_property_c_dec is_thread_dec: well_know_wf_dec.

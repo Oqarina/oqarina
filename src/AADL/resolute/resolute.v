@@ -87,6 +87,12 @@ We use a Coq typeclass to define a common interface for multiple named_elements.
 Definition has_property_c (c : component) (name : ps_qname) :=
     Is_Property_Defined name (c->properties).
 
+Lemma has_property_c_dec: forall (c: component) (name : ps_qname),
+    { has_property_c c name } + {~ has_property_c c name }.
+Proof.
+    prove_dec2 ; apply ps_qname_eq_dec.
+Defined.
+
 Definition property_c
     (c : component)
     (name : ps_qname)
