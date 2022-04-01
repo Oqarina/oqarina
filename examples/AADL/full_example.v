@@ -51,7 +51,7 @@ with AADL. It assumes the reader has some familiarity with AADLv2.2 (see :cite:t
 To use Oqarina, you will first import a collection of definitions from both the
 Coq standard library, and Oqarina specific definitions.
 
-*Note:* Oqarina defines a hierarchy of Coq modules. For each level, a :coq:`all` package provides a handy mechanism to import all definition within a hierchy. |*)
+*Note:* Oqarina defines a hierarchy of Coq modules. For each level, a :coq:`all` package provides a handy mechanism to import all definition within a hierarchy. |*)
 
 (* Coq library *)
 Require Import List.
@@ -74,7 +74,7 @@ Open Scope aadl_scope.
 
 Print component.
 
-(*| *Note: This level of modeling aims at capturing a fully instantiated models, for which all properties have been resolved, features are connected, etc. This level of abstraction is the root of most AADL analyses. It differs from the declarative modeling approach that is accessible from an AADL tool such as OSATE.* |*)
+(*| *Note: This level of modeling aims at capturing a fully instantiated model, for which all properties have been resolved, features are connected, etc. This level of abstraction is the root of most AADL analyses. It differs from the declarative modeling approach that is accessible from an AADL tool such as OSATE.* |*)
 
 (*| Using Coq notation mechanism, Oqarina provides a direct way to model model elements. In the following, we create a periodic thread. |*)
 
