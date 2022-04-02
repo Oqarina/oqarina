@@ -60,7 +60,8 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/formalisms/DEVS/classic/all.v \
 	src/formalisms/DEVS/classic/devs.v \
 	src/formalisms/DEVS/classic/coupled.v \
-	examples/AADL/full_example.v
+	examples/AADL/full_example.v \
+	examples/3rd-party/aadl2prosa.v
 
 alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \

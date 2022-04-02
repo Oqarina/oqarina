@@ -31,16 +31,11 @@
 ***)
 
 (*|
-=====================
-Oqarina/AADL tutorial
-=====================
-|*)
 
+Basic concepts
+==============
 
-(*|
-
-Part 1 -- Basic concepts
-========================
+*Note:* the content of this tutorial is in :file:`examples/AADL/full_example.v`.
 
 Being a Coq development, Oqarina leverages the fundamental features
 of Coq, namely inductive types and lists. It allows reasonning on an AADL model, such as building proof out of an AADL model.
@@ -58,7 +53,6 @@ Require Import List.
 Import ListNotations. (* from List *)
 
 Require Import Coq.ZArith.ZArith.
-Open Scope Z_scope.
 
 (* Oqarina library *)
 Require Import Oqarina.core.all. (* core definitions, identifier, time, etc. *)
