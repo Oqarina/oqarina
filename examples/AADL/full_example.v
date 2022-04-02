@@ -66,6 +66,7 @@ Open Scope aadl_scope.
 
 (*| An AADL component instance is defined as an inductive type. It loosely follows the AADLv2 instance metamodel concepts. Some aspects are currently not addressed such as modes, others do not belong to the instance model such as arrays. |*)
 
+Print ComponentCategory.
 Print component.
 
 (*| *Note: This level of modeling aims at capturing a fully instantiated model, for which all properties have been resolved, features are connected, etc. This level of abstraction is the root of most AADL analyses. It differs from the declarative modeling approach that is accessible from an AADL tool such as OSATE.* |*)
@@ -92,7 +93,7 @@ Locate AADL_Predeclared_Property_Sets.
 
 (*| Using Coq variables, one can then combine model elements to build a full hierarchy. Here, we define a process whose subcomponent is :coq:`A_Periodic_Thread`. |*)
 
-Definition A_Process :=
+Definition A_Process' :=
     process: "a_process" ->| "pack::a_process_classifier"
     features: nil
     subcomponents: [ A_Periodic_Thread ]
@@ -102,29 +103,29 @@ Definition A_Process :=
             PV_ModelRef [ Id "a_processor" ]
     ].
 
-(*| We then complete the model with a processor and a system. As part of the system definition, we bind the process :coq:`A_Process` to the processor :coq:`A_Processor`. |*)
+(*| We then complete the model with a processor and a system. As part of the system definition, we bind the process :coq:`A_Process'` to the processor :coq:`A_Processor`. |*)
 
-Definition A_Processor :=
+Definition A_Processor' :=
     processor: "a_processor" ->| "pack::a_processor_classifier"
     features: nil
     subcomponents: nil
     connections: nil
     properties: nil.
 
-Definition A_System :=
+Definition A_System' :=
     system: "a_system" ->| "pack::a_system_classifier"
     features: nil
-    subcomponents: [ A_Process ; A_Processor ]
+    subcomponents: [ A_Process' ; A_Processor' ]
     connections: nil
     properties: nil.
 
 (*| The corresponding internal representation using native Coq inductive types is available also. You will note it is not as readable as the previous approach using notations. |*)
-Compute A_System.
+Compute A_System'.
 
 (*| We show that the resulting system is well-formed. Oqarina provides several Coq tactics to discharge these obligations. Note that well-formedness rules are decidable, allowing for code extraction as well. |*)
 
 Lemma a_system_wf :
-    Well_Formed_Component_Instance A_System.
+    Well_Formed_Component_Instance A_System'.
 Proof.
     prove_Well_Formed_Component_Instance.
 Qed.
@@ -143,11 +144,11 @@ Print Well_Formed_Component_Implementation'.
 
 Lemma Resolve_A_Processor:
     Resolve_Subcomponent
-        A_System (FQN [] (Id "a_processor") None) = Some A_Processor.
+        A_System' (FQN [] (Id "a_processor") None) = Some A_Processor'.
 Proof. trivial. Qed.
 
 Lemma Resolve_A_Periodic_Thread:
     Resolve_Subcomponent
-        A_System (FQN [ Id "a_process" ] (Id "a_periodic_thread") None) =
+        A_System' (FQN [ Id "a_process" ] (Id "a_periodic_thread") None) =
         Some A_Periodic_Thread.
 Proof. trivial. Qed.

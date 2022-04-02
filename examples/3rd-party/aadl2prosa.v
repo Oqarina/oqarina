@@ -86,32 +86,38 @@ Mapping an AADL component definition to a PROSA model is a rather straightforwar
 
 We first define a general preficate that asserts that an AADL thread component is properly configured. For now, we consider that a thread is valid iff. the following properties are defined: :file:`Dispatch_Protocol`, :file:`Period`, :file:`Compute_Execution_Time`.
 
-*Note:* we might consider adding a predicate that checks that if the Deadline property is set, then Deadline < Period. But actually, PROSA does not need this hypothesis.
+*Note:* we might consider adding a predicate that checks that if the :file:`Deadline` property is set, then :math:`Deadline < Period`. However, this is not necessaary: PROSA does not need this hypothesis.
 
-We then extend this definition to an AADL root system. Both predicates are trivially decidable. |*)
+We then extend this definition to an AADL root system. Both predicates are trivially decidable.
 
-Definition Thread_Has_Valid_Scheduling_Paramters (c : component) :=
+*Note:* we do not show decidability results, see the source code for details.|*)
+
+Definition Thread_Has_Valid_Scheduling_Parameters (c : component) :=
     is_thread c /\
     has_property_c c Dispatch_Protocol_Name /\
     has_property_c c Period_Name /\
     has_property_c c Compute_Execution_Time_Name.
 
-Lemma Thread_Has_Valid_Scheduling_Paramters_dec: forall (c: component),
-    { Thread_Has_Valid_Scheduling_Paramters c } +
-    {~ Thread_Has_Valid_Scheduling_Paramters c}.
+(*| .. coq:: none |*)
+Lemma Thread_Has_Valid_Scheduling_Parameters_dec: forall (c: component),
+    { Thread_Has_Valid_Scheduling_Parameters c } +
+    {~ Thread_Has_Valid_Scheduling_Parameters c}.
 Proof.
     prove_dec.
 Defined.
+(*| .. coq:: |*)
 
-Definition System_Has_Valid_Scheduling_Paramters (r: component) :=
-    All Thread_Has_Valid_Scheduling_Paramters (thread_set r).
+Definition System_Has_Valid_Scheduling_Parameters (r: component) :=
+    All Thread_Has_Valid_Scheduling_Parameters (thread_set r).
 
-Lemma System_Has_Valid_Scheduling_Paramters_dec: forall (r: component),
-    { System_Has_Valid_Scheduling_Paramters r } +
-    { ~ System_Has_Valid_Scheduling_Paramters r }.
+(*| .. coq:: none |*)
+Lemma System_Has_Valid_Scheduling_Parameters_dec: forall (r: component),
+    { System_Has_Valid_Scheduling_Parameters r } +
+    { ~ System_Has_Valid_Scheduling_Parameters r }.
 Proof.
     prove_dec.
 Defined.
+(*| .. coq:: |*)
 
 (*|
 PROSA well-formedness rules for scheduling
@@ -119,11 +125,12 @@ PROSA well-formedness rules for scheduling
 
 In addition to these constraints, we place ourselves in the scope of the abstract RTA analysis provided by PROSA:
 
-* the system is uniprocessor and uses fixed-priority. |*)
+* the system is uniprocessor. |*)
 
 Definition Is_Uniprocessor_System (r: component) :=
     List.length (processor_set r) = 1%nat.
 
+(*| .. coq:: none |*)
 Lemma Is_Uniprocessor_System_dec: forall (r: component),
     { Is_Uniprocessor_System r } + { ~ Is_Uniprocessor_System r }.
 Proof.
@@ -132,6 +139,7 @@ Proof.
     auto.
     apply PeanoNat.Nat.eq_dec.
 Defined.
+(*| .. coq:: |*)
 
 (*| * the system only uses fixed priority. |*)
 
@@ -146,6 +154,7 @@ Definition Is_Fixed_Priority (r: component) :=
 (*|*Note:* this definition may seem incomplete: one could misuse the POSIX API
 and have dynamic priority. However, a conforming code generation strategy from AADL would enforce fixed priority. |*)
 
+(*| .. coq:: none |*)
 Lemma Is_Fixed_Priority_dec: forall (r: component),
     { Is_Fixed_Priority r } + { ~ Is_Fixed_Priority r }.
 Proof.
@@ -154,6 +163,7 @@ Proof.
     apply Scheduling_Protocol_eq_dec.
     auto.
 Defined.
+(*| .. coq:: |*)
 
 (*|
 General precondition for mapping an AADL model to PROSA
@@ -164,20 +174,22 @@ Hence, a precondition for mapping an AADL model to a PROSA task set is that the 
 |*)
 
 Definition Check_aRTA_Hypotheses (r: component) :=
-    System_Has_Valid_Scheduling_Paramters r /\
+    System_Has_Valid_Scheduling_Parameters r /\
     Is_Uniprocessor_System r /\
     Is_Fixed_Priority r.
 
+(*| .. coq:: none |*)
 Lemma Check_aRTA_Hypotheses_dec: forall (r: component),
     { Check_aRTA_Hypotheses r } + { ~ Check_aRTA_Hypotheses r }.
 Proof.
     intros.
     unfold Check_aRTA_Hypotheses.
     repeat apply dec_sumbool_and.
-    apply System_Has_Valid_Scheduling_Paramters_dec.
+    apply System_Has_Valid_Scheduling_Parameters_dec.
     apply Is_Uniprocessor_System_dec.
     apply Is_Fixed_Priority_dec.
 Defined.
+(*| .. coq:: |*)
 
 (*|
 Mapping an AADL model to a PROSA taskset
@@ -191,7 +203,7 @@ Print concrete_task.
 corresponding concept in PROSA.
 
 First, we mapp the AADL :file:`Dispatch_Protocol` property value to the
-corresponding PROSA arrival bound.|*)
+corresponding PROSA arrival bound. |*)
 
 Definition Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound
     (c: component)
@@ -267,7 +279,11 @@ In the following, we create an AADL task set that mimics one of the example prov
 * :math:`\tau_1 = \{C = 100, T = 500, D = ., P = 3\}`.
 
 |*)
+
+(*| .. coq:: none |*)
 Open Scope aadl_scope.
+(*| .. coq:: |*)
+
 Example Task_1 :=
     thread: "task_1" ->| "pack::a_thread_classifier"
         features: nil
@@ -328,7 +344,7 @@ Definition A_Process :=
     ].
 
 (*| An AADL processor is an abstraction of both a processor and the RTOS it
-executes. We indicates the scheduling discipline used. |*)
+executes. We indicate the scheduling discipline used at the processor level. |*)
 
 Definition A_Processor :=
     processor: "a_processor" ->| "pack::a_processor_classifier"
@@ -340,6 +356,8 @@ Definition A_Processor :=
         PV_Enum (Id "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL")
     ].
 
+(*| :coq:`A_System` is the root system that we will consider when performing scheduling analysis. |*)
+
 Definition A_System :=
     system: "a_system" ->| "pack::a_system_classifier"
     features: nil
@@ -347,7 +365,9 @@ Definition A_System :=
     connections: nil
     properties: nil.
 
+(*| .. coq:: none |*)
 Close Scope aadl_scope.
+(*| .. coq:: |*)
 
 (*| First, we check that :coq:`A_System` is a well-formed AADL mode, i.e. the
 containment hierarchy is respected, properties are correctly applied, etc. |*)
@@ -384,8 +404,9 @@ Proof of schedulability
 
 In this section, we illustrate how to finalize the verification that the model
 is schedulable. PROSA expects the user to carry several proof to ultimately
-demonstrate that the system is schedulable. We unfold these steps.
+demonstrate that the system is schedulable.
 
+We unfold these steps. For more details, please refer to PROSA documentation.
 
 First, we build a clean version of the task set from :coq:`ts_aadl` through an explict evaluation.
 |*)
