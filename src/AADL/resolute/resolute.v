@@ -104,6 +104,12 @@ Definition property_c
 Definition has_property_f (f : feature) (name : ps_qname) :=
     Is_Property_Defined name (projectionFeatureProperties f).
 
+Lemma has_property_f_dec: forall (f : feature) (name : ps_qname),
+    { has_property_f f name } + {~ has_property_f f name }.
+Proof.
+    prove_dec2 ; apply ps_qname_eq_dec.
+Defined.
+
 Definition property_f
     (f : feature)
     (name : ps_qname)
@@ -124,6 +130,7 @@ Class named_element_interface A : Type := {
     name : A -> identifier ;
     type : A -> fq_name ;
     has_property : A -> ps_qname -> Prop ;
+    has_property_dec : forall (a: A) (name : ps_qname), { has_property a name } + {~ has_property a name } ;
     property : A -> ps_qname
         -> property_association -> property_association ;
 }.
@@ -132,6 +139,7 @@ Class named_element_interface A : Type := {
     name := projectionComponentId ;
     type := projectionComponentClassifier ;
     has_property := has_property_c ;
+    has_property_dec := has_property_c_dec ;
     property := property_c ;
 }.
 
@@ -139,6 +147,7 @@ Class named_element_interface A : Type := {
     name :=  projectionFeatureIdentifier ;
     type :=  Feature_Classifier ;
     has_property := has_property_f ;
+    has_property_dec := has_property_f_dec ;
     property := property_f ;
 }.
 

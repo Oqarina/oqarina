@@ -94,9 +94,9 @@ We then extend this definition to an AADL root system. Both predicates are trivi
 
 Definition Thread_Has_Valid_Scheduling_Parameters (c : component) :=
     is_thread c /\
-    has_property_c c Dispatch_Protocol_Name /\
-    has_property_c c Period_Name /\
-    has_property_c c Compute_Execution_Time_Name.
+    has_property c Dispatch_Protocol_Name /\
+    has_property c Period_Name /\
+    has_property c Compute_Execution_Time_Name.
 
 (*| .. coq:: none |*)
 Lemma Thread_Has_Valid_Scheduling_Parameters_dec: forall (c: component),
@@ -274,7 +274,7 @@ Example
 AADL model and its mapping to a PROSA taskset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In the following, we create an AADL task set that mimics one of the example provided in PROSA for validation purposes. The model is made of three tasks
+In the following, we create an AADL task set that mimics one of the example provided in PROSA for validation purposes. The model is made of three tasks, the deadline is not specified. Following typical conventions, we assume the deadline to be equal to the period.
 
 * :math:`\tau_1 = \{C = 100, T = 500, D = ., P = 3\}`.
 
@@ -384,8 +384,10 @@ assess basic equalities.|*)
 
 Lemma Check_aRTA_Hypothesis_A_System : Check_aRTA_Hypotheses A_System.
 Proof.
-    unfold Check_aRTA_Hypotheses.
+    (* Compute all possible values *)
     compute.
+
+    (* We have several basic conjunctions, we split and discharge them *)
     repeat split ; auto.
 Qed.
 
@@ -423,6 +425,9 @@ Definition null_tsk := {|
     task_priority := 0%N |}.
 (*| .. coq:: |*)
 
+(*| *Note:* In the following, we only prove that :coq:`tsk`, the first task in :coq:`ts_aadl`, is schedulable. The proof for the other tasks follow the same pattern.
+|*)
+
 Definition tsk := Eval compute in hd null_tsk ts_aadl.
 
 Definition L := 100%N. (* length of the busy interval *)
@@ -430,16 +435,25 @@ Definition R := 100%N. (* upper bound of the reponse time *)
 
 Section Certificate.
 
+Print id.
+Print max_arrivals.
+
+(*| The first step is to prove that the arrival curve presented in the task set is valid, i.e. the arrival curve is a monotinc function. |*)
+
 Lemma arrival_curve_is_valid :
     valid_taskset_arrival_curve ts max_arrivals.
 Proof.
     move => task IN.
     split.
-    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); apply/eqP;   last by done.
-        all: rewrite /max_arrivals /MaxArrivals /fast_search_space.MaxArrivals.
+    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); apply/eqP;
+       last by done.
+        all: rewrite /max_arrivals /MaxArrivals
+                /fast_search_space.MaxArrivals.
         all: by clear; rewrite [_ == _]refines_eq;vm_compute. }
-    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); last by done.
-        all: rewrite /max_arrivals /MaxArrivals /PGMaxArrivals /task_arrival.
+    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]);
+        last by done.
+        all: rewrite /max_arrivals /MaxArrivals /PGMaxArrivals
+                /task_arrival.
         have TR1 := leq_steps_is_transitive.
         all: apply extrapolated_arrival_curve_is_monotone;
         [ by apply/eqP/eqP; clear; rewrite [_ == _]refines_eq
@@ -457,9 +471,10 @@ Qed.
 
 Lemma L_fixed_point: total_hep_rbf ts tsk L = L.
 Proof.
-    rewrite /tsk; apply /eqP.
-    by clear; rewrite [_ == _]refines_eq; vm_compute.
+    rewrite /tsk. apply /eqP.
+    by clear; rewrite [_ == _]refines_eq.
 Qed.
+
 
 Variable arr_seq : arrival_sequence Job.
 Hypothesis H_arr_seq_is_a_set : arrival_sequence_uniq arr_seq.
