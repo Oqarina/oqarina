@@ -64,7 +64,7 @@ the construction of AADL model elements. |*)
 Import AADL_Notations.
 Open Scope aadl_scope.
 
-(*| An AADL component instance is defined as an inductive type. It loosely follows the AADLv2 instance metamodel concepts. Some aspects are currently not addressed such as modes, others do not belong to the instance model such as arrays. |*)
+(*| An AADL component instance is defined as an inductive type. It loosely follows the AADLv2 instance metamodel concepts. Some aspects are currently not addressed such as modes, others do not belong to the instance model such as arrays. You can refer to :ref:`Categories` for more details. |*)
 
 Print ComponentCategory.
 Print component.

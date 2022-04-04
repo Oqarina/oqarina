@@ -30,9 +30,25 @@
  * DM21-0762
 ***)
 
+(*| .. coq:: none |*)
 Require Export Oqarina.AADL.Kernel.all.
 Require Export Oqarina.AADL.legality.all.
 Require Export Oqarina.AADL.declarative.all.
 Require Export Oqarina.AADL.instance.all.
 Require Export Oqarina.AADL.property_sets.all.
 Require Export Oqarina.AADL.resolute.all.
+(*| .. coq:: |*)
+
+(*|
+
+***********
+AADL Kernel
+***********
+
+In this chapter, we introduce the key elements of the formalization of AADL in Coq.
+
+*Note:* some elements are not presented, most notably decidability results since those are trivial.
+
+.. include::  AADL__Kernel_categories.v.rst
+
+|*)

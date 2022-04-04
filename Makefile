@@ -60,6 +60,8 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/formalisms/DEVS/classic/all.v \
 	src/formalisms/DEVS/classic/devs.v \
 	src/formalisms/DEVS/classic/coupled.v \
+	src/AADL/all.v \
+	src/AADL/Kernel/categories.v \
 	examples/AADL/full_example.v \
 	examples/3rd-party/aadl2prosa.v
 
