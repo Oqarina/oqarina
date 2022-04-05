@@ -85,7 +85,7 @@ Fact Am_AADL_System_LTS_4_OK :
 Proof. trivial. Qed.
 
 Example An_AADL_System_LTS_5 :=
-    step_lts An_AADL_System_LTS_4 (xs Y_system Parent Parent 3 [ started_system]).
+    step_lts An_AADL_System_LTS_4 (xs Y_system Parent Parent 3 [ started_systemm ]).
 
 Fact Am_AADL_System_LTS_5_OK :
     Print_DEVS_Simulator An_AADL_System_LTS_5 =
@@ -144,7 +144,7 @@ Example An_AADL_System_LTS' :=
 Example An_AADL_System_LTS_1' :=
     step_lts (Init An_AADL_System_LTS') (i X_system Y_system 0).
 
-(* After initialization, both system are offline *)
+(* After initialization, all systems are offline *)
 Fact Am_AADL_System_LTS_1_OK' :
     Print_DEVS_Simulator An_AADL_System_LTS_1' =
     dbg 0 1
