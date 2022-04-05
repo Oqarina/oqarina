@@ -19,7 +19,7 @@ jobs:
           - '8.15'
           - dev
         ocaml_version:
-          - '4.11-flambda'
+          - '4.13.1-flambda'
       max-parallel: 4
       fail-fast: false
 
