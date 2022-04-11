@@ -79,8 +79,8 @@ Definition A_Periodic_Thread :=
         subcomponents: nil
         connections: nil
         properties: [
-            property: Priority_Name ==>| PV_Int 42 ;
-            property: Dispatch_Protocol_Name ==>| PV_Enum (Id "Periodic") ;
+            property: Priority_Name ==>| PV_Int 42;
+            property: Dispatch_Protocol_Name ==>| PV_Enum (Id "Periodic");
             property: Period_Name ==>| PV_IntU 3 (PV_Unit (Id "ms"))
         ].
 

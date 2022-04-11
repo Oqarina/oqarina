@@ -88,7 +88,7 @@ We first define a general preficate that asserts that an AADL thread component i
 
 *Note:* we might consider adding a predicate that checks that if the :file:`Deadline` property is set, then :math:`Deadline < Period`. However, this is not necessaary: PROSA does not need this hypothesis.
 
-We then extend this definition to an AADL root system. Both predicates are trivially decidable.
+We now extend this definition to an AADL root system. Both predicates are trivially decidable.
 
 *Note:* we do not show decidability results, see the source code for details.|*)
 
@@ -220,7 +220,7 @@ Definition Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound
         | _ => ArrivalPrefix (0%nat, [::(0%nat, 0%nat)])
     end.
 
-(*| Then  :coq:`Map_AADL_Deadline_to_PROSA_deadline` extracts the deadline of a
+(*| Then, :coq:`Map_AADL_Deadline_to_PROSA_deadline` extracts the deadline of a
 thread. The deadlne may either be set explicitly by the property Deadline. if
 not, we default to the period.
 |*)
