@@ -35,7 +35,7 @@ Section AADL_Categories.
 
 (*|
 Categories
-----------
+==========
 
 * The :coq:`ComponentCategory` type denotes AADL component categories.
 

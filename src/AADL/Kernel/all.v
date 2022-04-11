@@ -111,6 +111,6 @@ Notation "'bus:' id ->| classifier features: lf subcomponents: ls connections: l
     (Build_Component id bus classifier lf ls lc lp) (at level 200).
 
 Notation "'virtualBus:' id ->| classifier features: lf subcomponents: ls connections: lc properties: lp" :=
-(Build_Component id virtualBus classifier lf ls lc lp) (at level 200).
+    (Build_Component id virtualBus classifier lf ls lc lp) (at level 200).
 
 End AADL_Notations.
