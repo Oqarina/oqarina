@@ -41,14 +41,16 @@ Require Export Oqarina.AADL.resolute.all.
 
 (*|
 
-***********
-AADL Kernel
-***********
+****
+AADL
+****
 
 In this chapter, we introduce the key elements of the formalization of AADL in Coq.
 
 *Note:* some elements are not presented, most notably decidability results since those are trivial.
 
 .. include::  AADL__Kernel_categories.v.rst
+.. include::  AADL__Kernel_component.v.rst
+.. include::  AADL__resolute_resolute.v.rst
 
 |*)

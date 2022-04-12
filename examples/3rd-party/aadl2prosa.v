@@ -84,13 +84,13 @@ General well-formedness rules for scheduling
 
 Mapping an AADL component definition to a PROSA model is a rather straightforward process. PROSA defines the type :coq:`concrete_task` which is a record that captures a typical task specification, following Burns Scheduling Notation :cite:`10.1145/2597457.2597458`: :math:`\tau = \{C, T, D, P \}`.
 
-We first define a general preficate that asserts that an AADL thread component is properly configured. For now, we consider that a thread is valid iff. the following properties are defined: :file:`Dispatch_Protocol`, :file:`Period`, :file:`Compute_Execution_Time`.
+We first define a general predicate that asserts that an AADL thread component is properly configured. For now, we consider that a thread is valid iff. the following properties are defined: :file:`Dispatch_Protocol`, :file:`Period`, :file:`Compute_Execution_Time`.
+
+*Note:* We use the Resolute build-in functions ported to Coq to define predicates on AADL model elements, see :ref:`Resolute Queries` for more details.
 
 *Note:* we might consider adding a predicate that checks that if the :file:`Deadline` property is set, then :math:`Deadline < Period`. However, this is not necessaary: PROSA does not need this hypothesis.
 
-We now extend this definition to an AADL root system. Both predicates are trivially decidable.
-
-*Note:* we do not show decidability results, see the source code for details.|*)
+|*)
 
 Definition Thread_Has_Valid_Scheduling_Parameters (c : component) :=
     is_thread c /\
@@ -106,6 +106,8 @@ Proof.
     prove_dec.
 Defined.
 (*| .. coq:: |*)
+
+(*| We now extend this definition to an AADL root system. Both predicates are trivially decidable. |*)
 
 Definition System_Has_Valid_Scheduling_Parameters (r: component) :=
     All Thread_Has_Valid_Scheduling_Parameters (thread_set r).
@@ -202,7 +204,7 @@ Print concrete_task.
 (*| We proceed in multiple basic steps: we map each AADL concept to the
 corresponding concept in PROSA.
 
-First, we mapp the AADL :file:`Dispatch_Protocol` property value to the
+First, we map the AADL :file:`Dispatch_Protocol` property value to the
 corresponding PROSA arrival bound. |*)
 
 Definition Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound
@@ -238,7 +240,7 @@ Definition Map_AADL_Thread_to_PROSA_concrete_task
     (c: component)
     : concrete_task
 := {|
-    task_id := 0; (* dummy value, does it have a semantics? *)
+    task_id := 0; (* dummy value, no semantics *)
     task_cost :=  Z.to_N (snd (Map_Compute_Execution_Time (c->properties)));
     task_arrival := Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound c ;
     task_priority := Z.to_N (Map_Priority (c->properties));
@@ -253,10 +255,9 @@ Definition Map_AADL_Root_System_to_PROSA_concrete_task_seq_unsafe
 (*| We have defined
 :coq:`Map_AADL_Root_System_to_PROSA_concrete_task_seq_unsafe` as an unsafe
 mapping function: this function does not check the validity of the model, it
-blindly translates the model. Thus, we define a variant that operates only on
-those models that matches aRTA hypotheses.
+blindly translates the model.
 
-Hence, to call this function, one has to *prove* that the model is correct. |*)
+Thus, we define a variant that operates only on those models that match aRTA hypotheses: to call this function, one has to *prove* that the model is correct. |*)
 
 Definition Map_AADL_Root_System_to_PROSA_concrete_task_seq
     (c: {c : component | Check_aRTA_Hypotheses c})
@@ -425,7 +426,7 @@ Definition null_tsk := {|
     task_priority := 0%N |}.
 (*| .. coq:: |*)
 
-(*| *Note:* In the following, we only prove that :coq:`tsk`, the first task in :coq:`ts_aadl`, is schedulable. The proof for the other tasks follow the same pattern.
+(*| *Note:* In the following, we only prove that :coq:`tsk`, the first task in :coq:`ts_aadl`, is schedulable. The proof for the other tasks follows the same pattern.
 |*)
 
 Definition tsk := Eval compute in hd null_tsk ts_aadl.
@@ -435,10 +436,12 @@ Definition R := 100%N. (* upper bound of the reponse time *)
 
 Section Certificate.
 
-Print id.
-Print max_arrivals.
+(*| Proving the schedulability of the task set builds on the following intermediate results, see :cite:`DBLP:conf/ecrts/BozhkoB20` for more details. |*)
 
-(*| The first step is to prove that the arrival curve presented in the task set is valid, i.e. the arrival curve is a monotinc function. |*)
+(*| 1. the arrival curve presented in the task set is valid, i.e. the arrival curve is a monotonic function. See the following definitions: |*)
+
+Print valid_taskset_arrival_curve.
+Print valid_arrival_curve.
 
 Lemma arrival_curve_is_valid :
     valid_taskset_arrival_curve ts max_arrivals.
@@ -461,6 +464,12 @@ Proof.
             rewrite [_ == _]refines_eq ]. }
 Qed.
 
+
+(*| 2. the task set has valid arrivals. All our tasks are  periodic, this is therefore trivial. |*)
+
+Print task_set_with_valid_arrivals.
+Print valid_arrivals.
+
 Lemma task_set_has_valid_arrivals:
     task_set_with_valid_arrivals ts.
 Proof.
@@ -469,12 +478,18 @@ Proof.
     all: try by apply/eqP/eqP; clear; rewrite [_ == _]refines_eq.
 Qed.
 
+(*| 3. :coq:`L` is a fixed-point of the total cost function of all higher-or equal-priority jobs. |*)
+
+Print total_hep_rbf.
+Print total_hep_request_bound_function_FP.
+
 Lemma L_fixed_point: total_hep_rbf ts tsk L = L.
 Proof.
     rewrite /tsk. apply /eqP.
     by clear; rewrite [_ == _]refines_eq.
 Qed.
 
+(*| From these 3 initial results, we can now instantite the schedulabiltiy problem. First we build a couple of hypotheses from the task set. |*)
 
 Variable arr_seq : arrival_sequence Job.
 Hypothesis H_arr_seq_is_a_set : arrival_sequence_uniq arr_seq.
@@ -486,7 +501,12 @@ Hypothesis H_is_arrival_curve : taskset_respects_max_arrivals arr_seq ts.
 Instance sequential_ready_instance : JobReady Job (ideal.processor_state Job) :=
 sequential_ready_instance arr_seq.
 
+(*| We instantiate a uni-processor schedule from the set of Jobs generated by the task set. |*)
+
 Definition sched := uni_schedule arr_seq.
+
+(*| This intermediate lemma is purely technical, refer to section 3.7 of
+:cite:`DBLP:conf/ecrts/BozhkoB20` for details. |*)
 
 Lemma A_in_search_space:
     forall (A : duration),
@@ -503,7 +523,9 @@ Proof.
         by rewrite mem_iota; move: IN => /andP[LT _].
 Qed.
 
-Let Fs_tsk_0 := m_b2n [R%N]. (*ggg.*)
+Let Fs_tsk_0 := m_b2n [R%N].
+
+(*| The following lemmas go further, first we assess that R is actually an upper bound for the response time.|*)
 
 Lemma R_is_maximum:
     forall (A : duration),
@@ -545,6 +567,8 @@ Proof.
     - by symmetry; apply L_fixed_point.
     - by apply R_is_maximum.
 Qed.
+
+(*| The final conclusion is that all deadlines are respected, i.e., R is an upperbound of the response-time and this uppoer-bound is less than the task_deadline. |*)
 
 Corollary deadline_is_respected:
     task_response_time_bound arr_seq sched tsk R /\ R <= task_deadline tsk.

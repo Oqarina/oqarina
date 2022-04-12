@@ -29,14 +29,7 @@
  *
  * DM21-0762
 ***)
-(** %\chapter{Mechanizing the AADL component model}\label{chap::aadl_mecha}% *)
-
-Set Warnings "-parsing".
-(** printing -> %\ensuremath{\rightarrow}% *)
-(** printing abstract %\coqdocvar{abstract}% *)
-
-(* begin hide *)
-(* XXX abstract is recognized as a tactic keyword by coqdoc .. this does not fully address the issue *)
+(*| .. coq:: none |*)
 
 (** Coq Library *)
 Require Import Bool.
@@ -59,30 +52,42 @@ Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.features_helper.
 Require Import Oqarina.AADL.Kernel.properties_helper.
 Open Scope list_scope.
-(* end hide *)
-
-(*| In this module, we provide a Coq variant of all build-in function defined by Resolute. We use the Resolute Reference Guide from https://github.com/loonwerks/Resolute/blob/master/org.osate.resolute.help/src/reference/reference.md as reference |*)
-
-(*| Section 6.1 introduces built-in functions for collections. This is not required as Coq has the build-in mechanisms to manipulate lists and we use them to define AADL types as native Coq types. |*)
-
-(*| Section 6.2 defines functions for Ranges. TBD |*)
+(*| .. coq::  |*)
 
 (*|
-Section 6.3 defines a collection of built-in functions for properties
+Resolute Queries
+================
 
-has_property(<named_element>, <property>): Boolean - the named element has the property. IMPLEMENTED
+In this module, we provide a Coq variant of built-in functions defined by Resolute :cite:`DBLP:conf/nfm/LiuBCG16`. Resolute provides its own language to define predicates, inspired by Prolog. Instead, we rely on Coq syntax and notation to define lemma like the REAL annex language :cite:`hugues08idm`.
 
-property(<named_element>, <property>, <default value>): value - returns the value of the property. If a default value is supplied, then it is returned if the element does not have the property value. If no default is supplied and the value does not exist, a resolute failure exception is thrown, which is caught by the closest enclosing claim function and interpreted as a fail. IMPLEMENTED
+Built-in functions for named elements
+-------------------------------------
 
-property(<property>) value - returns the value of the property constant.
+We use a Coq typeclass to define a common interface for accessing :coq`named_elements`. In the context of Resolute, a named_element can be a component, a feature, or a connection. See the definition of named_element_interface below:
 
-property_member(<record_property_value>, <field name>): Boolean - return the value of the record field. IMPLEMENTED
+* :coq:`name(<named_element>): string` - returns the name of the named element: IMPLEMENTED
 
-enumerated_values(<property>): [ <string> ] - return the an ordered set of string values. NOT IMPLEMENTED, is this even useful ?
+* :coq:`has_property(<named_element>, <property>): Boolean` - the named element has the property.
 
-We use a Coq typeclass to define a common interface for multiple named_elements. In the context of Resolute, a named_element can be a component, a feature, or a connection. See the definition of named_element_interface below.
+* :coq:`property(<named_element>, <property>, <default value>): value` - returns the value of the property. A default value must be supplied, it is returned if the element does not have the property value.
 
+* :coq:`type(<named_element>): Classifier` - returns the classifier of a component, feature, or connection. In the case of a connection, the type is that of the connection source (if not present the destination) feature.
+
+* :coq:`property(<property>) value` - returns the value of the property constant.
+
+* :coq:`property_member(<record_property_value>, <field name>): Boolean`  return the value of the record field.
 |*)
+
+Class named_element_interface A : Type := {
+    name : A -> identifier ;
+    type : A -> fq_name ;
+    has_property : A -> ps_qname -> Prop ;
+    has_property_dec : forall (a: A) (name : ps_qname), { has_property a name } + {~ has_property a name } ;
+    property : A -> ps_qname
+        -> property_association -> property_association ;
+}.
+
+(*| * Implementation for components |*)
 
 Definition has_property_c (c : component) (name : ps_qname) :=
     Is_Property_Defined name (c->properties).
@@ -100,6 +105,16 @@ Definition property_c
 :=
     let pvs := filter (fun x => ps_qname_beq x.(P) name) (projectionComponentProperties c) in
     hd default pvs.
+
+#[global]Instance component' : named_element_interface component := {
+    name := projectionComponentId ;
+    type := projectionComponentClassifier ;
+    has_property := has_property_c ;
+    has_property_dec := has_property_c_dec ;
+    property := property_c ;
+}.
+
+(*| * Implementation for features |*)
 
 Definition has_property_f (f : feature) (name : ps_qname) :=
     Is_Property_Defined name (projectionFeatureProperties f).
@@ -124,25 +139,6 @@ Definition property_member (pv : property_value) (name : identifier) :=
     | _ => None
     end.
 
-(*| Section 6.4 defines the following |*)
-
-Class named_element_interface A : Type := {
-    name : A -> identifier ;
-    type : A -> fq_name ;
-    has_property : A -> ps_qname -> Prop ;
-    has_property_dec : forall (a: A) (name : ps_qname), { has_property a name } + {~ has_property a name } ;
-    property : A -> ps_qname
-        -> property_association -> property_association ;
-}.
-
-#[global]Instance component' : named_element_interface component := {
-    name := projectionComponentId ;
-    type := projectionComponentClassifier ;
-    has_property := has_property_c ;
-    has_property_dec := has_property_c_dec ;
-    property := property_c ;
-}.
-
 #[global]Instance feature' : named_element_interface feature := {
     name :=  projectionFeatureIdentifier ;
     type :=  Feature_Classifier ;
@@ -151,25 +147,20 @@ Class named_element_interface A : Type := {
     property := property_f ;
 }.
 
+(*| * :coq:`has_type (named_element): Boolean` - returns true if the named element has a classifier. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. *)
+
 Definition has_type
     (A : Type) {H : named_element_interface A} (e : A) :=
     type e <> empty_fqname.
+
+(*| * :coq:`is_of_type(<named_element>, <classifier>): Boolean` - true if the named element has the classifier or one of its type extensions. The named element must have a type. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. |*)
 
 Definition is_of_type
     (A : Type) {H : named_element_interface A}
     (e : A) (t : fq_name) :=
     type e = t.
 
-(*|
-
-name(<named_element>): string - returns the name of the named element: IMPLEMENTED
-
-has_type (named_element): Boolean - returns true if the named element has a classifier. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. IMPLEMENTED
-
-type(<named_element>): Classifier - returns the classifier of a component, feature, or connection. In the case of a connection, the type is that of the connection source (if not present the destination) feature. The named element must have a type, otherwise a resolute failure exception is thrown and caught by the closest enclosing claim function. IMPLEMENTED
-
-is_of_type(<named_element>, <classifier>): Boolean - true if the named element has the classifier or one of its type extensions. The named element must have a type. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. IMPLEMENTED
-
+(*
 has_parent(<named_element>): Boolean - returns true if the component has an enclosing model element
 
 parent(<named_element>): named_element - returns the parent of the named element. The parent must exist.
@@ -183,14 +174,13 @@ is_in_array(<component>): Boolean - returns true if the component instance in in
 has_prototypes(<component>): Boolean - returns true if component classifier contains prototype declarations.
 
 has_modes(<component>): Boolean - returns true if component directly contains mode instances.
+|*)
 
-is_procesor(<component>): Boolean - true if the component instance is a processor
+(*|
+Built-in Functions for Component categories
+-------------------------------------------
 
-Other built-in component category tests are: is_virtual_procesor, is_system, is_bus, is_virtual_bus, is_device, is_memory, is_thread, is_process, is_data, is_subprogram.
-
-    Missing tests (abstract, thread_group, subprogram_group) can be tested by \<object\> instanceof \<aadl model element type\>
-
-=> trivial to implement, see below
+* :coq:`is_procesor(<component>): Boolean` - true if the component instance is a processor. Other built-in component category tests are: is_virtual_procesor, is_system, is_bus, is_virtual_bus, is_device, is_memory, is_thread, is_process, is_data, is_subprogram.
 
 |*)
 
@@ -220,34 +210,24 @@ Definition thread_set (c: component) :=
 
 (*|
 
-6.5 Built-in Functions for Features
+Built-in Functions for Features
+-------------------------------
 
-Resolute:
-
-    direction(<feature>): string - returns the direction of a feature instance as string (in, out, in out/in_out). Access features do not have direction.
-
-    is_event_port(<feature>): Boolean - true if the feature instance is an event port or event data port
-
-    is_data_port(<feature>): Boolean - true if the feature instance is an data port or event data port
-
-    is_port(<feature>): Boolean - true if the feature instance is a port
-
-    is_abstract_feature(<feature>): Boolean - true if the feature instance is an abstract feature
-
-These can be directly mapped as Coq functions, all of which are trivially decidable
-
-|*)
+* :coq:`direction(<feature>)` - returns the direction of a feature instance as string (in, out, in out/in_out). Access features do not have direction.|*)
 
 Definition direction (f : feature) :=
     projectionFeatureDirection f.
 
-(* Note that Is_Triggering_Feature is more precise *)
+(*| * :coq:`is_event_port(<feature>): Boolean` - true if the feature instance is an event port or event data port.  See also :coq:`Is_Triggering_Feature`. *)
+
 Definition is_event_port (f : feature) :=
     In (projectionFeatureCategory f) [ eventPort ; eventDataPort ].
 
 Lemma is_event_port_dec: forall (f: feature),
     { is_event_port f} + {~ is_event_port f}.
 Proof. prove_dec. Qed.
+
+(*| * :coq:`is_data_port(<feature>): Boolean` - true if the feature instance is an data port or event data port|*)
 
 Definition is_data_port (f : feature) :=
     In (projectionFeatureCategory f) [ dataPort ; eventDataPort ].
@@ -256,6 +236,8 @@ Lemma is_data_port_dec: forall (f: feature),
     { is_data_port f} + {~ is_data_port f}.
 Proof. prove_dec. Qed.
 
+(*| * :coq:`is_port(<feature>): Boolean` - true if the feature instance is a port |*)
+
 Definition is_port (f : feature) :=
     In (projectionFeatureCategory f)
         [ dataPort ; eventDataPort ; eventDataPort ].
@@ -263,6 +245,8 @@ Definition is_port (f : feature) :=
 Lemma is_port_dec: forall (f: feature),
     { is_port f} + {~ is_port f}.
 Proof. prove_dec. Qed.
+
+(*| :coq:`is_abstract_feature(<feature>): Boolean` - true if the feature instance is an abstract feature|*)
 
 Definition is_abstract_feature (f : feature) :=
     In (projectionFeatureCategory f) [ abstractFeature ].
