@@ -29,12 +29,6 @@
  *
  * DM21-0762
 ***)
-(** %\chapter{Mechanizing the AADL component model}\label{chap::aadl_mecha}% *)
-
-Set Warnings "-parsing".
-(** printing -> %\ensuremath{\rightarrow}% *)
-(** printing abstract %\coqdocvar{abstract}% *)
-
 (*| .. coq:: none |*)
 (* XXX abstract is recognized as a tactic keyword by coqdoc .. this does not fully address the issue *)
 

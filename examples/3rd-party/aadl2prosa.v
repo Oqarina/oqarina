@@ -411,6 +411,9 @@ demonstrate that the system is schedulable.
 
 We unfold these steps. For more details, please refer to PROSA documentation.
 
+*Note:* these proofs are likely to evolve as PROSA development team is actively
+working on improving this part as part of the POET companion toolset that will generate proof scripts.
+
 First, we build a clean version of the task set from :coq:`ts_aadl` through an explict evaluation.
 |*)
 
@@ -434,7 +437,9 @@ Definition tsk := Eval compute in hd null_tsk ts_aadl.
 Definition L := 100%N. (* length of the busy interval *)
 Definition R := 100%N. (* upper bound of the reponse time *)
 
+(*| .. coq:: none |*)
 Section Certificate.
+(*| .. coq:: |*)
 
 (*| Proving the schedulability of the task set builds on the following intermediate results, see :cite:`DBLP:conf/ecrts/BozhkoB20` for more details. |*)
 
@@ -578,4 +583,6 @@ Proof.
     - by clear; rewrite [_ <= _]refines_eq.
 Qed.
 
+(*| .. coq:: none |*)
 End Certificate.
+(*| .. coq:: |*)
