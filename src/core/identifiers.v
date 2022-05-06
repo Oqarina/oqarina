@@ -136,9 +136,8 @@ Definition id_in (id : identifier) (l : list identifier) :=
 Inductive fq_name :=
 | FQN (path : list identifier) (name : identifier) (impl_name : option identifier).
 
-Lemma fq_name_eqdec  : eq_dec fq_name.
+Lemma fq_name_eq_dec : forall x y : fq_name, {x = y} + {x <> y}.
 Proof.
-    unfold eq_dec.
     repeat decide equality.
 Defined.
 
