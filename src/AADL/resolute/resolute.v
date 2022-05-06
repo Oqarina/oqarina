@@ -46,11 +46,8 @@ Require Import Sumbool.
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-Require Import Oqarina.AADL.Kernel.categories.
-Require Import Oqarina.AADL.Kernel.component.
-Require Import Oqarina.AADL.Kernel.properties.
-Require Import Oqarina.AADL.Kernel.features_helper.
-Require Import Oqarina.AADL.Kernel.properties_helper.
+Require Import Oqarina.AADL.Kernel.all.
+Require Import Oqarina.AADL.property_sets.all.
 Open Scope list_scope.
 (*| .. coq::  |*)
 
@@ -63,9 +60,9 @@ In this module, we provide a Coq variant of built-in functions defined by Resolu
 Built-in functions for named elements
 -------------------------------------
 
-We use a Coq typeclass to define a common interface for accessing :coq`named_elements`. In the context of Resolute, a named_element can be a component, a feature, or a connection. See the definition of named_element_interface below:
+We use a Coq typeclass to define a common interface for accessing :coq`named_elements`. In the context of Resolute, a named_element can be a component, a feature, or a connection. See the definition of named_element_interface below. As a general rule, whenever Resolute uses a string, we use the :coq:`identifier` type; Boolean values are mapped to :coq:`Prop` type.
 
-* :coq:`name(<named_element>): string` - returns the name of the named element: IMPLEMENTED
+* :coq:`name(<named_element>): string` - returns the name of the named element.
 
 * :coq:`has_property(<named_element>, <property>): Boolean` - the named element has the property.
 
@@ -76,18 +73,27 @@ We use a Coq typeclass to define a common interface for accessing :coq`named_ele
 * :coq:`property(<property>) value` - returns the value of the property constant.
 
 * :coq:`property_member(<record_property_value>, <field name>): Boolean`  return the value of the record field.
+
+* :coq:`parent(<named_element>): named_element` - returns the parent of the named element. The parent must exist. *Note:* Coq is built on top of a pure functional language. We extend :coq:`parent` with an additional parameter which is the root scope to look for a parent.
+
 |*)
 
 Class named_element_interface A : Type := {
     name : A -> identifier ;
     type : A -> fq_name ;
     has_property : A -> ps_qname -> Prop ;
-    has_property_dec : forall (a: A) (name : ps_qname), { has_property a name } + {~ has_property a name } ;
+    has_property_dec : forall (a: A) (name : ps_qname),
+        { has_property a name } + {~ has_property a name } ;
     property : A -> ps_qname
         -> property_association -> property_association ;
+    is_parent_of : component -> A -> Prop ;
+    parent : component -> A -> component ;
 }.
 
-(*| * Implementation for components |*)
+(*|
+Implementation for components
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+|*)
 
 Definition has_property_c (c : component) (name : ps_qname) :=
     Is_Property_Defined name (c->properties).
@@ -106,15 +112,38 @@ Definition property_c
     let pvs := filter (fun x => ps_qname_beq x.(P) name) (projectionComponentProperties c) in
     hd default pvs.
 
-#[global]Instance component' : named_element_interface component := {
+Definition is_parent_of_c (parent : component) (c : component) :=
+    In c (parent->subcomps).
+
+Definition is_parent_of_c_b (parent : component) (c : component) :=
+    In_b component_beq c (parent->subcomps).
+
+Lemma is_parent_of_c_dec: forall (parent:component) (c:component),
+    { is_parent_of_c parent c} + { ~ is_parent_of_c parent c }.
+Proof.
+    prove_dec2.
+Qed.
+
+Definition parent_c (r : component) (c : component) :=
+    let all_components := Unfold r in
+    let p := filter (fun x => is_parent_of_c_b x c) all_components in
+    hd nil_component p.
+
+#[global]
+Instance component' : named_element_interface component := {
     name := projectionComponentId ;
     type := projectionComponentClassifier ;
     has_property := has_property_c ;
     has_property_dec := has_property_c_dec ;
     property := property_c ;
+    is_parent_of := is_parent_of_c ;
+    parent := parent_c ;
 }.
 
-(*| * Implementation for features |*)
+(*|
+Implementation for features
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+|*)
 
 Definition has_property_f (f : feature) (name : ps_qname) :=
     Is_Property_Defined name (projectionFeatureProperties f).
@@ -139,13 +168,38 @@ Definition property_member (pv : property_value) (name : identifier) :=
     | _ => None
     end.
 
-#[global]Instance feature' : named_element_interface feature := {
+Definition is_parent_of_f (parent : component) (f : feature) :=
+    In f (parent->features).
+
+Definition is_parent_of_f_b (parent : component) (f : feature) :=
+    existsb (fun x => (feature_beq x f)) (parent->features).
+
+Lemma is_parent_of_f_dec: forall (parent : component) (f : feature),
+    { is_parent_of_f parent f } + { ~ is_parent_of_f parent f }.
+Proof.
+    prove_dec2.
+Qed.
+
+Definition parent_f (r : component) (f : feature) :=
+    let all_components := Unfold r in
+    let p := filter (fun x => is_parent_of_f_b x f) all_components in
+    hd nil_component p.
+
+#[global]
+Instance feature' : named_element_interface feature := {
     name :=  projectionFeatureIdentifier ;
     type :=  Feature_Classifier ;
     has_property := has_property_f ;
     has_property_dec := has_property_f_dec ;
     property := property_f ;
+    is_parent_of := is_parent_of_f ;
+    parent := parent_f ;
 }.
+
+(*|
+General accessor functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+|*)
 
 (*| * :coq:`has_type (named_element): Boolean` - returns true if the named element has a classifier. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. *)
 
@@ -160,10 +214,15 @@ Definition is_of_type
     (e : A) (t : fq_name) :=
     type e = t.
 
-(*
-has_parent(<named_element>): Boolean - returns true if the component has an enclosing model element
+(*| * :coq:`has_parent(<named_element>): Boolean` - returns true if the component has an enclosing model element |*)
 
-parent(<named_element>): named_element - returns the parent of the named element. The parent must exist.
+Definition has_parent
+    (A : Type) {H : named_element_interface A}
+    (r : component) (a : A)
+:=
+    (parent r a) <> nil_component.
+
+(*|
 
 has_member(<component>, <string>): Boolean - true if the component has a member with the specified name (string). Members are features, subcomponents, etc. The component can be a component instance or a component classifier.
 
@@ -246,7 +305,7 @@ Lemma is_port_dec: forall (f: feature),
     { is_port f} + {~ is_port f}.
 Proof. prove_dec. Qed.
 
-(*| :coq:`is_abstract_feature(<feature>): Boolean` - true if the feature instance is an abstract feature|*)
+(*| * :coq:`is_abstract_feature(<feature>): Boolean` - true if the feature instance is an abstract feature|*)
 
 Definition is_abstract_feature (f : feature) :=
     In (projectionFeatureCategory f) [ abstractFeature ].
@@ -254,3 +313,51 @@ Definition is_abstract_feature (f : feature) :=
 Lemma is_abstract_feature_dec: forall (f: feature),
     { is_abstract_feature f} + {~ is_abstract_feature f}.
 Proof. prove_dec. Qed.
+
+(*
+processor_bound(logical : aadl, physical : component) : bool =
+  has_property(logical, Deployment_Properties::Actual_Processor_Binding) and
+  member(physical, property(logical, Deployment_Properties::Actual_Processor_Binding))
+
+*)
+
+Fixpoint is_processor_bound'
+    (r: component)
+    (c: component)
+    (fuel : nat)
+    : Prop
+:=
+    if has_property_dec c Actual_Processor_Binding_Name then True else
+        match fuel with
+            | 0 => False
+            | S n => is_processor_bound' r (parent r c) n
+        end.
+
+Fixpoint is_processor_bound'' (r: component) (c: component) (fuel : nat) : Prop :=
+    has_property c Actual_Processor_Binding_Name \/
+        match fuel with
+            | 0 => False
+            | S n => is_processor_bound'' r (parent r c) n
+        end.
+
+Lemma is_processor_bound'_dec: forall  (r:component) (c: component) (f : nat),
+    {is_processor_bound' r c f } + {~ is_processor_bound' r c f }.
+Proof.
+    unfold is_processor_bound'.
+    intros.
+    generalize dependent c.
+    generalize dependent r.
+
+    induction f ; intros.
+    - destruct (has_property_dec c Actual_Processor_Binding_Name) ; auto.
+    - destruct (has_property_dec c Actual_Processor_Binding_Name) ; auto.
+Qed.
+
+Definition is_processor_bound (r : component) (c: component) : Prop :=
+    is_processor_bound' r c 10.
+
+Lemma is_processor_bound_dec: forall (r:component) (c: component),
+    {is_processor_bound r c} + {~ is_processor_bound r c}.
+Proof.
+    prove_dec2. apply is_processor_bound'_dec.
+Qed.
