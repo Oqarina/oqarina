@@ -33,6 +33,7 @@
 Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
 Require Import Coq.Logic.Decidable.
+Require Import Coq.Bool.Bool.
 Set Implicit Arguments.
 (* end hide *)
 
@@ -184,3 +185,44 @@ Section GenericLists.
       end.
 
 End GenericLists.
+
+Section in_boolean.
+
+  Variable A : Type.
+  Variable beq: A -> A -> bool.
+
+  Variable H: forall t1 t2, reflect (t1 = t2) (beq t1 t2).
+
+  Fixpoint In_b (x: A) (l: list A) : bool :=
+    match l with
+      | [] => false
+      | h :: t => orb (beq h x) (In_b x t)
+    end.
+
+  Theorem In_reflect (x: A) (L: list A) : reflect (In x L) (In_b x L).
+  Proof.
+    induction L.
+    + simpl. apply ReflectF. auto.
+    + simpl. destruct (H a x).
+      - subst. assert (beq x x = true). destruct (H x x); auto. simpl.
+        apply ReflectT. left. auto.
+      - destruct IHL.
+        * apply ReflectT. auto.
+        * assert (beq x a = false). destruct (H x a); congruence.
+          apply ReflectF. tauto.
+  Qed.
+
+End in_boolean.
+
+
+Lemma forallb_reflect (X : Type) (f : X -> bool) (xs : list X) :
+  reflect (forall x, In x xs -> f x = true) (forallb f xs).
+Proof.
+  induction xs.
+  - cbn. left. tauto.
+  - simpl. destruct (f a) eqn:E; cbn.
+    + destruct IHxs.
+      * left. intros x [-> | H]; auto.
+      * right. intuition.
+    + right. intros H. specialize (H a (or_introl eq_refl)). congruence.
+Qed.
