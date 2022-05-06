@@ -52,7 +52,6 @@ Set Implicit Arguments.
 Parallel DEVS
 *************
 
-
 |*)
 
 (*| .. coq:: none |*)
