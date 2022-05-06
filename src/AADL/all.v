@@ -52,5 +52,6 @@ In this chapter, we introduce the key elements of the formalization of AADL in C
 .. include::  AADL__Kernel_categories.v.rst
 .. include::  AADL__Kernel_component.v.rst
 .. include::  AADL__resolute_resolute.v.rst
+.. include::  AADL__behavior_thread.v.rst
 
 |*)
