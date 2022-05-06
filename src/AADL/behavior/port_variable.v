@@ -42,6 +42,7 @@ Require Import Coq.ZArith.BinInt.
 (** Oqarina library *)
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
+Import NaturalTime.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 
@@ -59,8 +60,8 @@ A port variable is modeled by a Coq record. We define the concept of invalid por
 *)
 
 Module PortVal.
-  Definition V := prod AADL_Time bool.
-  Definition Invalid_Value := (1978%Z, true).
+  Definition V := prod Time bool.
+  Definition Invalid_Value := (1978%nat, true).
 End PortVal.
 
 Module PortQueue := ListQueue PortVal.
@@ -194,6 +195,19 @@ Section Port_Variable.
 
   Definition Get_Port_Variable_Name (p : port_variable) :=
     projectionFeatureIdentifier p.(port).
+
+(*| - :coq:`Get_Port_Variable_With_Max_Urgency` returns the port variable with the maximum urgency, see %\S 8.3 (32) \change{We should also address the FIFO for ports with same urgency .. }% |*)
+
+Fixpoint Get_Port_Variable_With_Max_Urgency
+  (p : port_variable) (l : list port_variable) : port_variable :=
+    match l with
+    | nil => p
+    | h :: t => if p.(urgency) <=? h.(urgency) then
+        Get_Port_Variable_With_Max_Urgency h t else
+        Get_Port_Variable_With_Max_Urgency p t
+      (* note we take h in all cases, this is to address the case where the
+        first argument is :coq:`Invalid_Port_Variable` *)
+    end.
 
 (* begin hide *)
 End Port_Variable.
