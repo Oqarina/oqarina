@@ -89,7 +89,7 @@ Inductive property_type :=
             (units: option property_type)
 | PT_Range (p : property_type) (* must be numeric *)
 | PT_Classifier (* TBD *)
-| PT_Reference 
+| PT_Reference
 | PT_Record (fields: list field_decl)
 | PT_List (of: property_type) (* not allowed in named types in AADL2 (why???) *)
 | PT_TypeRef (qname : ps_qname)
@@ -201,7 +201,7 @@ Proof.
   apply list_eq_dec; auto || auto.
 
   decide equality.
-Qed.
+Defined.
 
 (*+ Property Sets *)
 
@@ -242,7 +242,7 @@ Lemma property_association_eq_dec (a b : property_association): {a=b}+{a<>b}.
 Proof.
   decide equality.
   apply property_value_eq_dec.
-Qed.
+Defined.
 
 (** AADL Property set *)
 
