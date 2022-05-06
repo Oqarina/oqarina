@@ -44,6 +44,8 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
 
+(* Require Import Oqarina.BoolEqual. *)
+
 (** Oqarina library *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
@@ -78,26 +80,26 @@ _Note: actually, this definition allows also for the definition of component typ
 |*)
 
   Inductive component :=
-  | Component : identifier ->          (* component identifier *)
-                ComponentCategory ->   (* category *)
-                fq_name ->             (* classifier, e.g. A::B::c.impl *)
-                list feature ->        (* features *)
-                list component ->      (* subcomponents *)
-                list property_association -> (* properties *)
-                list connection -> (* XXX change order *)
-                component
-    with feature :=
-      | Feature : identifier -> (* its unique identifier *)
-                  DirectionType -> (* its direction *)
-                  FeatureCategory -> (* category of the feature *)
-                  component ->  (* corresponding component *)
+    | Component : identifier ->          (* component identifier *)
+                  ComponentCategory ->   (* category *)
+                  fq_name ->             (* classifier, e.g. A::B::c.impl *)
+                  list feature ->        (* features *)
+                  list component ->      (* subcomponents *)
                   list property_association -> (* properties *)
-                  feature
-    with connection :=
+                  list connection -> (* XXX change order *)
+                  component
+  with feature :=
+    | Feature : identifier -> (* its unique identifier *)
+                DirectionType -> (* its direction *)
+                FeatureCategory -> (* category of the feature *)
+                component ->  (* corresponding component *)
+                list property_association -> (* properties *)
+                feature
+  with connection :=
     | Connection : identifier ->
-                   feature_ref -> (* path to the source feature *)
-                   feature_ref -> (* path to the destination feature *)
-                   connection.
+                    feature_ref -> (* path to the source feature *)
+                    feature_ref -> (* path to the destination feature *)
+                    connection.
 
 (*| * Definition of an empty component |*)
 
@@ -149,66 +151,106 @@ Section AADL_Component_Decidability.
 
 (** For other types, we manually define and prove decidability for equality *)
 
-  Lemma connection_eq_dec : eq_dec connection.
+  Lemma connection_eq_dec (a b : connection) : {a=b}+{a<>b}.
   Proof.
-      unfold eq_dec.
       repeat decide equality.
   Qed.
 
+  Lemma list_connection_eq_dec (a b : list connection) : {a=b}+{a<>b}.
+  Proof.
+      generalize list_eq_dec connection_eq_dec.
+      decide equality.
+  Defined.
+
   Hint Resolve connection_eq_dec DirectionType_eq_dec
       identifier_eq_dec ComponentCategory_eq_dec FeatureCategory_eq_dec
-      property_association_eq_dec fq_name_eqdec
+      property_association_eq_dec fq_name_eq_dec
       : core.
 
   (* Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
 
   Fixpoint component_eq_dec' (a b : component) : {a=b}+{a<>b}
-      with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
+  with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
   Proof.
-      (* decide equality for component type *)
-      decide equality;
-      apply list_eq_dec; auto
-      || auto.
+    generalize identifier_eq_dec ComponentCategory_eq_dec
+               fq_name_eq_dec list_eq_dec
+               connection_eq_dec property_association_eq_dec.
+    decide equality.
 
-      (* decide equality for feature type *)
-      decide equality;
-      apply list_eq_dec; auto
-      || auto.
+    generalize identifier_eq_dec FeatureCategory_eq_dec
+               DirectionType_eq_dec list_eq_dec
+               property_association_eq_dec.
+    decide equality.
   Defined.
 
-  Lemma component_eq_dec: eq_dec component.
+  Lemma component_eq_dec:
+      forall (a :component) (b : component) , {a=b}+{a<>b}.
   Proof.
-      unfold eq_dec.
-      intros.
-      apply component_eq_dec'.
-  Qed.
-
-  Lemma feature_eq_dec: eq_dec feature.
-  Proof.
-      unfold eq_dec.
-      intros.
-      apply feature_eq_dec'.
+      generalize identifier_eq_dec ComponentCategory_eq_dec
+                 fq_name_eq_dec component_eq_dec'
+                 feature_eq_dec' connection_eq_dec
+                 property_association_eq_dec list_eq_dec.
+      decide equality.
   Defined.
 
-  Lemma list_component_eq_dec : eq_dec (list component).
+  Lemma list_component_eq_dec (a b : list component) : {a=b}+{a<>b}.
   Proof.
-      unfold eq_dec.
-      apply list_eq_dec.
-      apply component_eq_dec.
-  Qed.
+      generalize list_eq_dec component_eq_dec.
+      decide equality.
+  Defined.
 
-  Lemma list_connection_eq_dec : eq_dec (list connection).
+  Lemma feature_eq_dec:
+      forall (a : feature) (b : feature) , {a=b}+{a<>b}.
   Proof.
-      unfold eq_dec.
-      apply list_eq_dec.
-      apply connection_eq_dec.
-  Qed.
+      generalize identifier_eq_dec FeatureCategory_eq_dec
+                 DirectionType_eq_dec component_eq_dec'
+                 list_eq_dec property_association_eq_dec.
+      decide equality.
+  Defined.
 
+  Lemma list_feature_eq_dec (a b : list feature) : {a=b}+{a<>b}.
+  Proof.
+      generalize list_eq_dec feature_eq_dec.
+      decide equality.
+  Defined.
+
+Definition component_beq (x : component) (y: component) : bool :=
+  match component_eq_dec x y with
+  | left _ => true
+  | _ => false
+  end.
+
+Definition feature_beq (x : feature) (y: feature) : bool :=
+  match feature_eq_dec x y with
+  | left _ => true
+  | _ => false
+  end.
+
+(* XXX 
+  Definition component_beq: forall (x y: component), bool.
+  Proof.
+      generalize identifier_eq_dec ComponentCategory_eq_dec
+                  fq_name_eq_dec component_eq_dec
+                  feature_eq_dec connection_eq_dec
+                  property_association_eq_dec ;
+                  boolean_equality.
+  Defined.
+
+  Definition feature_beq: forall (x y: feature), bool.
+  Proof.
+    generalize identifier_eq_dec ComponentCategory_eq_dec
+                DirectionType_eq_dec FeatureCategory_eq_dec
+                fq_name_eq_dec component_eq_dec'
+                feature_eq_dec' connection_eq_dec
+                property_association_eq_dec ;
+                boolean_equality.
+  Defined.
+*)
 End AADL_Component_Decidability.
 
 Global Hint Resolve connection_eq_dec property_association_eq_dec
   DirectionType_eq_dec identifier_eq_dec ComponentCategory_eq_dec
-  FeatureCategory_eq_dec component_eq_dec
+  FeatureCategory_eq_dec component_eq_dec feature_eq_dec
   list_component_eq_dec list_connection_eq_dec
   : core.
 (*| .. coq::  |*)
