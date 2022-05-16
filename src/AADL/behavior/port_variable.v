@@ -182,6 +182,32 @@ Section Port_Variable.
     dequeued_items := p.(dequeued_items);
   |}.
 
+  Definition Freeze_Port_Variable (p : port_variable) : port_variable := {|
+    port := p.(port);
+    is_data := p.(is_data);
+    inner_variable := p.(outer_variable); (* XXX enough ?*)
+    outer_variable := [];
+    port_input_times := p.(port_input_times);
+    urgency := p.(urgency);
+    size := p.(size);
+    overflow_handling_protocol := p.(overflow_handling_protocol);
+    dequeue_protocol := p.(dequeue_protocol);
+    dequeued_items := p.(dequeued_items);
+  |}.
+
+Definition Reset_Port_Variable (p : port_variable) : port_variable := {|
+  port := p.(port);
+  is_data := p.(is_data);
+  inner_variable := []; (* XXX enough ?*)
+  outer_variable := p.(outer_variable);
+  port_input_times := p.(port_input_times);
+  urgency := p.(urgency);
+  size := p.(size);
+  overflow_handling_protocol := p.(overflow_handling_protocol);
+  dequeue_protocol := p.(dequeue_protocol);
+  dequeued_items := p.(dequeued_items);
+|}.
+
   (** [Build_Input_Port_Variables] (resp. [Build_Output_Port_Variables]) is a utility function that builds port variables from input (resp. output) features. AADL inout features are also considered. *)
 
   Definition Build_Input_Port_Variables (l : list feature) :=

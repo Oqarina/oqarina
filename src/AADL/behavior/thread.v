@@ -32,9 +32,10 @@
 (*|
 AADL Threads
 ============
+
+.. coq:: none
 |*)
 
-(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
@@ -66,21 +67,20 @@ Open Scope aadl_scope.
 
 Open Scope nat_scope.
 
-(*| .. coq:: |*)
-
 (*|
-
 Thread State Variable
 ---------------------
 
 Each AADL thread is associated to a state variable that stores the relevant parameters relative to is dispatch and scheduling by the underlying executive.
+
+.. coq:: none
 |*)
 
-(*| .. coq:: none |*)
 Section Thread_State_Variable.
-(*| .. coq:: |*)
 
-(*| :coq:`Build_Dispatch_Trigger` returns the list of triggering features |*)
+(*|
+:coq:`Build_Dispatch_Trigger` returns the list of triggering features
+|*)
 
 Definition Build_Dispatch_Trigger (l : list feature) :=
   filter Is_Triggering_Feature l.
@@ -88,9 +88,11 @@ Definition Build_Dispatch_Trigger (l : list feature) :=
 
 Inductive thread_state := Not_Activated | Idle | Ready | Running.
 
-(*| :coq:`thread_state_variable` defines the general state variable that stores
+(*|
+:coq:`thread_state_variable` defines the general state variable that stores
 the current state of a thread. Its is made of a static part that is derived
-from the AADL model, and a dynamic part that is the current state used in the simulation. It is associated with a constructor :coq:`mk_thread_state_variable` and a well-formedness predicate. |*)
+from the AADL model, and a dynamic part that is the current state used in the simulation. It is associated with a constructor :coq:`mk_thread_state_variable` and a well-formedness predicate.
+|*)
 
 Record thread_state_variable : Type := {
   (* static configuration parameters derived from AADL thread component *)
@@ -112,7 +114,10 @@ Record thread_state_variable : Type := {
   dispatch_trigger : list feature;
 }.
 
-(*| * :coq:`mk_thread_state_variable` maps an AADL component to a :coq:`thread_state_variable`.|*)
+(*|
+* :coq:`mk_thread_state_variable` maps an AADL component to a :coq:`thread_state_variable`.
+|*)
+
 Definition mk_thread_state_variable (t : component) : thread_state_variable := {|
   dispatch_protocol := Map_Dispatch_Protocol (t->properties);
   period := (Z.to_nat (Map_Period (t->properties))) ;
@@ -131,14 +136,19 @@ Definition mk_thread_state_variable (t : component) : thread_state_variable := {
   dispatch_trigger := Build_Dispatch_Trigger (t->features);
 |}.
 
-(*| :coq:`Compute_Entrypoint` defines the compute entrypoint of a thread. |*)
+(*|
+:coq:`Compute_Entrypoint` defines the compute entrypoint of a thread.
+|*)
 
 Definition Compute_Entry_Point := thread_state_variable -> thread_state_variable.
 
 Definition Default_Compute_Entry_Point : Compute_Entry_Point :=
   (fun x => x).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
   Definition thread_state_variable_wf (t : thread_state_variable) :=
     t.(dispatch_protocol) <> Unspecified_Dispatch_Protocol /\
     port_variable_list_wf t.(input_ports) /\
@@ -157,9 +167,11 @@ Definition Default_Compute_Entry_Point : Compute_Entry_Point :=
     - apply port_variable_list_wf_dec.
     - apply port_variable_list_wf_dec.
   Qed.
-(*| .. coq:: |*)
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 End Thread_State_Variable.
 
 Ltac prove_thread_state_variable_wf :=
@@ -171,63 +183,68 @@ Ltac prove_thread_state_variable_wf :=
     | |- NoDup  _  => apply NoDup_cons ; auto
     | |- NoDup nil => apply NoDup_nil
   end.
-(*| .. coq:: |*)
 
 (*|
-
 Thread Dispatching
 ------------------
 
 This section captures the content of %\S 5.4.2 of \cite{as2-cArchitectureAnalysisDesign2017}%. Ultimately, we want to provide a definition of the :coq:`Enabled` function that controls the dispatch of a thread. The definition of this function relies on the state of some of its triggering features. In the following, we use directly the concept of thread state variable and port variables to define :coq:`Enabled` .
 
+.. coq:: none
 |*)
 
-(*| .. coq:: none |*)
 Section AADL_Dispatching.
-(*| .. coq::  |*)
 
 (*|
-
 Intermediate Predicates
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 All AADL dispatch protocols review the state of triggering features and the current clock. We build the :coq:`Thread_Has_Activated_Triggering_Feature` predicate as a conjunction of more basic predicates, in :coq:`Prop`, and demonstrate their decidability.
 
 First, we check whether the feature is activated, :coq:`Is_Feature_Activated`, then whether it is in the dispatch trigger, in :coq:`Feature_In_Dispatch_Trigger`.
-
 |*)
 
 Definition Is_Feature_Activated (p : port_variable) :=
   ~ PortQueue.Is_Empty p.(outer_variable).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Is_Feature_Activated_dec :
   forall (p : port_variable), dec_sumbool (Is_Feature_Activated p).
 Proof.
   prove_dec.
   apply PortQueue.Is_Empty_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Feature_In_Dispatch_Trigger (p : port_variable) (d : list feature) :=
   In p.(port) d.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Definition Feature_In_Dispatch_Trigger_dec :
   forall (p : port_variable) (d : list feature),
     dec_sumbool (Feature_In_Dispatch_Trigger p d).
 Proof.
   prove_dec2.
 Defined.
-(*| .. coq::  |*)
 
-(*| From that point, we can build :coq:`Thread_Has_Activated_Triggering_Feature` that is true iff. the thread has at least one activated triggering feature that is also in the dispatch trigger.
+(*|
+From that point, we can build :coq:`Thread_Has_Activated_Triggering_Feature` that is true iff. the thread has at least one activated triggering feature that is also in the dispatch trigger.
 |*)
 
 Definition Is_Activated_Triggering_Feature (p : port_variable)  (d : list feature) :=
   Is_Feature_Activated p /\ Feature_In_Dispatch_Trigger p d.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Is_Activated_Triggering_Feature_dec:
   forall (p : port_variable)  (d : list feature),
     dec_sumbool (Is_Activated_Triggering_Feature p d).
@@ -238,14 +255,18 @@ Defined.
 
 Definition Is_Activated_Triggering_Feature_b (p : port_variable)  (d : list feature) :=
   if Is_Activated_Triggering_Feature_dec p d is (left _) then true else false.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Has_Activated_Triggering_Feature
   (l : list port_variable) (d : list feature)
 :=
   All_Or (fun x => (Is_Activated_Triggering_Feature x d)) l.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Has_Activated_Triggering_Feature_dec :
   forall (l : list port_variable) (d : list feature),
     { Has_Activated_Triggering_Feature l d } + { ~ Has_Activated_Triggering_Feature l d }.
@@ -258,14 +279,18 @@ Proof.
     * apply Is_Activated_Triggering_Feature_dec.
     * apply IHl.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Thread_Has_Activated_Triggering_Feature
   (th : thread_state_variable)
   :=
   Has_Activated_Triggering_Feature th.(input_ports) th.(dispatch_trigger).
 
-  (*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
   Lemma Thread_Has_Activated_Triggering_Feature_dec :
     forall (th : thread_state_variable),
       { Thread_Has_Activated_Triggering_Feature th } +
@@ -274,10 +299,8 @@ Definition Thread_Has_Activated_Triggering_Feature
     generalize Has_Activated_Triggering_Feature_dec.
     prove_dec.
   Defined.
-(*| .. coq::  |*)
 
 (*|
-
 Definition of :coq:`Enabled`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -289,19 +312,26 @@ A thread can be enable if it is "dispatchable". Then, we define basic predicates
 Definition Thread_Dispatchable (th : thread_state_variable) :=
   (th.(dispatch_able) = true).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Thread_Dispatchable_dec:
   forall (th : thread_state_variable), dec_sumbool (Thread_Dispatchable th).
 Proof.
   prove_dec.
   apply bool_dec.
 Defined.
-(*| .. coq:: |*)
+
+(*||*)
 
 Definition Periodic_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th) /\ (th.(clock) mod th.(period) = 0).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Periodic_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Periodic_Enabled th).
 Proof.
@@ -309,13 +339,17 @@ Proof.
   apply Thread_Dispatchable_dec.
   apply PeanoNat.Nat.eq_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Aperiodic_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th) /\
     (Thread_Has_Activated_Triggering_Feature th).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Aperiodic_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Aperiodic_Enabled th).
 Proof.
@@ -323,14 +357,19 @@ Proof.
   apply bool_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Sporadic_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th) /\
-    th.(period) <= th.(clock) /\
+    th.(next_dispatch_time) <= th.(clock) /\
+   (* th.(period) <= th.(clock) /\ *)
     Thread_Has_Activated_Triggering_Feature th.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Sporadic_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Sporadic_Enabled th).
 Proof.
@@ -339,14 +378,18 @@ Proof.
   prove_dec.
   apply Compare_dec.le_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Timed_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th) /\
   ((th.(period) = th.(clock)) \/
   Thread_Has_Activated_Triggering_Feature th).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Timed_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Timed_Enabled th).
 Proof.
@@ -355,13 +398,17 @@ Proof.
   apply PeanoNat.Nat.eq_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Hybrid_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th) /\ (th.(period) = th.(clock)) /\
   Thread_Has_Activated_Triggering_Feature th.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Hybrid_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Hybrid_Enabled th).
 Proof.
@@ -370,21 +417,26 @@ Proof.
   apply PeanoNat.Nat.eq_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Background_Enabled (th : thread_state_variable) :=
   (Thread_Dispatchable th).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Background_Enabled_dec:
   forall (th : thread_state_variable), dec_sumbool (Background_Enabled th).
 Proof.
   prove_dec.
   apply Thread_Dispatchable_dec.
 Defined.
-(*| .. coq::  |*)
 
-(*| Then we define the :coq:`Enabled` predicate |*)
+(*|
+Then we define the :coq:`Enabled` predicate
+|*)
 
 Definition Enabled (th : thread_state_variable) :=
   match th.(dispatch_protocol) with
@@ -397,7 +449,10 @@ Definition Enabled (th : thread_state_variable) :=
   | Unspecified => False
   end.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Enabled_dec: forall (th : thread_state_variable),
   dec_sumbool (Enabled th).
 Proof.
@@ -411,25 +466,28 @@ Proof.
   apply Timed_Enabled_dec.
   apply Hybrid_Enabled_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
   (** :coq:`Enabled_oracle` return a :coq:`bool` as a witness, for debugging purposes. *)
 
   Definition Enabled_oracle (th : thread_state_variable) :=
     if Enabled_dec th is (left _) then true else false.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 End AADL_Dispatching.
-(*| .. coq::  |*)
 
 (*|
-
 Ports Queue Processing
 ----------------------
 
-The following is a first cut at formalizing ports from %\S 8.3%. We capture the definition of :coq:`Frozen` for ports. First, we build ATF, the list of Activated Triggering Features. |*)
+The following is a first cut at formalizing ports from %\S 8.3%. We capture the definition of :coq:`Frozen` for ports. First, we build ATF, the list of Activated Triggering Features.
 
-(*| - :coq:`Activated_Triggering_Features` returns the list of Activated Triggering Features. |*)
+- :coq:`Activated_Triggering_Features` returns the list of Activated Triggering Features.
+|*)
 
 Definition Activated_Triggering_Features'  (l : list port_variable) (d : list feature) :=
   filter (fun x => Is_Activated_Triggering_Feature_b x d) l.
@@ -437,24 +495,36 @@ Definition Activated_Triggering_Features'  (l : list port_variable) (d : list fe
 Definition Activated_Triggering_Features (th : thread_state_variable) :=
   Activated_Triggering_Features' th.(input_ports) th.(dispatch_trigger).
 
-(*| Then, we can define the :coq:`Get_Elected_Triggering_Feature` that returns the elected features among Activated Triggering Features. |*)
+(*|
+Then, we can define the :coq:`Get_Elected_Triggering_Feature` that returns the elected features among Activated Triggering Features.
+|*)
 
-Definition Get_Elected_Triggering_Feature (th : thread_state_variable) : port_variable :=
+Definition Get_Elected_Triggering_Feature (th : thread_state_variable) :=
   Get_Port_Variable_With_Max_Urgency Invalid_Port_Variable
       (Activated_Triggering_Features th).
 
-(*| :coq:`Current_Valid_IO_Time_Spec` returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}% |*)
+(*|
+:coq:`Current_Valid_IO_Time_Spec` returns the current IO_Time_Spec for the considered port variable. A port variable can be associated with a list of IO_Time_Spec. The current IO_Time_Spec denotes the IO_Time_Spec that is current to the thread state. %\change{This version is highly simplified. We should define this in the standard first}%
+|*)
 
-Definition Current_Valid_IO_Time_Spec (p : port_variable) (th : thread_state_variable) :=
+Definition Current_Valid_IO_Time_Spec
+  (p : port_variable)
+  (th : thread_state_variable)
+:=
   hd Unspecified_IO_Time_Spec (projectionIO_Time_Spec p.(port_input_times)).
 
-(*| The definition of the :coq:`Frozen` predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc. |*)
+(*|
+The definition of the :coq:`Frozen` predicate relies on the previous definitions. A port variable is frozen based on the current thread state, the port IO_Time_Spec, etc.
+|*)
 
-Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
+Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) :=
    (p = Get_Elected_Triggering_Feature  th) \/
        ~ (Feature_In_Dispatch_Trigger p th.(dispatch_trigger)).
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 Lemma Dispatch_Frozen_dec:
   forall p th, { Dispatch_Frozen p th } + { ~ Dispatch_Frozen p th }.
 Proof.
@@ -463,7 +533,8 @@ Proof.
   apply dec_sumbool_not.
   apply Feature_In_Dispatch_Trigger_dec.
 Defined.
-(*| .. coq::  |*)
+
+(*||*)
 
 Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
   match Current_Valid_IO_Time_Spec p th with
@@ -474,21 +545,42 @@ Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
   | IO_Time_Spec_Unspecified => False
   end.
 
+Lemma Frozen_dec: forall p th,  { Frozen p th } + { ~ Frozen p th }.
+Proof.
+  generalize Dispatch_Frozen_dec.
+  prove_dec2.
+  destruct (Current_Valid_IO_Time_Spec p th) ; auto.
+Defined.
+
+Fixpoint Freeze_Port_Variables
+  (l : list port_variable)
+  (th : thread_state_variable)
+:=
+  match l with
+  | [] => []
+  | h :: t => match Frozen_dec h th with
+              | left _ => Freeze_Port_Variable h :: Freeze_Port_Variables t th
+              | right _ => h :: Freeze_Port_Variables t th
+              end
+end.
+
 Definition Frozen_Ports' (th : thread_state_variable): list port_variable :=
   filter_dec port_variable_wf port_variable_wf_dec th.(input_ports).
 
 (*|
 Runtime support for threads -- Private API
 -------------------------------------------
+
+.. coq:: none
 |*)
 
-(*| .. coq:: none |*)
 Section Thread_RTS.
-(*| .. coq::  |*)
 
-(*| A collection of runtime services is provided. A runtime service manipulates the thread state and its port variables. *)
+(*|
+A collection of runtime services is provided. A runtime service manipulates the thread state and its port variables.
 
-(*| :coq:`advance_time` increments the clock of the thread state variable. |*)
+:coq:`advance_time` increments the clock of the thread state variable.
+|*)
 
 Definition advance_time (th : thread_state_variable) (t : Time) (n : Time) := {|
   (* Generic part *)
@@ -509,6 +601,50 @@ Definition advance_time (th : thread_state_variable) (t : Time) (n : Time) := {|
   clock := t;
   delta_cet := n;
   cet := th.(cet);
+|}.
+
+Definition freeze_thread_ports (th : thread_state_variable)  := {|
+  (* Generic part *)
+  dispatch_protocol := th.(dispatch_protocol);
+  period := th.(period);
+  deadline := th.(deadline);
+  priority := th.(priority);
+  dispatch_able := th.(dispatch_able);
+  wcet := th.(wcet);
+
+  clock := th.(clock);
+  delta_cet := th.(delta_cet);
+  cet := th.(cet);
+
+  output_ports := th.(output_ports);
+  dispatch_trigger := th.(dispatch_trigger);
+  current_state := th.(current_state);
+  next_dispatch_time := th.(next_dispatch_time);
+
+  (* freeze_ports *)
+  input_ports := Freeze_Port_Variables th.(input_ports) th;
+|}.
+
+Definition reset_thread_ports (th : thread_state_variable)  := {|
+  (* Generic part *)
+  dispatch_protocol := th.(dispatch_protocol);
+  period := th.(period);
+  deadline := th.(deadline);
+  priority := th.(priority);
+  dispatch_able := th.(dispatch_able);
+  wcet := th.(wcet);
+
+  clock := th.(clock);
+  delta_cet := th.(delta_cet);
+  cet := th.(cet);
+
+  output_ports := th.(output_ports);
+  dispatch_trigger := th.(dispatch_trigger);
+  current_state := th.(current_state);
+  next_dispatch_time := th.(next_dispatch_time);
+
+  (* freeze_ports *)
+  input_ports := map Reset_Port_Variable th.(input_ports) ;
 |}.
 
 Definition compute_during (th : thread_state_variable) (t : Time) := {|
@@ -532,7 +668,9 @@ Definition compute_during (th : thread_state_variable) (t : Time) := {|
   delta_cet := t;
 |}.
 
-(*| :coq:`store_in` stores a value in an outer\_port of an AADL thread. |*)
+(*|
+:coq:`store_in` stores a value in an outer\_port of an AADL thread.
+|*)
 
 Definition store_in
   (t : thread_state_variable) (name : identifier) (value : bool) := {|
@@ -556,7 +694,10 @@ Definition store_in
   input_ports := Store t.(input_ports) name (t.(clock), value);
 |}.
 
-(*| XXX |*)
+(*|
+XXX
+|*)
+
 Definition eval_enabled_thread_state (t : thread_state_variable) :=
 let is_enabled := Enabled_oracle t in {|
 (* Generic part *)
@@ -579,11 +720,32 @@ let is_enabled := Enabled_oracle t in {|
   next_dispatch_time :=
     if is_enabled then
       match t.(dispatch_protocol) with
-      | Periodic =>  t.(clock) + t.(period)
-      | Sporadic =>  t.(clock) + t.(period)
+      | Periodic => t.(clock) + t.(period)
+      | Sporadic => t.(clock) + t.(period)
       | _ => t.(clock)
       end
     else t.(next_dispatch_time);
+|}.
+
+Definition nop (t : thread_state_variable) := {|
+  (* Generic part *)
+  dispatch_protocol := t.(dispatch_protocol);
+  period := t.(period);
+  deadline := t.(deadline);
+  priority := t.(priority);
+  dispatch_able := t.(dispatch_able);
+  wcet := t.(wcet);
+
+  current_state := t.(current_state);
+  clock := t.(clock);
+  cet := t.(cet);
+  output_ports := t.(output_ports);
+  dispatch_trigger := t.(dispatch_trigger);
+  input_ports := t.(input_ports);
+  next_dispatch_time := t.(next_dispatch_time);
+
+  (* set_running *)
+  delta_cet := 0;
 |}.
 
 Definition set_running (t : thread_state_variable) := {|
@@ -633,9 +795,9 @@ Runtime support for threads -- AADL RTS
 ---------------------------------------
 
 The definition of the RTS relies on the port functions presented in XXX.
-|*)
 
-(*| * :coq:`Await_Dispatch` |*)
+* :coq:`Await_Dispatch`
+|*)
 
 Definition await_dispatch (t : thread_state_variable) := {|
   (* Generic part *)
@@ -659,12 +821,16 @@ Definition await_dispatch (t : thread_state_variable) := {|
   delta_cet := 0;
 |}.
 
-(*| * :coq:`Get_Count` |*)
+(*|
+* :coq:`Get_Count`
+|*)
 
 Definition get_count (t : thread_state_variable) (name : identifier) :=
   Get_Count t.(input_ports) name.
 
-(*| * :coq:`Put_Value` |*)
+(*|
+* :coq:`Put_Value`
+|*)
 
 Definition put_value
   (t : thread_state_variable) (name : identifier) (value : bool) := {|
@@ -688,7 +854,9 @@ Definition put_value
   output_ports := Store t.(output_ports) name (t.(clock), value);
 |}.
 
-(*| * :coq:`Send_Output` |*)
+(*|
+* :coq:`Send_Output`
+|*)
 
 Definition send_output (t : thread_state_variable) (name : identifier) := {|
   (* Generic part *)
@@ -711,12 +879,16 @@ Definition send_output (t : thread_state_variable) (name : identifier) := {|
   output_ports := Send_Output t.(output_ports) name;
 |}.
 
-(*| * :coq:`Get_Value` |*)
+(*|
+* :coq:`Get_Value`
+|*)
 
 Definition get_value (t : thread_state_variable) (name : identifier) :=
   Get_Value t.(input_ports) name.
 
-(*| * :coq:`Next_Value` |*)
+(*|
+* :coq:`Next_Value`
+|*)
 
 Definition next_value
   (t : thread_state_variable) (name : identifier) (value : bool) := {|
@@ -740,7 +912,9 @@ Definition next_value
   input_ports := Next_Value t.(input_ports) name;
 |}.
 
-(*| * :coq:`Receive_Input` |*)
+(*|
+* :coq:`Receive_Input`
+|*)
 
 Definition receive_input (t : thread_state_variable) (name : identifier) := {|
   (* Generic part *)
@@ -763,20 +937,21 @@ Definition receive_input (t : thread_state_variable) (name : identifier) := {|
   input_ports := Receive_Input t.(input_ports) name;
 |}.
 
-(*| .. coq:: none |*)
+(*|
+.. coq:: none
+|*)
+
 End Thread_RTS.
-(*| .. coq::  |*)
 
 (*|
 Examples
 --------
-|*)
 
-(*|
 A Periodic Thread
 ^^^^^^^^^^^^^^^^^
 
-In this example, we first build a periodic AADL :coq:`Component`, we then map it to a :coq:`thread_state_variable` and perform some steps on it. |*)
+In this example, we first build a periodic AADL :coq:`Component`, we then map it to a :coq:`thread_state_variable` and perform some steps on it.
+|*)
 
 Example A_Periodic_Thread :=
     thread: "a_periodic_thread" ->| "pack::a_thread_classifier"
@@ -792,14 +967,18 @@ Example A_Periodic_Thread :=
                             (PV_IntU 100 (PV_Unit (Id "ms")))
         ].
 
-(*| This component is well-formed |*)
+(*|
+This component is well-formed
+|*)
 
 Lemma A_Periodic_Thread_wf : Well_Formed_Component_Instance A_Periodic_Thread.
 Proof.
   prove_Well_Formed_Component_Instance.
 Qed.
 
-Definition A_Periodic_Thread_State_ := mk_thread_state_variable (A_Periodic_Thread).
+Definition A_Periodic_Thread_State_ := set_Idle (mk_thread_state_variable (A_Periodic_Thread)).
+
+Check A_Periodic_Thread_State_.
 
 Lemma A_Periodic_Thread_State_valid : thread_state_variable_wf A_Periodic_Thread_State_ .
 Proof.
@@ -808,12 +987,14 @@ Qed.
 
 (** - "activate" the thread *)
 
-Definition A_Periodic_Thread_State := eval_enabled_thread_state A_Periodic_Thread_State_.
+Definition A_Periodic_Thread_State :=
+  eval_enabled_thread_state A_Periodic_Thread_State_.
 
 (** - At t = 0, the periodic thread is enabled *)
 
 Lemma Periodic_t0_enabled : A_Periodic_Thread_State.(current_state) = Ready.
 Proof.
+  compute.
   trivial.
 Qed.
 
@@ -824,26 +1005,136 @@ Definition A_Periodic_Thread_State'' := await_dispatch A_Periodic_Thread_State'.
 
 (** - At t = 2, the periodic thread is not enabled *)
 
-Lemma Periodic_t2_not_enabled : A_Periodic_Thread_State''.(current_state) = Idle.
+Lemma Periodic_t2_not_enabled :
+  A_Periodic_Thread_State''.(current_state) = Idle.
 Proof.
   trivial.
 Qed.
 
-(*| Let us turn this thread into a P-DEVS. |*)
+(*|
+A Sporadic Thread
+^^^^^^^^^^^^^^^^^
 
-(*| :coq:`X_thread` is the set of incoming messages the P-DEVS reacts to.  |*)
+In this example, we consider a sporadic thread with one input event port.
+|*)
+
+Example A_Sporadic_Thread :=
+thread: "a_periodic_thread" ->| "pack::a_thread_classifier"
+    features: [
+      feature: in_event "a_feature"
+    ]
+
+    subcomponents: nil
+    connections: nil
+    properties: [
+        property: Priority_Name ==>| PV_Int 42 ;
+        property: Dispatch_Protocol_Name ==>| PV_Enum (Id "Sporadic") ;
+        property: Period_Name ==>| PV_IntU 500 (PV_Unit (Id "ms")) ;
+        property: Compute_Execution_Time_Name ==>|
+            PV_IntRange (PV_IntU 0 (PV_Unit (Id "ms")))
+                        (PV_IntU 100 (PV_Unit (Id "ms")))
+    ].
+
+(*|
+This component is well-formed
+|*)
+
+Lemma A_Sporadic_Thread_wf : Well_Formed_Component_Instance A_Sporadic_Thread.
+Proof.
+  prove_Well_Formed_Component_Instance.
+Qed.
+
+(*|
+We can continue and build a corresponding thread state variable, add an event, avance time and check whether the thread is enabled.
+|*)
+
+Definition A_Sporadic_Thread_State_ := set_Idle (mk_thread_state_variable (A_Sporadic_Thread)).
+
+Lemma A_Sporadic_Thread_State_valid : thread_state_variable_wf A_Sporadic_Thread_State_.
+Proof.
+  prove_thread_state_variable_wf.
+Qed.
+
+Definition A_Sporadic_Thread_State := eval_enabled_thread_state A_Sporadic_Thread_State_.
+
+(*|
+Initially, the sporadic thread is not enabled
+|*)
+
+Lemma Sporadic_tO_not_enabled :
+  Enabled_oracle (A_Sporadic_Thread_State) = false.
+Proof. trivial. Qed.
+
+(*|
+Inject two events. Because of the DropOldest policy used, with a queue size of 1, we loose the first event
+|*)
+
+Definition A_Sporadic_Thread_State' :=
+  store_in A_Sporadic_Thread_State (Id "a_feature") false.
+Definition A_Sporadic_Thread_State'' :=
+  store_in A_Sporadic_Thread_State' (Id "a_feature") true.
+
+(** - The thread is not enabled yet *)
+
+Lemma Sporatic_tO_not_enabled' :
+  A_Sporadic_Thread_State''.(current_state) = Idle.
+Proof. trivial. Qed.
+
+(** - We advance time *)
+Definition th_ := advance_time A_Sporadic_Thread_State'' 500 0.
+Definition th := eval_enabled_thread_state th_.
+
+(** - The thread is enabled, and we can check frozen port *)
+
+Lemma Sporadic_t500_enabled : th.(current_state) = Ready.
+Proof. trivial. Qed.
+
+Lemma ETF:
+  Get_Port_Variable_Name (Get_Elected_Triggering_Feature (th)) = Id "a_feature".
+Proof. trivial. Qed.
+
+Compute Frozen_Ports' th.
+
+(* - At this stage, we have not called receive_input, no event available *)
+
+Lemma get_count_1 : get_count th (Id "a_feature") = 0%nat.
+Proof. trivial. Qed.
+
+(* - Calling receive input *)
+
+Definition th_rec := receive_input th (Id "a_feature").
+
+Lemma get_count_2 : get_count th_rec (Id "a_feature") = 1%nat.
+Proof. trivial. Qed.
+
+Lemma get_value_1 : get_value th_rec (Id "a_feature") = (0,true).
+Proof. trivial. Qed.
+
+(*|
+AADL thread as a P-DEVS
+-----------------------
+
+Let us turn this thread into a P-DEVS.
+
+* :coq:`X_thread` is the set of incoming messages the P-DEVS reacts to.
+|*)
 
 Inductive X_thread : Set :=
 | thread_step
 | eval_enabled  (clock: Time)
-| run_thread (clock : Time) (duration : Time).
+| run_thread (clock : Time) (duration : Time)
+| store_message (clock : Time) (port_name : identifier) (value : bool)
+| time_advance (clock : Time)
+.
 
 Definition Y_thread : Type := X_thread.
 
 Definition Synchronization_Message_Type_thread :=
     Synchronization_Message_Type X_thread Y_thread.
 
-(*| :coq:`S_thread` is the state variable of the P-DEVS. It is the cross-product of a label denoting the state and the actual state varoable. XXX thread_state_variable also has the Ready/Idle/Run state, is this redundant ?|*)
+(*|
+* :coq:`S_thread` is the state variable of the P-DEVS. It is the cross-product of a label denoting the state and the actual state varoable. XXX thread_state_variable also has the Ready/Idle/Run state, is this redundant ?
+|*)
 
 Inductive S_thread_labels : Set :=
     | performing_thread_activation
@@ -865,7 +1156,6 @@ Definition Update_S_thread
 
 Definition Q_thread : Type := Q S_thread.
 
-(* XXX better definition? *)
 Definition Q_init_thread
   (tsv : thread_state_variable)
   (tce : Compute_Entry_Point)
@@ -883,14 +1173,14 @@ Definition Update_Q
 :=
   {| st := Update_S_thread q.(st) label tsv ; e := q.(e) |}.
 
-(*| :coq:`δint_thread` updates the internal state of the thread
+(*|
+* :coq:`δint_thread` updates the internal state of the thread
 
-- (1) if the thread is Idle, we evaluate its enable function using eval_enabled_thread_state. If the thread is Readym we enter the performing thread conputation
+  - (1) if the thread is Idle, we evaluate its enable function using eval_enabled_thread_state. If the thread is Readym we enter the performing thread conputation
 
-- (2) if the thread is Running, and if its compute execution time is equal to its WCET, the thread becomes suspended (external AADL state) and Idle .
+  - (2) if the thread is Running, and if its compute execution time is equal to its WCET, the thread becomes suspended (external AADL state) and Idle .
 
-- Otherwise, we keep the existing state
-
+  - Otherwise, we keep the existing state
 |*)
 
 Definition δint_thread (s : S_thread) : S_thread :=
@@ -901,7 +1191,9 @@ Definition δint_thread (s : S_thread) : S_thread :=
     | Idle => (* (1) *)
       let state' := eval_enabled_thread_state s.(thread_st) in
         match state'.(current_state) with
-        | Ready => Update_S_thread s performing_thread_computation state'
+        | Ready =>
+          let state'' := freeze_thread_ports state' in
+            Update_S_thread s performing_thread_computation state''
 
         | _ =>  s
         end
@@ -914,8 +1206,9 @@ all atomic except execute
       let state := s.(thread_ce) s.(thread_st) in
 
       if state.(wcet) <=? state.(cet) then
+      let state' := reset_thread_ports state in
         {| thread_l := suspended_awaiting_dispatch ;
-           thread_st := set_Idle state ;
+           thread_st := set_Idle state' ;
            thread_ce := s.(thread_ce) |}
 
       else
@@ -926,20 +1219,29 @@ all atomic except execute
     | Ready  => s
   end.
 
-(*| :coq:`δext_thread` take into account incoming messages to update
-the thread state. |*)
+(*|
+* :coq:`δext_thread` take into account incoming messages to update
+the thread state.
+|*)
+
 Definition δext_thread (q : Q_thread) (x : list X_thread) : S_thread :=
   match q.(st).(thread_l), hd_error x with
 
     | performing_thread_activation, Some thread_step =>
-    let state' := await_dispatch q.(st).(thread_st) in
-      {| thread_l  := suspended_awaiting_dispatch ;
-         thread_st := state' ;
-         thread_ce := q.(st).(thread_ce) |}
+      let state' := await_dispatch q.(st).(thread_st) in
+        {| thread_l  := suspended_awaiting_dispatch ;
+          thread_st := state' ;
+          thread_ce := q.(st).(thread_ce) |}
 
     | suspended_awaiting_dispatch, Some (eval_enabled c) =>
       let state' := advance_time q.(st).(thread_st) c 0 in
-        {| thread_l  := q.(st).(thread_l) ;
+        {| thread_l := q.(st).(thread_l) ;
+          thread_st := state' ;
+          thread_ce := q.(st).(thread_ce) |}
+
+    |  _, Some (time_advance c) =>
+      let state' := advance_time q.(st).(thread_st) c 0 in
+        {| thread_l := q.(st).(thread_l) ;
           thread_st := state' ;
           thread_ce := q.(st).(thread_ce) |}
 
@@ -950,7 +1252,17 @@ Definition δext_thread (q : Q_thread) (x : list X_thread) : S_thread :=
           thread_st := state' ;
           thread_ce := q.(st).(thread_ce) |}
 
-    | _, _ => q.(st)
+    | _, Some (store_message c p m) =>
+      let state' := store_in q.(st).(thread_st) p m in
+        {| thread_l :=  q.(st).(thread_l);
+           thread_st := state' ;
+           thread_ce := q.(st).(thread_ce) |}
+
+    | _, _ =>
+    let state' := nop q.(st).(thread_st) in
+      {| thread_l :=  q.(st).(thread_l);
+        thread_st := state' ;
+        thread_ce := q.(st).(thread_ce) |}
 
 end.
 
@@ -966,48 +1278,70 @@ Definition λ_thread (s : S_thread) : list Y_output_thread :=
 Definition ta_thread (s : S_thread) : Time :=
   match s.(thread_l) with
     | performing_thread_activation => Zero
+
     | suspended_awaiting_dispatch =>
-        s.(thread_st).(next_dispatch_time) + s.(thread_st).(delta_cet)
-        - s.(thread_st).(clock)
+      match s.(thread_st).(dispatch_protocol) with
+        | Periodic =>
+          s.(thread_st).(next_dispatch_time) + s.(thread_st).(delta_cet)
+          - s.(thread_st).(clock)
+
+        | Sporadic => s.(thread_st).(delta_cet)
+
+        | _ => Zero
+      end
+
+    (* XXX if periodic, OK, if sporadic, should be 0*)
+
     | performing_thread_computation => s.(thread_st).(delta_cet)
   end.
 
 Definition thread_DEVS_type : Type :=
     DEVS_Atomic_Model S_thread X_thread Y_thread.
 
+Definition thread_DEVS_Simulator_Type : Type :=
+    DEVS_Simulator S_thread X_thread Y_thread.
+
+Definition thread_DEVS
+  (t : component)
+  (ce : Compute_Entry_Point)
+  : thread_DEVS_type := {|
+  devs_atomic_id := t->id ;
+  Q_init := Q_init_thread (mk_thread_state_variable t) ce;
+
+  ta := ta_thread;
+  δint := δint_thread;
+  λ  := λ_thread;
+  δext := δext_thread;
+  δcon := δcon_thread;
+|}.
+
+Definition thread_Initial
+  (t : component)
+  (ce : Compute_Entry_Point)
+:=
+  Instantiate_DEVS_Simulator (t->id) (thread_DEVS t ce).
+
+(*|
+Periodic thread test
+^^^^^^^^^^^^^^^^^^^^
+
+Translate DEVS to a LTS
+|*)
+
 Definition Periodic_Compute_Entry_Point : Compute_Entry_Point :=
   fun x : thread_state_variable =>
     compute_during x x.(delta_cet).
 
-Definition thread_DEVS
-    (t : component)
-    (ce : Compute_Entry_Point)
-    : thread_DEVS_type := {|
-    devs_atomic_id := t->id ;
-    Q_init := Q_init_thread (mk_thread_state_variable t) ce;
-
-    ta := ta_thread;
-    δint := δint_thread;
-    λ  := λ_thread;
-    δext := δext_thread;
-    δcon := δcon_thread;
-|}.
-
-Definition thread_DEVS_Simulator_Type : Type :=
-    DEVS_Simulator S_thread X_thread Y_thread.
-
-Definition thread_Initial (t : component) := Instantiate_DEVS_Simulator
-    (Id "thread") (thread_DEVS t Periodic_Compute_Entry_Point).
-
-(* Translate DEVS to a LTS *)
-
-Definition A_Periodic_initial := thread_Initial A_Periodic_Thread.
+Definition A_Periodic_initial :=
+  thread_Initial A_Periodic_Thread Periodic_Compute_Entry_Point.
 
 Definition thread_LTS := LTS_Of_DEVS (A_Periodic_initial).
 
 Example thread_LTS_0 := Init thread_LTS.
 
-(*| * Step#0: we confirm the correct initialization of a thread |*)
+(*|
+* Step#0: we confirm the correct initialization of a thread
+|*)
 
 Lemma thread_LTS_0_OK :
     Print_DEVS_Simulator thread_LTS_0 =
@@ -1035,7 +1369,9 @@ Lemma thread_LTS_0_OK :
     |} [].
 Proof. trivial. Qed.
 
-(*| * Step#1: We perform a :coq:`thread_step` to activate the thread. Because of the activation time allows the thread to be dispatched, the thread directly enters the :coq:`performing_thread_computation` state. This is expected because of the confluence function that executes first the external transition, then the internal one. |*)
+(*|
+* Step#1: We perform a :coq:`thread_step` to activate the thread. Because of the activation time allows the thread to be dispatched, the thread directly enters the :coq:`performing_thread_computation` state. This is expected because of the confluence function that executes first the external transition, then the internal one.
+|*)
 
 Example thread_LTS_1 :=
   step_lts thread_LTS_0
@@ -1067,7 +1403,9 @@ Lemma thread_LTS_1_OK :
     |} [].
 Proof. trivial. Qed.
 
-(*| * Step#2: we "run" the thread for 50 ms |*)
+(*|
+* Step#2: we "run" the thread for 50 ms
+|*)
 
 Example thread_LTS_2 :=
     step_lts thread_LTS_1
@@ -1099,7 +1437,9 @@ Lemma thread_LTS_2_OK :
     |} [].
 Proof. trivial. Qed.
 
-(*| * Step#3: we "run" the thread for another 50 ms to see it being completed and go back to :coq:`suspended_awaiting_dispatch` state. |*)
+(*|
+* Step#3: we "run" the thread for another 50 ms to see it being completed and go back to :coq:`suspended_awaiting_dispatch` state.
+|*)
 
 Example thread_LTS_3 :=
     step_lts thread_LTS_2 (xs Y_thread Parent Parent 50%nat [ run_thread 50 50%nat ]).
@@ -1187,4 +1527,287 @@ Lemma thread_LTS_5_OK :
              |};
           thread_ce := Periodic_Compute_Entry_Point;
           |} [].
+Proof. trivial. Qed.
+
+(*|
+Sporadic thread test
+^^^^^^^^^^^^^^^^^^^^
+
+Translate DEVS to a LTS
+|*)
+
+Definition Sporadic_Compute_Entry_Point : Compute_Entry_Point :=
+  fun x : thread_state_variable =>
+    compute_during x x.(delta_cet).
+
+Definition A_Sporadic_initial :=
+  thread_Initial A_Sporadic_Thread Sporadic_Compute_Entry_Point.
+
+Definition S_thread_LTS := LTS_Of_DEVS (A_Sporadic_initial).
+
+Example S_thread_LTS_0 := Init S_thread_LTS.
+
+(*|
+* Step#0: we confirm the correct initialization of a thread
+|*)
+
+Compute Print_DEVS_Simulator S_thread_LTS_0.
+Lemma S_thread_LTS_0_OK :
+    Print_DEVS_Simulator S_thread_LTS_0 =
+    dbg Zero Zero
+    {|
+      thread_l := performing_thread_activation;
+      thread_st :=
+        {|
+          dispatch_protocol := Sporadic;
+          period := 500;
+          deadline := 0%Z;
+          priority := 42;
+          dispatch_able := true;
+          wcet := 100;
+          clock := 0;
+          cet := 0;
+          delta_cet := 0;
+          current_state := Not_Activated;
+          next_dispatch_time := 0;
+          input_ports :=
+          [{|
+             port :=
+               Feature (Id "a_feature") inF eventPort
+                 (Component (Id "") null (FQN [] (Id "") None) [] []
+                    [] []) [];
+             is_data := false;
+             inner_variable := [];
+             outer_variable := [];
+             port_input_times := Input_Time [Dispatch];
+             urgency := 0;
+             size := 1;
+             overflow_handling_protocol := DropOldest;
+             dequeue_protocol := OneItem;
+             dequeued_items := 0
+           |}];
+          output_ports := [];
+          dispatch_trigger :=
+          [Feature (Id "a_feature") inF eventPort
+             (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+             []]
+        |};
+        thread_ce := Periodic_Compute_Entry_Point;
+    |} [].
+Proof. trivial. Qed.
+
+(*|
+* Step#1: We perform a :coq:`thread_step` to activate the thread. XXX
+|*)
+
+Example S_thread_LTS_1 :=
+  step_lts S_thread_LTS_0
+    (xs Y_thread Parent Parent Zero [ thread_step ]).
+
+Compute Print_DEVS_Simulator S_thread_LTS_1.
+
+Lemma S_thread_LTS_1_OK :
+    Print_DEVS_Simulator S_thread_LTS_1 =
+    dbg 0 0
+         {|
+           thread_l := suspended_awaiting_dispatch;
+           thread_st :=
+             {|
+               dispatch_protocol := Sporadic;
+               period := 500;
+               deadline := 0%Z;
+               priority := 42;
+               dispatch_able := true;
+               wcet := 100;
+               clock := 0;
+               cet := 0;
+               delta_cet := 0;
+               current_state := Idle;
+               next_dispatch_time := 0;
+               input_ports :=
+                 [{|
+                    port :=
+                      Feature (Id "a_feature") inF eventPort
+                        (Component (Id "") null (FQN [] (Id "") None) [] []
+                           [] []) [];
+                    is_data := false;
+                    inner_variable := [];
+                    outer_variable := [];
+                    port_input_times := Input_Time [Dispatch];
+                    urgency := 0;
+                    size := 1;
+                    overflow_handling_protocol := DropOldest;
+                    dequeue_protocol := OneItem;
+                    dequeued_items := 0
+                  |}];
+               output_ports := [];
+               dispatch_trigger :=
+                 [Feature (Id "a_feature") inF eventPort
+                    (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+                    []]
+             |};
+             thread_ce := Periodic_Compute_Entry_Point;
+             |} [].
+Proof. trivial. Qed.
+
+(*|
+* Step#2: We send an event to the sporadic thread, the thread is immediatly dispatched.
+|*)
+
+Example S_thread_LTS_2 :=
+  step_lts S_thread_LTS_1
+    (xs Y_thread Parent Parent 0 [ store_message 0 (Id "a_feature") false ]).
+
+Compute Print_DEVS_Simulator S_thread_LTS_2.
+
+Lemma S_thread_LTS_2_OK :
+    Print_DEVS_Simulator S_thread_LTS_2 =
+    dbg 0 0
+    {|
+      thread_l := performing_thread_computation;
+      thread_st :=
+        {|
+          dispatch_protocol := Sporadic;
+          period := 500;
+          deadline := 0%Z;
+          priority := 42;
+          dispatch_able := true;
+          wcet := 100;
+          clock := 0;
+          cet := 0;
+          delta_cet := 0;
+          current_state := Ready;
+          next_dispatch_time := 500;
+          input_ports :=
+            [{|
+               port :=
+                 Feature (Id "a_feature") inF eventPort
+                   (Component (Id "") null (FQN [] (Id "") None) [] []
+                      [] []) [];
+               is_data := false;
+               inner_variable := [(0, false)];
+               outer_variable := [];
+               port_input_times := Input_Time [Dispatch];
+               urgency := 0;
+               size := 1;
+               overflow_handling_protocol := DropOldest;
+               dequeue_protocol := OneItem;
+               dequeued_items := 0
+             |}];
+          output_ports := [];
+          dispatch_trigger :=
+            [Feature (Id "a_feature") inF eventPort
+               (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+               []]
+        |};
+        thread_ce := Periodic_Compute_Entry_Point;
+        |} [].
+Proof. trivial. Qed.
+
+(*|
+* Step#3: We execute the thread for 100 time units. The thread goes to the :coq:`suspended_awaiting_dispatch` state.
+|*)
+
+Example S_thread_LTS_3 :=
+  step_lts S_thread_LTS_2
+    (xs Y_thread Parent Parent 0  [ run_thread 0 100%nat ]).
+
+Compute Print_DEVS_Simulator S_thread_LTS_3.
+
+Lemma S_thread_LTS_3_OK :
+    Print_DEVS_Simulator S_thread_LTS_3 =
+    dbg 0 100
+    {|
+      thread_l := suspended_awaiting_dispatch;
+      thread_st :=
+        {|
+          dispatch_protocol := Sporadic;
+          period := 500;
+          deadline := 0%Z;
+          priority := 42;
+          dispatch_able := true;
+          wcet := 100;
+          clock := 100;
+          cet := 0;
+          delta_cet := 100;
+          current_state := Idle;
+          next_dispatch_time := 500;
+          input_ports :=
+            [{|
+               port :=
+                 Feature (Id "a_feature") inF eventPort
+                   (Component (Id "") null (FQN [] (Id "") None) [] []
+                      [] []) [];
+               is_data := false;
+               inner_variable := [];
+               outer_variable := [];
+               port_input_times := Input_Time [Dispatch];
+               urgency := 0;
+               size := 1;
+               overflow_handling_protocol := DropOldest;
+               dequeue_protocol := OneItem;
+               dequeued_items := 0
+             |}];
+          output_ports := [];
+          dispatch_trigger :=
+            [Feature (Id "a_feature") inF eventPort
+               (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+               []]
+        |};
+        thread_ce := Periodic_Compute_Entry_Point;
+        |} [].
+Proof. trivial. Qed.
+
+(*|
+* Step#4: We just step .
+|*)
+
+Example S_thread_LTS_4 :=
+  step_lts S_thread_LTS_3
+    (xs Y_thread Parent Parent 100 [ thread_step  ]).
+
+Compute Print_DEVS_Simulator S_thread_LTS_4.
+
+Lemma S_thread_LTS_4_OK :
+    Print_DEVS_Simulator S_thread_LTS_4 =
+    dbg 100 100 (* XXX wrong *)
+         {|
+           thread_l := suspended_awaiting_dispatch;
+           thread_st :=
+             {|
+               dispatch_protocol := Sporadic;
+               period := 500;
+               deadline := 0%Z;
+               priority := 42;
+               dispatch_able := true;
+               wcet := 100;
+               clock := 100;
+               cet := 0;
+               delta_cet := 0;
+               current_state := Idle;
+               next_dispatch_time := 500;
+               input_ports :=
+                 [{|
+                    port :=
+                      Feature (Id "a_feature") inF eventPort
+                        (Component (Id "") null (FQN [] (Id "") None) [] []
+                           [] []) [];
+                    is_data := false;
+                    inner_variable := [];
+                    outer_variable := [];
+                    port_input_times := Input_Time [Dispatch];
+                    urgency := 0;
+                    size := 1;
+                    overflow_handling_protocol := DropOldest;
+                    dequeue_protocol := OneItem;
+                    dequeued_items := 0
+                  |}];
+               output_ports := [];
+               dispatch_trigger :=
+                 [Feature (Id "a_feature") inF eventPort
+                    (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+                    []]
+             |};
+             thread_ce := Periodic_Compute_Entry_Point;
+             |} [].
 Proof. trivial. Qed.
