@@ -126,19 +126,12 @@ Section Port_Variable.
 
   (* begin hide *)
   Definition port_variable_wf_dec : forall p : port_variable,
-    dec_sumbool (port_variable_wf p).
+    { port_variable_wf p } + { ~ port_variable_wf p }.
   Proof.
-    intros.
-    unfold port_variable_wf.
-    destruct port_input_times.
-    repeat apply dec_sumbool_and.
-    - apply input_time_wf_dec.
-    -  destruct (Overflow_Handling_Protocol_eq_dec (overflow_handling_protocol p) Unspecified_Overflow_Handling_Protocol).
-      * subst; auto.
-      * subst; auto.
-    - destruct (Dequeue_Protocol_eq_dec (dequeue_protocol p) Unspecified_Dequeue_Protocol).
-      * subst; auto.
-      * subst; auto.
+    generalize IO_Time_Spec_eq_dec.
+    generalize Overflow_Handling_Protocol_eq_dec.
+    generalize Dequeue_Protocol_eq_dec.
+    prove_dec.
   Defined.
   (* end hide *)
 
@@ -148,10 +141,8 @@ Section Port_Variable.
   Definition port_variable_list_wf_dec : forall p : list port_variable,
     dec_sumbool (port_variable_list_wf p).
   Proof.
-    intros.
-    unfold port_variable_list_wf.
-    apply sumbool_All_dec.
-    apply port_variable_wf_dec.
+    generalize port_variable_wf_dec.
+    prove_dec.
   Qed.
 
   Definition Invalid_Port_Variable := mkPortVariable Invalid_Feature.

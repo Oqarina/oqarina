@@ -643,7 +643,7 @@ Definition reset_thread_ports (th : thread_state_variable)  := {|
   current_state := th.(current_state);
   next_dispatch_time := th.(next_dispatch_time);
 
-  (* freeze_ports *)
+  (* reset_thread_ports *)
   input_ports := map Reset_Port_Variable th.(input_ports) ;
 |}.
 

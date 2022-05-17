@@ -31,6 +31,8 @@
 ***)
 
 Require Import List.
+Require Import Lists.ListDec.
+
 Require Export Oqarina.coq_utils.all.
 
 (*| We define general tactics to prove basic decidability results. It is
@@ -51,8 +53,9 @@ Ltac prove_dec :=
     | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
     | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
     | [ |- {?X _} + {~ ?X _} ] =>
-        try auto with well_know_wf_dec ; unfold X
+        auto ; try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
+    | [ |- {NoDup _} + {~ NoDup _} ] => apply NoDup_dec
     end.
 
 Ltac prove_dec2 :=
@@ -66,4 +69,5 @@ Ltac prove_dec2 :=
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
+    | [ |- {NoDup _} + {~ NoDup _} ] => apply NoDup_dec
     end.
