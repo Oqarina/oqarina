@@ -41,9 +41,9 @@ Require Export Oqarina.AADL.resolute.all.
 
 (*|
 
-****
-AADL
-****
+*********
+AADL Core
+*********
 
 In this chapter, we introduce the key elements of the formalization of AADL in Coq.
 
@@ -52,6 +52,15 @@ In this chapter, we introduce the key elements of the formalization of AADL in C
 .. include::  AADL__Kernel_categories.v.rst
 .. include::  AADL__Kernel_component.v.rst
 .. include::  AADL__resolute_resolute.v.rst
+
+*************************
+AADL Behavioral semantics
+*************************
+
+In this chapter, we leverage the previous definitions of AADL concepts and provide a description of the behavioral semantics of AADL. This description starts with the description of AADL port variables, representing features, then present AADL runtime services to finally present the semantics of each components category.
+
+.. include::  AADL__behavior_port_variable.v.rst
 .. include::  AADL__behavior_thread.v.rst
+.. include::  AADL__behavior_system.v.rst
 
 |*)

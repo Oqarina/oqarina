@@ -64,6 +64,8 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/AADL/Kernel/categories.v \
 	src/AADL/Kernel/component.v \
 	src/AADL/behavior/thread.v \
+	src/AADL/behavior/port_variable.v \
+	src/AADL/behavior/system.v \
 	src/AADL/resolute/resolute.v \
 	examples/AADL/full_example.v \
 	examples/3rd-party/aadl2prosa.v
