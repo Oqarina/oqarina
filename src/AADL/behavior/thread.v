@@ -559,7 +559,7 @@ Fixpoint Freeze_Port_Variables
   match l with
   | [] => []
   | h :: t => match Frozen_dec h th with
-              | left _ => Freeze_Port_Variable h :: Freeze_Port_Variables t th
+              | left _ => Receive_Input__ h :: Freeze_Port_Variables t th
               | right _ => h :: Freeze_Port_Variables t th
               end
 end.
