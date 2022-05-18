@@ -62,8 +62,8 @@ Lemma Is_Property_Defined_dec :
   forall (name:ps_qname) (pa: list property_association),
     {Is_Property_Defined name pa} + {~ Is_Property_Defined name pa}.
 Proof.
-  prove_dec2.
-  apply ps_qname_eq_dec.
+  generalize ps_qname_eq_dec.
+  prove_dec.
 Defined.
 
 (** [Map_PV_Int] maps a property value to an integer. *)

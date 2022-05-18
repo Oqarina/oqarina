@@ -212,7 +212,8 @@ Definition Is_Feature_Activated (p : port_variable) :=
 |*)
 
 Lemma Is_Feature_Activated_dec :
-  forall (p : port_variable), dec_sumbool (Is_Feature_Activated p).
+  forall (p : port_variable),
+    { Is_Feature_Activated p } + { ~ Is_Feature_Activated p }.
 Proof.
   prove_dec.
   apply PortQueue.Is_Empty_dec.
@@ -231,7 +232,7 @@ Definition Feature_In_Dispatch_Trigger_dec :
   forall (p : port_variable) (d : list feature),
     dec_sumbool (Feature_In_Dispatch_Trigger p d).
 Proof.
-  prove_dec2.
+  prove_dec.
 Defined.
 
 (*|
@@ -249,8 +250,8 @@ Lemma Is_Activated_Triggering_Feature_dec:
   forall (p : port_variable)  (d : list feature),
     dec_sumbool (Is_Activated_Triggering_Feature p d).
 Proof.
-  prove_dec2.
-  apply Is_Feature_Activated_dec.
+  generalize Is_Feature_Activated_dec.
+  prove_dec.
 Defined.
 
 Definition Is_Activated_Triggering_Feature_b (p : port_variable)  (d : list feature) :=
@@ -528,10 +529,8 @@ Definition Dispatch_Frozen (p : port_variable) (th : thread_state_variable) :=
 Lemma Dispatch_Frozen_dec:
   forall p th, { Dispatch_Frozen p th } + { ~ Dispatch_Frozen p th }.
 Proof.
-  prove_dec2.
-  apply port_variable_eq_dec.
-  apply dec_sumbool_not.
-  apply Feature_In_Dispatch_Trigger_dec.
+  generalize port_variable_eq_dec.
+  prove_dec.
 Defined.
 
 (*||*)
@@ -548,7 +547,7 @@ Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
 Lemma Frozen_dec: forall p th,  { Frozen p th } + { ~ Frozen p th }.
 Proof.
   generalize Dispatch_Frozen_dec.
-  prove_dec2.
+  prove_dec.
   destruct (Current_Valid_IO_Time_Spec p th) ; auto.
 Defined.
 

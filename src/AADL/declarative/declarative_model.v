@@ -150,8 +150,6 @@ Section AADL_Component_Implementation.
             { ~Well_Formed_Component_Implementation c}.
     Proof.
         prove_dec.
-        apply Unfold_Apply_dec.
-        apply Well_Formed_Component_Implementation'_dec.
     Qed.
 
 (* begin hide *)

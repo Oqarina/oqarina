@@ -54,18 +54,6 @@ Ltac prove_dec :=
     | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
     | [ |- {?X _} + {~ ?X _} ] =>
         auto ; try auto with well_know_wf_dec ; unfold X
-    | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
-    | [ |- {NoDup _} + {~ NoDup _} ] => apply NoDup_dec
-    end.
-
-Ltac prove_dec2 :=
-    repeat match goal with
-    | [ |- forall x : ?T, _ ] => intros
-    | [ |- dec_sumbool _ ] => unfold dec_sumbool
-    | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
-    | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
-    | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
-    | [ |- { _ -> False } + { (_ -> False) -> False} ] => apply dec_sumbool_not
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec

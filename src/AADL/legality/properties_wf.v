@@ -108,7 +108,7 @@ Lemma Well_Formed_Property_Value_dec :
     forall (c : component) (pa : property_association),
         { Well_Formed_Property_Value  c pa } + { ~ Well_Formed_Property_Value  c pa  }.
 Proof.
-    prove_dec2.
+    prove_dec.
     destruct (PV pa); auto.
     destruct (Resolve_PV_ModelRef c pa); auto.
 Qed.
@@ -127,7 +127,7 @@ Lemma Well_Formed_Property_Values'_dec:
         { Well_Formed_Property_Values'  parent c } +
         { ~ Well_Formed_Property_Values'  parent c }.
 Proof.
-    prove_dec2.
+    prove_dec.
 Qed.
 
 Global Hint Resolve Well_Formed_Property_Values'_dec : well_know_wf_dec.

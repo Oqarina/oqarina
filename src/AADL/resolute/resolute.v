@@ -101,7 +101,7 @@ Definition has_property_c (c : component) (name : ps_qname) :=
 Lemma has_property_c_dec: forall (c: component) (name : ps_qname),
     { has_property_c c name } + {~ has_property_c c name }.
 Proof.
-    prove_dec2 ; apply ps_qname_eq_dec.
+    prove_dec ; apply ps_qname_eq_dec.
 Defined.
 
 Definition property_c
@@ -121,7 +121,7 @@ Definition is_parent_of_c_b (parent : component) (c : component) :=
 Lemma is_parent_of_c_dec: forall (parent:component) (c:component),
     { is_parent_of_c parent c} + { ~ is_parent_of_c parent c }.
 Proof.
-    prove_dec2.
+    prove_dec.
 Qed.
 
 Definition parent_c (r : component) (c : component) :=
@@ -151,7 +151,7 @@ Definition has_property_f (f : feature) (name : ps_qname) :=
 Lemma has_property_f_dec: forall (f : feature) (name : ps_qname),
     { has_property_f f name } + {~ has_property_f f name }.
 Proof.
-    prove_dec2 ; apply ps_qname_eq_dec.
+    prove_dec ; apply ps_qname_eq_dec.
 Defined.
 
 Definition property_f
@@ -177,7 +177,7 @@ Definition is_parent_of_f_b (parent : component) (f : feature) :=
 Lemma is_parent_of_f_dec: forall (parent : component) (f : feature),
     { is_parent_of_f parent f } + { ~ is_parent_of_f parent f }.
 Proof.
-    prove_dec2.
+    prove_dec.
 Qed.
 
 Definition parent_f (r : component) (f : feature) :=
@@ -359,5 +359,5 @@ Definition is_processor_bound (r : component) (c: component) : Prop :=
 Lemma is_processor_bound_dec: forall (r:component) (c: component),
     {is_processor_bound r c} + {~ is_processor_bound r c}.
 Proof.
-    prove_dec2. apply is_processor_bound'_dec.
+    prove_dec. apply is_processor_bound'_dec.
 Qed.
