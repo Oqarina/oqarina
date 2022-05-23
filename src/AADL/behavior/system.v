@@ -29,7 +29,11 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
+(*|
+AADL Systems
+============
+
+.. coq:: none |*)
 Require Import Coq.Init.Datatypes.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.Lists.List.
@@ -47,18 +51,15 @@ Import AADL_Notations.
 Require Import Oqarina.AADL.property_sets.all.
 
 Set Implicit Arguments.
-(* end hide *)
+(*| .. coq::  |*)
 
-(**
-%\chapter{AADL System Category}\label{sec::aadl_system}%
+(*|
+The system component category denotes an assembly of interacting application software, execution platform, and sub-systems as sub-components. Systems may be hierarchically nested.
 
-%\N% The %\texttt{system}% component category denotes an assembly of interacting application software, execution platform, and sub-systems as sub-components. Systems may be hierarchically nested%\footnote{Note: the following is inspired from AADLv2.2 \S 13.3. We heavily simplified it to the bare minimal level of information. We also corrected some of this description to better reflect the modular nature of AADL instance hierarchy and remove redundant information that belongs to the description of other component categories.}%.
+System behavioral semantics
+---------------------------
 
-* System behavioral semantics
-
-** Informal definition
-
-%\N% In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}%).
+In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}.
 
 %
 \tikzset{elliptic state/.style={draw,ellipse}, -Triangle, node distance=2cm}
@@ -82,25 +83,27 @@ Set Implicit Arguments.
 \end{figure}
 %
 
-%\N% This automata semantics can also be described as follows:
+This automata semantics can also be described as follows:
 
-- %\textit{"system offline"}% is the system initial state.
+- :code:`system offline` is the system initial state.
 
-- On system startup the system instance transitions from %\textit{"system offline"}% to %\textit{"system starting"}% through the action %\textbf{start(system)}%
+- On system startup the system instance transitions from :code:`system offline` to :code:`system starting` through the action :code:`start(system)`
 
-- When in state %\textit{"system starting"}%, the system perform the initialization of the system subcomponents. In case of an error during this step, the system goes back to %\textit{"system offline"}% through the the %\textbf{abort(system)}% action. When all subsystems have been successfully initialized, the system moves to the state %\textit{"system operational"}% through the %\textbf{started(system)}% action.
+- When in state :code:`system starting`, the system perform the initialization of the system subcomponents. In case of an error during this step, the system goes back to :code:`system offline` through the the :code:`abort(system)` action. When all subsystems have been successfully initialized, the system moves to the state :code:`system operational` through the :code:`started(system)` action.
 
-- When in state %\textit{"system operational"}%, the system is under operation, the system and its subcomponents execute their nominal behavior. In case of an error during the execution, the system goes back to %\textit{"system offline"}% through the %\textbf{abort(system)}% action.
+- When in state :code:`system operational`, the system is under operation, the system and its subcomponents execute their nominal behavior. In case of an error during the execution, the system goes back to :code:`system offline` through the :code:`abort(system)` action.
 
-- Upon completion of its execution, a system may perform a graceful shutdowm (%\textbf{stop(system)}% action) and moves to the state %\textit{"system stoping"}%. When all subsystems are successfully stoped, the system moves to the state %\textit{"system offline"}% through the %\textbf{stopped(system)}% action.
+- Upon completion of its execution, a system may perform a graceful shutdowm (:code:`stop(system)` action) and moves to the state :code:`system stoping`. When all subsystems are successfully stoped, the system moves to the state :code:`system offline` through the :code:`stopped(system)` action.
 
-*)
+|*)
 
-(** *** Coq mechanization
+(*|
+Coq mechanization
+------------------
 
-%\N% The following provides a Coq mechanization of the previous automata using the DEVS formalism. *)
+The following provides a Coq mechanization of the previous automata using the DEVS formalism.
 
-(** [X_system] represents the set of actions that a system may perform, as per the hybrid automata defined in AADLv2.2 \S 13.3. *)
+:coq:`X_system` represents the set of actions that a system may perform, as per the hybrid automata defined in AADLv2.2 \S 13.3. |*)
 
 Inductive X_system : Set :=
     start_system | abort_system | started_system | stop_system | stopped_system.
@@ -112,7 +115,7 @@ Definition Y_system : Type := X_system.
 Definition Synchronization_Message_Type_system :=
     Synchronization_Message_Type X_system Y_system.
 
-(** [system_S] represents the labels of the state of the system DEVS. *)
+(*| :coq:`system_S` represents the labels of the state of the system DEVS. |*)
 
 Inductive S_system : Set :=
     system_offline | system_starting |
@@ -170,33 +173,14 @@ Definition system_DEVS_Simulator_Type : Type :=
 Definition System_Initial := Instantiate_DEVS_Simulator
     (Id "System") system_DEVS.
 
-(* Translate DEVS to a LTS *)
 
-Definition System_LTS := LTS_Of_DEVS (System_Initial).
+(*| Map a complete system hierarchy to a DEVS |*)
 
-Example System_LTS_1 :=
-    step_lts (Init System_LTS) (i X_system Y_system 0).
-
-Lemma System_LTS_1_OK :
-    Print_DEVS_Simulator System_LTS_1 =  dbg 0 1 system_offline [].
-Proof. trivial. Qed.
-
-Example System_LTS_2 :=
-    step_lts System_LTS_1 (xs Y_system Parent Parent 1 [ start_system ]).
-
-Lemma System_LTS_2_OK :
-    Print_DEVS_Simulator System_LTS_2 =  dbg 1 2 system_starting [].
-Proof. trivial. Qed.
-
-(* Map a complete system hierarchy to a DEVS *)
-
-(* Map a system component and system subcomponents into a list of DEVS system *)
+(*| Map a system component and system subcomponents into a list of DEVS system |*)
 
 Definition Map_AADL_System_DEVS_System (c : component) :=
     map (fun s => Instantiate_DEVS_Simulator (s->id) system_DEVS)
      (Unfold c).
-
-(* Let's map a system hierarchy into a coupled DEVS ! *)
 
 Definition Z_Function_system : Z_Function_internal X_system Y_system :=
     fun (id id2 : identifier) (yi : Y_output Y_system)  =>
@@ -211,11 +195,11 @@ Definition Z_Function_in_system : Z_Function_in X_system :=
 Definition Z_Function_out_system : Z_Function_out Y_system :=
     fun (id : identifier) (y : Y_output Y_system) => y.
 
-(* For a list of components, we define the map of influenced
+(*| For a list of components, we define the map of influenced
 components as follows:
 -  A influences B if B is a subcomponent of A
 - others XXX TBD e.g. modes, EMV2 state machine, etc.
-*)
+|*)
 
 Fixpoint Build_Influenced' (lc : list component) :=
     match lc with
@@ -223,8 +207,6 @@ Fixpoint Build_Influenced' (lc : list component) :=
     | h :: t =>  (h->id) !-> Components_Identifiers (h->subcomps) ;
                  (Build_Influenced' t)
     end.
-
-(* For a component hierarchy, we build the *)
 
 Definition Build_Influenced (c : component) :=
     (Id "_self") !-> [c->id] ;

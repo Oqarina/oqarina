@@ -9,7 +9,25 @@ Import AADL_Notations.
 Require Import Oqarina.formalisms.DEVS.parallel.all.
 Require Import Oqarina.formalisms.all.
 
-(* Map An_AADL_System to an LTS *)
+(* Test #1: Translate DEVS to a LTS *)
+
+Definition System_LTS := LTS_Of_DEVS (System_Initial).
+
+Example System_LTS_1 :=
+    step_lts (Init System_LTS) (i X_system Y_system 0).
+
+Lemma System_LTS_1_OK :
+    Print_DEVS_Simulator System_LTS_1 =  dbg 0 1 system_offline [].
+Proof. trivial. Qed.
+
+Example System_LTS_2 :=
+    step_lts System_LTS_1 (xs Y_system Parent Parent 1 [ start_system ]).
+
+Lemma System_LTS_2_OK :
+    Print_DEVS_Simulator System_LTS_2 =  dbg 1 2 system_starting [].
+Proof. trivial. Qed.
+
+(* Test#2: Map An_AADL_System to an LTS *)
 
 Example An_AADL_System :=
     system: "a_system" ->| "pack::a_system_classifier"
