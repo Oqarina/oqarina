@@ -57,6 +57,10 @@ Require Import Oqarina.AADL.legality.features_wf.
 From these rules, we deduce the two following lemmas and their decidability results\change{Actually wrong, we miss the direction of the feature !}:
 % *)
 
+Local Hint Resolve
+  Well_Formed_Component_Subcomponents_dec
+  Well_Formed_Component_Interface_dec : core.
+
 Definition Well_Formed_Thead_Component_Type (c: component) :=
   Well_Formed_Component_Interface c
       [ dataPort ; eventPort ; eventDataPort ; dataAccess ;
@@ -67,9 +71,7 @@ Lemma Well_Formed_Thead_Component_Type_dec :
     {Well_Formed_Thead_Component_Type c} +
     {~ Well_Formed_Thead_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Thead_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Thead_Component_Implementation (c: component) :=
@@ -80,9 +82,7 @@ Lemma Well_Formed_Thead_Component_Implementation_dec :
   forall c:component, {Well_Formed_Thead_Component_Implementation c} +
                       {~ Well_Formed_Thead_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Thead_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -105,9 +105,7 @@ Lemma Well_Formed_Data_Component_Type_dec :
     {Well_Formed_Data_Component_Type c} +
     {~ Well_Formed_Data_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Data_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Data_Component_Implementation (c:component) :=
@@ -119,9 +117,7 @@ Lemma Well_Formed_Data_Component_Implementation_dec :
     {Well_Formed_Data_Component_Implementation c} +
     {~ Well_Formed_Data_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Data_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -144,9 +140,7 @@ Lemma Well_Formed_Subprogram_Component_Type_dec :
   {Well_Formed_Subprogram_Component_Type c} +
   {~ Well_Formed_Subprogram_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Subprogram_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Subprogram_Component_Implementation (c: component) :=
@@ -158,9 +152,7 @@ Lemma Well_Formed_Subprogram_Component_Implementation_dec :
   {Well_Formed_Subprogram_Component_Implementation c} +
   {~ Well_Formed_Subprogram_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Subprogram_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -182,9 +174,7 @@ Lemma Well_Formed_SubprogramGroup_Component_Type_dec :
   {Well_Formed_SubprogramGroup_Component_Type c} +
   {~ Well_Formed_SubprogramGroup_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_SubprogramGroup_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_SubprogramGroup_Component_Implementation (c: component) :=
@@ -196,9 +186,7 @@ Lemma Well_Formed_SubprogramGroup_Component_Implementation_dec :
   {Well_Formed_SubprogramGroup_Component_Implementation c} +
   {~ Well_Formed_SubprogramGroup_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_SubprogramGroup_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -220,9 +208,7 @@ Lemma Well_Formed_ThreadGroup_Component_Type_dec :
   {Well_Formed_ThreadGroup_Component_Type c} +
   {~ Well_Formed_ThreadGroup_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_ThreadGroup_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_ThreadGroup_Component_Implementation (c: component) :=
@@ -234,11 +220,8 @@ Lemma Well_Formed_ThreadGroup_Component_Implementation_dec :
   {Well_Formed_ThreadGroup_Component_Implementation c} +
   {~ Well_Formed_ThreadGroup_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_ThreadGroup_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
-
 
 (**
 %\subsection{Process}\label{sec::aadl_process}
@@ -258,9 +241,7 @@ Lemma Well_Formed_Process_Component_Type_dec :
   {Well_Formed_Process_Component_Type c} +
   {~ Well_Formed_Process_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Process_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Process_Component_Implementation (c: component) :=
@@ -272,9 +253,7 @@ Lemma Well_Formed_Process_Component_Implementation_dec :
   {Well_Formed_Process_Component_Implementation c} +
   {~ Well_Formed_Process_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Process_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -301,9 +280,7 @@ Lemma Well_Formed_Processor_Component_Type_dec :
   {Well_Formed_Processor_Component_Type c} +
   {~ Well_Formed_Processor_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Processor_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Processor_Component_Implementation (c: component) :=
@@ -315,9 +292,7 @@ Lemma Well_Formed_Processor_Component_Implementation_dec :
   {Well_Formed_Processor_Component_Implementation c} +
   {~ Well_Formed_Processor_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Processor_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -341,9 +316,7 @@ Lemma Well_Formed_VirtualProcessor_Component_Type_dec :
   {Well_Formed_VirtualProcessor_Component_Type c} +
   {~ Well_Formed_VirtualProcessor_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_VirtualProcessor_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_VirtualProcessor_Component_Implementation (c: component) :=
@@ -355,9 +328,7 @@ Lemma Well_Formed_VirtualProcessor_Component_Implementation_dec :
   {Well_Formed_VirtualProcessor_Component_Implementation c} +
   {~ Well_Formed_VirtualProcessor_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_VirtualProcessor_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -380,9 +351,7 @@ Lemma Well_Formed_Memory_Component_Type_dec :
   {Well_Formed_Memory_Component_Type c} +
   {~ Well_Formed_Memory_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Memory_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Memory_Component_Implementation (c: component) :=
@@ -394,9 +363,7 @@ Lemma Well_Formed_Memory_Component_Implementation_dec :
   {Well_Formed_Memory_Component_Implementation c} +
   {~ Well_Formed_Memory_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Memory_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -419,9 +386,7 @@ Lemma Well_Formed_Bus_Component_Type_dec :
   {Well_Formed_Bus_Component_Type c} +
   {~ Well_Formed_Bus_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Bus_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Bus_Component_Implementation (c: component) :=
@@ -433,9 +398,7 @@ Lemma Well_Formed_Bus_Component_Implementation_dec :
   {Well_Formed_Bus_Component_Implementation c} +
   {~ Well_Formed_Bus_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Bus_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -458,9 +421,7 @@ Lemma Well_Formed_VirtualBus_Component_Type_dec :
   {Well_Formed_VirtualBus_Component_Type c} +
   {~ Well_Formed_VirtualBus_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_VirtualBus_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_VirtualBus_Component_Implementation (c: component) :=
@@ -472,9 +433,7 @@ Lemma Well_Formed_VirtualBus_Component_Implementation_dec :
   {Well_Formed_VirtualBus_Component_Implementation c} +
   {~ Well_Formed_VirtualBus_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_VirtualBus_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -498,9 +457,7 @@ Lemma Well_Formed_Device_Component_Type_dec :
   {Well_Formed_Device_Component_Type c} +
   {~ Well_Formed_Device_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Device_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Device_Component_Implementation (c: component) :=
@@ -512,11 +469,8 @@ Lemma Well_Formed_Device_Component_Implementation_dec :
   {Well_Formed_Device_Component_Implementation c} +
   {~ Well_Formed_Device_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Device_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
-
 
 (**
 %
@@ -541,9 +495,7 @@ Lemma Well_Formed_Abstract_Component_Type_dec :
     {Well_Formed_Abstract_Component_Type c} +
     {~ Well_Formed_Abstract_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_Abstract_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_Abstract_Component_Implementation (c: component) :=
@@ -558,9 +510,7 @@ Lemma Well_Formed_Abstract_Component_Implementation_dec :
     {Well_Formed_Abstract_Component_Implementation c} +
     {~ Well_Formed_Abstract_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_Abstract_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (**
@@ -586,9 +536,7 @@ Lemma Well_Formed_System_Component_Type_dec :
   {Well_Formed_System_Component_Type c} +
   {~ Well_Formed_System_Component_Type c}.
 Proof.
-  intros.
-  unfold Well_Formed_System_Component_Type.
-  apply Well_Formed_Component_Interface_dec.
+  prove_dec.
 Qed.
 
 Definition Well_Formed_System_Component_Implementation (c: component) :=
@@ -602,13 +550,11 @@ Lemma Well_Formed_System_Component_Implementation_dec :
   {Well_Formed_System_Component_Implementation c} +
   {~ Well_Formed_System_Component_Implementation c}.
 Proof.
-  intros.
-  unfold Well_Formed_System_Component_Implementation.
-  apply Well_Formed_Component_Subcomponents_dec.
+  prove_dec.
 Qed.
 
 (* begin hide *)
-Global Hint Resolve
+Local Hint Resolve
   Well_Formed_Thead_Component_Type_dec
   Well_Formed_Thead_Component_Implementation_dec    Well_Formed_Data_Component_Type_dec
   Well_Formed_Data_Component_Implementation_dec
@@ -674,8 +620,7 @@ Lemma Well_Formed_Component_Type_Interface_dec :
   {Well_Formed_Component_Type_Interface c} +
   {~ Well_Formed_Component_Type_Interface c}.
 Proof.
-  intros.
-  unfold Well_Formed_Component_Type_Interface.
+  prove_dec.
   destruct (c ->category); auto.
 Qed.
 
@@ -706,7 +651,6 @@ Lemma Well_Formed_Component_Implementation_Subcomponents_dec :
   {Well_Formed_Component_Implementation_Subcomponents c} +
   {~ Well_Formed_Component_Implementation_Subcomponents c}.
 Proof.
-  intros.
-  unfold Well_Formed_Component_Implementation_Subcomponents.
+  prove_dec.
   destruct (c ->category); auto.
 Qed.
