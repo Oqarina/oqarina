@@ -82,16 +82,7 @@ Section WellFormedness_Rules.
   Lemma Well_Formed_Component_Id_dec : forall c : component,
     { Well_Formed_Component_Id c } + {~ Well_Formed_Component_Id c }.
   Proof.
-    (* Hint: this is a direct consequence of the decidability of the
-       well-formedness rule of identifiers *)
-    intros.
-
-    (* unfold the various definitions *)
-    unfold dec_sumbool.
-    unfold Well_Formed_Component_Id.
-
-    (* apply decidability result on Identifier *)
-    apply Well_Formed_Identifier_prop_dec.
+    prove_dec.
   Qed.
 
   (* begin hide *)
@@ -110,10 +101,8 @@ Section WellFormedness_Rules.
   Lemma Well_Formed_Component_Classifier_dec : forall c : component,
     { Well_Formed_Component_Classifier c } + {~ Well_Formed_Component_Classifier c }.
   Proof.
-    intros.
-
-    unfold Well_Formed_Component_Classifier.
-    apply Well_Formed_fq_name_prop_dec.
+    generalize Well_Formed_fq_name_prop_dec.
+    prove_dec.
   Qed.
 
   (* begin hide *)
@@ -126,10 +115,7 @@ Section WellFormedness_Rules.
   Lemma Well_Formed_Component_Features_dec : forall c : component,
     { Well_Formed_Component_Features c } + {~ Well_Formed_Component_Features c }.
   Proof.
-    intros.
-
-    unfold Well_Formed_Component_Features.
-    apply Well_Formed_Features_dec.
+    prove_dec.
   Qed.
 
   (* begin hide *)
@@ -164,17 +150,7 @@ Section WellFormedness_Rules.
     forall l : list component,
       dec_sumbool (Subcomponents_Identifiers_Are_Unique l).
   Proof.
-    intros.
-
-    (* unfold the various definitions *)
-    unfold dec_sumbool.
-    unfold Subcomponents_Identifiers_Are_Unique.
-
-    apply NoDup_dec. (* NoDup is decidable, from Coq.Lists.ListDec *)
-
-    (* Last bit is to rely on identifier equality being also decidable *)
-    unfold decidable_eq. (* from Coq.Lists.ListDec *)
-    apply identifier_eq_dec. (* from utils *)
+    prove_dec.
   Qed.
 
   (** We can now "implement" the predicate for rule 4.5 (N1) *)
@@ -185,9 +161,8 @@ Section WellFormedness_Rules.
   Lemma Rule_4_5_N1_dec :
     forall c : component, { Rule_4_5_N1 c } + { ~ Rule_4_5_N1 c } .
   Proof.
-    unfold Rule_4_5_N1.
-    intros.
-    apply Subcomponents_Identifiers_Are_Unique_dec.
+    generalize Subcomponents_Identifiers_Are_Unique_dec.
+    prove_dec.
   Qed.
 
   (* begin hide *)
@@ -227,14 +202,7 @@ Section WellFormedness_Rules.
   Lemma Well_Formed_Component_dec :
     forall c : component, dec_sumbool (Well_Formed_Component c).
   Proof.
-    (* Unfold all definitions *)
-    intros.
-    unfold Well_Formed_Component.
-    unfold dec_sumbool.
-    repeat (apply dec_sumbool_and; auto).
-
-    (* Note: auto requires all theorems to be part of the core hints
-    database, see above "Hint Resolve Rule_4_5_N1_dec : core."  *)
+    prove_dec.
   Defined.
 
   (** This theorem does not consider the component hierarchy, it is local to
@@ -251,10 +219,7 @@ Section WellFormedness_Rules.
   Lemma Well_Formed_Component_Hierarchy_dec:
     forall c : component, { Well_Formed_Component_Hierarchy c } + { ~Well_Formed_Component_Hierarchy c}.
   Proof.
-    intros.
-    unfold Well_Formed_Component_Hierarchy.
-    apply Unfold_Apply_dec.
-    apply Well_Formed_Component_dec.
+    prove_dec.
   Defined.
 
 (**  This second theorem is the main theorem to assess a component is well-formed. It applies the previous rules on the whole component hierarchy. *)

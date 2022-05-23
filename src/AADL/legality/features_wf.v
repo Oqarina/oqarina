@@ -48,11 +48,13 @@ Require Import Oqarina.AADL.Kernel.component.
 (*| Valid_Features_Category |*)
 
 Fixpoint Valid_Features_Category
-(l : list feature) (lcat : list FeatureCategory) :=
+    (l : list feature)
+    (lcat : list FeatureCategory)
+:=
     match l with
-    | nil => True
-    | h :: t => In (projectionFeatureCategory  h) lcat /\
-                Valid_Features_Category t lcat
+        | nil => True
+        | h :: t => In (projectionFeatureCategory  h) lcat /\
+                    Valid_Features_Category t lcat
     end.
 
 Lemma Valid_Features_Category_dec :
@@ -60,15 +62,13 @@ Lemma Valid_Features_Category_dec :
         { Valid_Features_Category l lcat } +
         { ~Valid_Features_Category l lcat }.
 Proof.
-    intros.
-    unfold Valid_Features_Category.
+    prove_dec.
     induction l.
     auto.
     apply dec_sumbool_and.
     - apply In_dec; apply FeatureCategory_eq_dec.
     - auto.
 Qed.
-
 
 (** XXX Actually wrong, we must check for the direction of the feature as well *)
 
@@ -81,8 +81,7 @@ Lemma Well_Formed_Component_Interface_dec :
         {Well_Formed_Component_Interface c lcat} +
         { ~Well_Formed_Component_Interface c lcat}.
 Proof.
-    intros.
-    unfold Well_Formed_Component_Interface.
+    prove_dec.
     apply Valid_Features_Category_dec.
 Qed.
 
@@ -92,9 +91,7 @@ Definition Well_Formed_Feature_Id (f : feature) : Prop :=
 Lemma Well_Formed_Feature_Id_dec : forall f : feature,
   {Well_Formed_Feature_Id f } + {~Well_Formed_Feature_Id f }.
 Proof.
-  intros.
-  unfold Well_Formed_Feature_Id.
-  apply Well_Formed_Identifier_prop_dec.
+    prove_dec.
 Qed.
 
 Definition Well_Formed_Feature_Ids (l : list feature) : Prop :=
@@ -103,11 +100,7 @@ Definition Well_Formed_Feature_Ids (l : list feature) : Prop :=
 Lemma Well_Formed_Feature_Ids_dec : forall l : list feature,
     { Well_Formed_Feature_Ids l } + { ~Well_Formed_Feature_Ids l }.
 Proof.
-    intros.
-    unfold Well_Formed_Feature_Ids.
-
-    apply sumbool_All_dec.
-    apply Well_Formed_Feature_Id_dec.
+    prove_dec.
 Qed.
 
 Definition Features_Identifiers_Are_Unique (l : list feature) : Prop :=
@@ -117,10 +110,7 @@ Lemma Features_Identifiers_Are_Unique_dec :
     forall l : list feature,
         { Features_Identifiers_Are_Unique l } + { ~ Features_Identifiers_Are_Unique l }.
 Proof.
-    intros.
-    unfold Features_Identifiers_Are_Unique.
-    apply NoDup_dec.
-    apply identifier_eq_dec. (* from utils *)
+    prove_dec.
 Qed.
 
 Definition Well_Formed_Features (l : list feature) :=
@@ -130,9 +120,5 @@ Definition Well_Formed_Features (l : list feature) :=
 Lemma Well_Formed_Features_dec : forall l : list feature,
     { Well_Formed_Features l } + { ~ Well_Formed_Features l }.
 Proof.
-    intros.
-    unfold Well_Formed_Features.
-    apply dec_sumbool_and.
-    apply Features_Identifiers_Are_Unique_dec.
-    apply Well_Formed_Feature_Ids_dec.
+    prove_dec.
 Qed.
