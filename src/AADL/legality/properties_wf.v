@@ -57,10 +57,8 @@ Require Import Oqarina.coq_utils.all.
   Proof.
     intros p ps c.
     unfold Property_Correctly_Applies_To.
-    destruct (resolve_property_decl ps (P p)).
-    apply in_dec.
+    prove_dec.
     apply AppliesToCategory_eq_dec.
-    auto.
   Qed.
 
 Fixpoint Property_Correctly_Applies_To_list (c : component) (ps : property_sets) (p : list property_association) :=
@@ -88,9 +86,7 @@ Lemma Well_Formed_Property_Associations_dec : forall (ps : property_sets) (c : c
     { Well_Formed_Property_Associations c ps } +
     { ~ Well_Formed_Property_Associations c ps }.
 Proof.
-    unfold Well_Formed_Property_Associations.
-    intros.
-    destruct (c ->properties);
+    prove_dec.
     apply Property_Correctly_Applies_To_list_dec.
 Qed.
 
