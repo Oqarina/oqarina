@@ -32,30 +32,44 @@
 
 Require Import List.
 Require Import Lists.ListDec.
+Require Import Coq.Bool.Bool.
 
 Require Export Oqarina.coq_utils.all.
 
-(*| We define general tactics to prove basic decidability results. It is
-made of two parts: a hint databse and a tactic. The database well_known_dec
-shall be populated with the non-trivial results necessary to conclude the proof.
+(*| We define general tactics to prove decidability results. It is
+made of two parts: a hint databse and a tactic.
+
+* The database :coq:`well_known_dec` shall be populated with the non-trivial results necessary to conclude the proof.
 |*)
 
 Create HintDb well_know_wf_dec.
 
-(*| prove_dec is a general tactic for decidability results {P x} + {~ P x } |*)
+(*|
+
+* :coq:`prove_dec` is a general tactic for decidability results {P x} + {~ P x }. It gathers most of the general pattern required to prove decidability results.
+
+|*)
 
 Ltac prove_dec :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros
     | [ |- dec_sumbool _ ] => unfold dec_sumbool
     | [ |- { In _ _ } + {~ In _ _ } ] => apply In_dec
-    | [ |- { _ -> False } + { (_ -> False) -> False} ] => apply dec_sumbool_not
-    | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] => apply dec_sumbool_and
-    | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] => apply dec_sumbool_or
+    | [ |- { _ -> False } + { (_ -> False) -> False} ] =>
+        apply dec_sumbool_not
+    | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] =>
+        apply dec_sumbool_and
+    | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] =>
+        apply dec_sumbool_or
     | [ |- {?X _} + {~ ?X _} ] =>
         auto ; try auto with well_know_wf_dec ; unfold X
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
     | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
     | [ |- {NoDup _} + {~ NoDup _} ] => apply NoDup_dec
+    | H : context [ match ?x with _ => _ end ] |- _ =>
+        destruct x eqn:? ; auto
+    | |- context [ match ?x with _ => _ end ] =>
+        destruct x eqn:? ; auto
+    | |- {_ = true} + {_  <> true} => apply bool_dec
     end.

@@ -43,7 +43,6 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Bool.Sumbool.
 Require Import Coq.Arith.PeanoNat.
 Require Import Coq.Arith.Compare_dec.
-Require Import Coq.Bool.Bool.
 Require Import Coq.ZArith.ZArith.
 Import IfNotations.
 
@@ -216,7 +215,6 @@ Lemma Is_Feature_Activated_dec :
     { Is_Feature_Activated p } + { ~ Is_Feature_Activated p }.
 Proof.
   prove_dec.
-  apply PortQueue.Is_Empty_dec.
 Defined.
 
 (*||*)
@@ -318,10 +316,10 @@ Definition Thread_Dispatchable (th : thread_state_variable) :=
 |*)
 
 Lemma Thread_Dispatchable_dec:
-  forall (th : thread_state_variable), dec_sumbool (Thread_Dispatchable th).
+  forall (th : thread_state_variable),
+    { Thread_Dispatchable th } + { ~  Thread_Dispatchable th }.
 Proof.
   prove_dec.
-  apply bool_dec.
 Defined.
 
 (*||*)
@@ -334,10 +332,10 @@ Definition Periodic_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Periodic_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Periodic_Enabled th).
+  forall (th : thread_state_variable),
+   { Periodic_Enabled th } + { ~ Periodic_Enabled th }.
 Proof.
   prove_dec.
-  apply Thread_Dispatchable_dec.
   apply PeanoNat.Nat.eq_dec.
 Defined.
 
@@ -352,10 +350,10 @@ Definition Aperiodic_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Aperiodic_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Aperiodic_Enabled th).
+  forall (th : thread_state_variable),
+   { Aperiodic_Enabled th } + { ~ Aperiodic_Enabled th  }.
 Proof.
   prove_dec.
-  apply bool_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
 
@@ -372,12 +370,12 @@ Definition Sporadic_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Sporadic_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Sporadic_Enabled th).
+  forall (th : thread_state_variable),
+    { Sporadic_Enabled th } + { ~ Sporadic_Enabled th }.
 Proof.
-  generalize bool_dec.
   generalize Thread_Has_Activated_Triggering_Feature_dec.
+  generalize Compare_dec.le_dec.
   prove_dec.
-  apply Compare_dec.le_dec.
 Defined.
 
 (*||*)
@@ -392,10 +390,10 @@ Definition Timed_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Timed_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Timed_Enabled th).
+  forall (th : thread_state_variable),
+  { Timed_Enabled th } + { ~ Timed_Enabled th }.
 Proof.
   prove_dec.
-  apply Thread_Dispatchable_dec.
   apply PeanoNat.Nat.eq_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
@@ -411,10 +409,10 @@ Definition Hybrid_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Hybrid_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Hybrid_Enabled th).
+  forall (th : thread_state_variable),
+    { Hybrid_Enabled th } + { ~ Hybrid_Enabled th }.
 Proof.
   prove_dec.
-  apply Thread_Dispatchable_dec.
   apply PeanoNat.Nat.eq_dec.
   apply Thread_Has_Activated_Triggering_Feature_dec.
 Defined.
@@ -429,10 +427,10 @@ Definition Background_Enabled (th : thread_state_variable) :=
 |*)
 
 Lemma Background_Enabled_dec:
-  forall (th : thread_state_variable), dec_sumbool (Background_Enabled th).
+  forall (th : thread_state_variable),
+  { Background_Enabled th } + { ~ Background_Enabled th }.
 Proof.
   prove_dec.
-  apply Thread_Dispatchable_dec.
 Defined.
 
 (*|
@@ -457,15 +455,13 @@ Definition Enabled (th : thread_state_variable) :=
 Lemma Enabled_dec: forall (th : thread_state_variable),
   dec_sumbool (Enabled th).
 Proof.
+  generalize Periodic_Enabled_dec.
+  generalize Sporadic_Enabled_dec.
+  generalize Aperiodic_Enabled_dec.
+  generalize Background_Enabled_dec.
+  generalize Timed_Enabled_dec.
+  generalize Hybrid_Enabled_dec.
   prove_dec.
-  destruct (dispatch_protocol th).
-  auto.
-  apply Periodic_Enabled_dec.
-  apply Sporadic_Enabled_dec.
-  apply Aperiodic_Enabled_dec.
-  apply Background_Enabled_dec.
-  apply Timed_Enabled_dec.
-  apply Hybrid_Enabled_dec.
 Defined.
 
 (*||*)
@@ -548,7 +544,6 @@ Lemma Frozen_dec: forall p th,  { Frozen p th } + { ~ Frozen p th }.
 Proof.
   generalize Dispatch_Frozen_dec.
   prove_dec.
-  destruct (Current_Valid_IO_Time_Spec p th) ; auto.
 Defined.
 
 Fixpoint Freeze_Port_Variables
@@ -1769,7 +1764,7 @@ Compute Print_DEVS_Simulator S_thread_LTS_4.
 
 Lemma S_thread_LTS_4_OK :
     Print_DEVS_Simulator S_thread_LTS_4 =
-    dbg 100 100 (* XXX wrong *)
+    dbg 100 100
          {|
            thread_l := suspended_awaiting_dispatch;
            thread_st :=

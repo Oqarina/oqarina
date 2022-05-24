@@ -109,8 +109,6 @@ Lemma Well_Formed_Property_Value_dec :
         { Well_Formed_Property_Value  c pa } + { ~ Well_Formed_Property_Value  c pa  }.
 Proof.
     prove_dec.
-    destruct (PV pa); auto.
-    destruct (Resolve_PV_ModelRef c pa); auto.
 Qed.
 
 Global Hint Resolve Well_Formed_Property_Value_dec : well_know_wf_dec.

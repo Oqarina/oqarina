@@ -621,7 +621,6 @@ Lemma Well_Formed_Component_Type_Interface_dec :
   {~ Well_Formed_Component_Type_Interface c}.
 Proof.
   prove_dec.
-  destruct (c ->category); auto.
 Qed.
 
 Definition Well_Formed_Component_Implementation_Subcomponents (c : component) :=
@@ -652,5 +651,4 @@ Lemma Well_Formed_Component_Implementation_Subcomponents_dec :
   {~ Well_Formed_Component_Implementation_Subcomponents c}.
 Proof.
   prove_dec.
-  destruct (c ->category); auto.
 Qed.
