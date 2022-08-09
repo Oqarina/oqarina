@@ -45,20 +45,32 @@ Set Implicit Arguments.
 Section All.
 (* end hide *)
 
-    Variable T : Type.
-    Variable P : T -> Prop.
+  Variable T : Type.
+  Variable P : T -> Prop.
 
-    Fixpoint All (ls : list T) : Prop :=
-      match ls with
-        | nil => True
-        | h :: t => P h /\ All t
-      end.
+  Fixpoint All (ls : list T) : Prop :=
+    match ls with
+      | nil => True
+      | h :: t => P h /\ All t
+    end.
 
-    Fixpoint All_Or (ls : list T) : Prop :=
-      match ls with
-        | nil => False
-        | h :: t => P h \/ All_Or t
-      end.
+  Lemma All_Forall l :
+    All l <-> Forall P l.
+  Proof.
+    induction l; simpl; split; intros HF; try now inversion HF; intuition.
+  Qed.
+
+  Lemma All_left_cons : forall (a: T) (lt : list T),
+      All (a :: lt) <-> P a /\ All lt.
+  Proof.
+    simpl. intuition.
+  Qed.
+
+  Fixpoint All_Or (ls : list T) : Prop :=
+    match ls with
+      | nil => False
+      | h :: t => P h \/ All_Or t
+    end.
 
     (** We show that if %\coqdocvar{HP}% holds, then %\coqdocvar{All}%
         is decidable as well.*)
@@ -103,15 +115,91 @@ Section All.
 End All.
 (* end hide *)
 
+Section FoldLeft.
+  Variable A B : Type.
+  Implicit Types x : B.
+  Implicit Types l : list B.
+  Variables (f : A -> B -> A) (i : A).
+
+  Lemma fold_left_nil :
+    fold_left f nil i = i.
+  Proof. auto. Qed.
+
+  Lemma fold_left_cons : forall x l,
+    fold_left f (x::l) i = fold_left f l (f i x).
+  Proof. auto. Qed.
+
+End FoldLeft.
+
 Section BoolList.
 
     (** [andbl] returns the logical and of a list of bools *)
 
-    Fixpoint andbl (lb : list bool) :=
-        match lb with
-            | nil => true
-            | h :: t => andb h (andbl t)
-        end.
+    Definition andbl (lb : list bool) :=
+      fold_left andb lb true.
+
+    Lemma andbl_true : forall (l : list bool),
+      andbl (true :: l) = andbl l.
+    Proof.
+      intros.
+      induction l.
+      - trivial.
+      - unfold andbl. rewrite fold_left_cons. simpl. auto.
+    Qed.
+
+    Lemma andbl_false : forall (l : list bool),
+      andbl (false :: l) = false.
+    Proof.
+      intros.
+      induction l.
+      - trivial.
+      - unfold andbl. rewrite fold_left_cons. simpl. auto.
+    Qed.
+
+    Lemma andbl_concatenate: forall (b : bool) (l : list bool) ,
+      andbl [b ; andbl l] = andbl (b :: l).
+    Proof.
+      intros.
+      induction l ; unfold andbl ; simpl ; destruct b ; auto.
+    Qed.
+
+    Definition orbl (lb : list bool) :=
+      fold_left orb lb false.
+
+    Lemma orbl_true : forall (l : list bool),
+      orbl (true :: l) = true.
+    Proof.
+      intros.
+      induction l.
+      - trivial.
+      - unfold orbl. rewrite fold_left_cons. simpl. apply IHl.
+    Qed.
+
+    Lemma orbl_false : forall (l : list bool),
+        orbl (false :: l) = orbl l.
+    Proof.
+      intros.
+      induction l.
+      - trivial.
+      - unfold orbl. rewrite fold_left_cons. simpl. auto.
+    Qed.
+
+    Lemma orbl_app : forall (l1 l2: list bool),
+      orbl (l1 ++ l2) = orbl (orbl l1 :: l2).
+    Proof.
+      intros.
+      unfold orbl.
+      apply fold_left_app.
+    Qed.
+
+  Lemma orbl_concatenate: forall (b : bool) (l : list bool) ,
+    orbl [b ; orbl l] = orbl (b :: l).
+  Proof.
+    intros.
+    induction l.
+    - unfold orbl. simpl. destruct b ; auto.
+    - unfold orbl. simpl. destruct b ; auto.
+  Qed.
 
 End BoolList.
 
@@ -213,16 +301,3 @@ Section in_boolean.
   Qed.
 
 End in_boolean.
-
-
-Lemma forallb_reflect (X : Type) (f : X -> bool) (xs : list X) :
-  reflect (forall x, In x xs -> f x = true) (forallb f xs).
-Proof.
-  induction xs.
-  - cbn. left. tauto.
-  - simpl. destruct (f a) eqn:E; cbn.
-    + destruct IHxs.
-      * left. intros x [-> | H]; auto.
-      * right. intuition.
-    + right. intros H. specialize (H a (or_introl eq_refl)). congruence.
-Qed.
