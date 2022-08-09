@@ -61,6 +61,7 @@ Ltac prove_dec :=
         apply dec_sumbool_and
     | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] =>
         apply dec_sumbool_or
+    | [ |- {True} + {~ True} ] => auto
     | [ |- {?X _} + {~ ?X _} ] =>
         auto ; try auto with well_know_wf_dec ; unfold X
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
