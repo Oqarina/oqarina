@@ -163,6 +163,12 @@ Section BoolList.
       induction l ; unfold andbl ; simpl ; destruct b ; auto.
     Qed.
 
+    Lemma andbl_singleton: forall (b : bool),
+      andbl [ b ] = b.
+    Proof.
+      trivial.
+    Qed.
+
     Definition orbl (lb : list bool) :=
       fold_left orb lb false.
 
@@ -237,6 +243,30 @@ Section GenericLists.
                 | Some h' => h' :: clean_options t
                 end
     end.
+
+  Fixpoint to_option (l : list T) : list (option T) :=
+    match l with
+    | [] => []
+    | h :: t => Some h :: to_option t
+    end.
+
+  Fixpoint has_none (l : list (option T)) :=
+    match l with
+      | [] => false
+      | h :: t => match h with
+                  | None => true
+                  | Some _ => has_none t
+                  end
+    end.
+
+  Lemma has_none_None: has_none [ None ] = true.
+  Proof. auto. Qed.
+
+  Lemma has_none_Some: forall (t : T) (l : list (option T)),
+    has_none ((Some t) :: l) = has_none l.
+  Proof.
+    simpl ; reflexivity.
+  Qed.
 
   Definition is_nil (l : list T) : bool :=
     match l with
