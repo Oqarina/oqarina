@@ -127,7 +127,7 @@ Module NaturalInfTime <: AbstractTime.
 
     Definition Time := natinf.
     Scheme Equality for natinf.
-    
+
     Definition Zero := ni 0.
     Definition One  := ni 1.
     Definition tle := ni_le.
@@ -142,6 +142,18 @@ Module NaturalInfTime <: AbstractTime.
                                 | ni n2 => lt n1 n2
                                 end
         end.
+
+        Definition tlt_b :=
+            fun t1 t2 => match t1 with
+                        | infty => match t2 with
+                                    | infty => true
+                                    | ni _ => false
+                                    end
+                        | ni n1 => match t2 with
+                                    | infty => true
+                                    | ni n2 => Nat.ltb n1 n2
+                                    end
+            end.
 
     Definition tplus :=
         fun t1 t2 => match t1 with
