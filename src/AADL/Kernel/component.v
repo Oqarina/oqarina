@@ -226,7 +226,7 @@ Definition feature_beq (x : feature) (y: feature) : bool :=
   | _ => false
   end.
 
-(* XXX 
+(* XXX
   Definition component_beq: forall (x y: component), bool.
   Proof.
       generalize identifier_eq_dec ComponentCategory_eq_dec
@@ -441,8 +441,8 @@ However, Coq has a strict definition of recursive functions, and the following i
       match lc with
       | [ ] => True
       | c :: l' => P c /\
-      Component_prop (Features_Components (c->features)) /\
-      Component_prop (l')
+        Component_prop (Features_Components (c->features)) /\
+        Component_prop (l')
       end.
 
 (*|
