@@ -41,8 +41,6 @@ Require Import Coq.Sorting.Permutation.
 Require Import Oqarina.core.all.
 Import NaturalInfTime.
 Require Import Oqarina.formalisms.FaultTrees.NatInfMinMax.
-
-Require Import Oqarina.cpdttactics.
 (*| .. coq:: |*)
 
 (*|
