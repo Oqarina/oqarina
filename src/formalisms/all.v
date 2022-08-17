@@ -44,6 +44,7 @@ Formalisms
    :maxdepth: 2
 
    formalisms__DEVS_classic_all.v.rst
+   formalisms__FaultTrees_AbstractFaultTree.v.rst
    formalisms__lts.v.rst
 
 |*)
