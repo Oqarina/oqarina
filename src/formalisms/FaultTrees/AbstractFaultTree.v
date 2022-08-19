@@ -306,24 +306,24 @@ Definition valid_dynamic_fault_tree_node
 
 Lemma valid_dynamic_fault_tree_node_dec:
     forall  (n : FT_Node) (l : list fault_tree),
-    { valid_static_fault_tree_node n l } +
-        { ~ valid_static_fault_tree_node n l }.
+    { valid_dynamic_fault_tree_node n l } +
+        { ~ valid_dynamic_fault_tree_node n l }.
 Proof.
     prove_dec.
     apply list_eq_dec. apply tree_eq_dec. apply FT_Node_eq_dec.
-    apply Compare_dec.le_dec.
+    apply PeanoNat.Nat.eq_dec. apply Compare_dec.le_dec.
 Qed.
 
 Definition valid_dynamic_fault_tree (sft : fault_tree) :=
-    tree_fall valid_static_fault_tree_node sft.
+    tree_fall valid_dynamic_fault_tree_node sft.
 
 Lemma valid_dynamic_fault_tree_dec:
     forall (sft : fault_tree),
-    { valid_static_fault_tree sft } +
-        { ~ valid_static_fault_tree sft }.
+    { valid_dynamic_fault_tree sft } +
+        { ~ valid_dynamic_fault_tree sft }.
 Proof.
     apply tree_fall_dec.
-    apply valid_static_fault_tree_node_dec.
+    apply valid_dynamic_fault_tree_node_dec.
 Qed.
 
 (*| .. coq:: none |*)
@@ -453,13 +453,15 @@ End Fault_Tree_Evaluation.
 
 End Abstract_Fault_Tree.
 
-Ltac prove_valid_static_fault_tree :=
+Ltac prove_valid_fault_tree :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros t H ; destruct H ; subst
     | [ |- valid_static_fault_tree _ ] => unfold valid_static_fault_tree
+    | [ |- valid_dynamic_fault_tree _ ] => unfold valid_dynamic_fault_tree
     | [ |- tree_fall _ _ ] => apply tree_fall_fix
     | [ |-  _ /\ _ ] => split
     | [ |- valid_static_fault_tree_node  _ _ ] => compute; auto
+    | [ |- valid_dynamic_fault_tree_node  _ _ ] => compute; auto
     | [ H : In _ _ |- _ ] => destruct H ; subst
 end.
 
@@ -515,7 +517,7 @@ Example Basic_BFT : BFT :=
 
 Fact Basic_BFT_OK : valid_static_fault_tree Basic_BFT.
 Proof.
-    prove_valid_static_fault_tree.
+    prove_valid_fault_tree.
 Qed.
 
 Lemma Compute_Fault_Tree_Basic_BFT_OK:
@@ -572,13 +574,10 @@ Example Basic_DFT : DFT :=
     [ in_tree (BASIC (d_0 basic_event)) [] ;
       in_tree (BASIC (d_0 basic_event)) []].
 
-      (*
-Fact Basic_DFT_OK : ~ valid_static_fault_tree Basic_DFT.
+Fact Basic_DFT_OK : valid_dynamic_fault_tree Basic_DFT.
 Proof.
-
-    prove_valid_static_fault_tree.
+    prove_valid_fault_tree.
 Qed.
-*)
 
 Lemma Compute_Fault_Tree_Basic_DFT_OK:
     Compute_Fault_Tree'' Basic_DFT =
@@ -590,4 +589,3 @@ Qed.
 (*| .. coq:: none |*)
 End DFT.
 (*| .. coq:: |*)
-
