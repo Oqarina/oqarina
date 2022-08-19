@@ -427,25 +427,24 @@ Proof.
     intros.
     inversion H.
     subst.
-    - simpl ; destruct (Compute_Fault_Tree'' s') ; unfold Compute_Fault_Node.
-      * assert (has_none [Some b] = false).
-        + compute ; reflexivity.
-        + simpl ; rewrite b_ANDl_singleton ; reflexivity.
+
+    - simpl. destruct (Compute_Fault_Tree'' s') ; unfold Compute_Fault_Node.
+      * rewrite has_none_Some. simpl. rewrite b_ANDl_singleton ; reflexivity.
       * compute ; reflexivity.
 
-    - simpl. destruct (Compute_Fault_Tree'' a).
-      * unfold Compute_Fault_Node. repeat rewrite has_none_Some.
-      destruct (has_none (map Compute_Fault_Tree'' l)).
-        + compute ; reflexivity.
-        + simpl. rewrite b_ANDl_concatenate ; reflexivity.
-      * unfold Compute_Fault_Node. compute ; reflexivity.
-
-    - simpl. destruct (Compute_Fault_Tree'' a).
-        * unfold Compute_Fault_Node. repeat rewrite has_none_Some.
+    - simpl. destruct (Compute_Fault_Tree'' a) ; unfold Compute_Fault_Node.
+      * repeat rewrite has_none_Some.
         destruct (has_none (map Compute_Fault_Tree'' l)).
         + compute ; reflexivity.
-        + simpl. rewrite b_ORl_concatenate ; reflexivity.
-        * unfold Compute_Fault_Node. compute ; reflexivity.
+        + simpl. rewrite b_ANDl_concatenate ; reflexivity.
+      * compute ; reflexivity.
+
+    - simpl. destruct (Compute_Fault_Tree'' a) ; unfold Compute_Fault_Node.
+        * repeat rewrite has_none_Some.
+          destruct (has_none (map Compute_Fault_Tree'' l)).
+            + compute ; reflexivity.
+            + simpl. rewrite b_ORl_concatenate ; reflexivity.
+        * compute ; reflexivity.
 Qed.
 
 (*| .. coq:: none |*)
