@@ -39,7 +39,7 @@ From Coq Require Import
     ZArith.BinInt.
 (* end hide *)
 
-(** [parse_int] parse a signed integer present in [s] or returns 0*)
+(** [parse_int] parse a signed integer present in [s] or returns 0 *)
 
 Definition parse_int s : Z :=
   let value := NilEmpty.int_of_string s in
@@ -47,7 +47,9 @@ Definition parse_int s : Z :=
   | None => 0
   | Some z => Z.of_int z
   end.
+
 (** [parse_bool] parses a bool value from [s] or return false *)
+
 Definition parse_bool s : bool :=
   if eqb "true" s then true
   else if eqb "false" s then true
