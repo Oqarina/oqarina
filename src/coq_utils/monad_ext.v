@@ -29,8 +29,45 @@
  *
  * DM21-0762
 ***)
-Require Export Oqarina.coq_utils.list_utils.
-Require Export Oqarina.coq_utils.utils.
-Require Export Oqarina.coq_utils.parser_utils.
-Require Export Oqarina.coq_utils.sumbool_utils.
-Require Export Oqarina.coq_utils.monad_ext.
+
+(*| .. coq:: none |*)
+(** Coq Library *)
+Require Import Coq.Strings.String.
+Require Import List.
+Import ListNotations. (* from List *)
+
+(* Coq Ext-lib *)
+Require Import ExtLib.Structures.Monads.
+(*
+Require Import ExtLib.Data.Monads.OptionMonad.
+*)
+(*| .. coq:: |*)
+
+(*| This module adds a monad-compatible map function to the monad library from Coq.ExtLib.  |*)
+
+Section monadic_map.
+
+    Variable m : Type -> Type.
+    Context {Monad_m : Monad m}.
+    (*
+    Context {MonadExc_m : MonadExc string m}.
+*)
+    Import MonadNotation.
+    Local Open Scope monad_scope.
+
+    Section mmap.
+
+        Variables (A : Type) (B: Type).
+        Variable f: A -> m B.
+
+        Fixpoint mmap (l: list A) {struct l}
+            : m (list B)
+        :=
+            match l with
+                | nil => ret nil
+                | hd :: tl =>  hd' <- f hd ;; tl' <- (mmap tl) ;; ret (hd' :: tl')
+            end.
+
+    End mmap.
+
+End monadic_map.
