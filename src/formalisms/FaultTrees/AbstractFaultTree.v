@@ -31,7 +31,7 @@
 ***)
 
 (*| .. coq:: none |*)
-(** Coq Library *)
+(* Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Relations.Relation_Definitions.
@@ -39,13 +39,24 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Unicode.Utf8.
 Require Import Coq.Bool.Bool.
 
+(* Coq ExtLib library *)
+Require Import ExtLib.Data.Monads.OptionMonad.
+Require Import ExtLib.Structures.Monads.
+
+Import MonadNotation.
+Local Open Scope monad_scope.
+Set Default Timeout 5.
+(* It is easy to confuse Coq typechecker with monads, this adds a default timeout to stop the evaluation in case of a faulty definition. *)
+
+(* Oqarina Library*)
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.formalisms.FaultTrees.Merle_Algebra.
 
-Require Import Top.tree.
+Require Export Top.tree.
 
 Set Implicit Arguments.
+Set Strict Implicit.
 (*| .. coq:: |*)
 
 (*|
@@ -69,7 +80,7 @@ Section Abstract_Fault_Tree.
 Abstract Fault Trees
 ====================
 
-We define an fault tree as an AST over FT_Node, a type representing the various gates of a fault tree. Each gate  (AND, OR, ...) represents a combinatorial function of some basic event.
+We define a fault tree as an AST over FT_Node, a type representing the various gates of a fault tree. Each gate  (AND, OR, ...) represents a combinatorial function of some basic events.
 
 A basic event is defined as a generic type. Note: we may not need a dedicably equality for this type.
 
@@ -199,7 +210,7 @@ Proof.
     intros. subst. apply Rewrite_Fault_Tree_Complete'.
 Qed.
 
-(*| Finally, we define recursrive functions that apply the reduction to all nodes. |*)
+(*| Finally, we define recursive functions that apply the reduction to all nodes. |*)
 
 Definition Rewrite_Fault_Tree' : fault_tree -> fault_tree.
 Proof.
@@ -362,6 +373,9 @@ Class Basic_Event_Operators (A : Type) :=
 
     b_PANDl : list A -> option A ;
 
+    b_k_out_of_N (k : nat) (l : list A) :=
+        b_ORl (map (fun x => b_ANDl x) (k_of_N k l)) ;
+
 }.
 
 Context `{ ba : Basic_Event_Operators basic_event }.
@@ -378,13 +392,43 @@ Definition Compute_Fault_Node
         | BASIC b => Some b
         | OR => Some (b_ORl l')
         | AND => Some (b_ANDl l')
-        | K_OUT_OF_N k => None
-        (*    if Nat.leb k (count_occ A_eq_dec l T) then T else F*)
+        | K_OUT_OF_N k => Some (b_k_out_of_N k l')
         | FDEP => None
         | PAND => b_PANDl l'
         | SPARE => None
     end.
 
+Section monadic.
+
+    Variable m : Type -> Type.
+    Context `{Monad_m : Monad m}.
+    Context `{MonadExc_m : MonadExc string m}.
+
+    Definition Compute_Fault_Node_m
+        (n : FT_Node)
+        (l : m (list basic_event))
+        : m basic_event
+    :=
+        match n with
+            | BASIC b => ret b
+            | OR => l' <- l ;; ret (b_ORl l')
+            | AND => l' <- l ;; ret (b_ANDl l')
+            | _ => raise ("Unsupported gate")%string
+        end.
+
+    Fixpoint Compute_Fault_Tree_m
+        (f : fault_tree )
+        : m basic_event
+    :=
+        let 'in_tree x ll := f in
+            Compute_Fault_Node_m x (mmap m _ _ Compute_Fault_Tree_m ll).
+
+End monadic.
+
+(*
+Definition Compute_Fault_Tree_m': fault_tree -> string + basic_event :=
+            Compute_Fault_Tree_m (m := sum string).
+*)
 Definition Compute_Fault_Tree : fault_tree -> option basic_event.
 Proof.
     induction 1 as [ x y IH ] using tree_recursion.
@@ -429,22 +473,22 @@ Proof.
     subst.
 
     - simpl. destruct (Compute_Fault_Tree'' s') ; unfold Compute_Fault_Node.
-      * rewrite has_none_Some. simpl. rewrite b_ANDl_singleton ; reflexivity.
-      * compute ; reflexivity.
-
-    - simpl. destruct (Compute_Fault_Tree'' a) ; unfold Compute_Fault_Node.
-      * repeat rewrite has_none_Some.
-        destruct (has_none (map Compute_Fault_Tree'' l)).
-        + compute ; reflexivity.
-        + simpl. rewrite b_ANDl_concatenate ; reflexivity.
-      * compute ; reflexivity.
+        * rewrite has_none_Some. simpl. rewrite b_ANDl_singleton ; reflexivity.
+        * intuition.
 
     - simpl. destruct (Compute_Fault_Tree'' a) ; unfold Compute_Fault_Node.
         * repeat rewrite has_none_Some.
           destruct (has_none (map Compute_Fault_Tree'' l)).
-            + compute ; reflexivity.
+            + intuition.
+            + simpl. rewrite b_ANDl_concatenate ; reflexivity.
+        * intuition.
+
+    - simpl. destruct (Compute_Fault_Tree'' a) ; unfold Compute_Fault_Node.
+        * repeat rewrite has_none_Some.
+          destruct (has_none (map Compute_Fault_Tree'' l)).
+            + intuition.
             + simpl. rewrite b_ORl_concatenate ; reflexivity.
-        * compute ; reflexivity.
+        * intuition.
 Qed.
 
 (*| .. coq:: none |*)
@@ -463,70 +507,6 @@ Ltac prove_valid_fault_tree :=
     | [ |- valid_dynamic_fault_tree_node  _ _ ] => compute; auto
     | [ H : In _ _ |- _ ] => destruct H ; subst
 end.
-
-Section Fault_Tree_Bool.
-(*| .. coq:: |*)
-
-(*|
-
-Boolean fault tree
-==================
-
-Stupid instantiation of the previous abstract fault tree. Basic events are simple booleans.
-
-|*)
-
-#[global]
-Instance bool_Basic_Event_Operators : Basic_Event_Operators bool :=
-{
-   (* A_eq_dec := bool_dec ;*)
-    T := true ;
-    F := false ;
-
-    b_AND := andb ;
-    b_ANDl_singleton := andbl_singleton ;
-
-    b_ANDl := andbl ;
-    b_ANDl_concatenate := andbl_concatenate ;
-
-    b_OR := orb ;
-
-    b_ORl := orbl ;
-    b_ORl_concatenate := orbl_concatenate ;
-
-    (* For boolean fault tree, the following gates are not defined ‘*)
-
-    b_PANDl := (fun x => None) ;
-}.
-
-Definition BFT := fault_tree bool.
-
-(*| .. coq:: none |*)
-End Fault_Tree_Bool.
-
-Section Fault_Tree_Bool_Examples.
-(*| .. coq::  |*)
-
-(*| From these definitions, one can directly built a fault tree, check it is correct, and evaluate it. |*)
-
-Example Basic_BFT : BFT :=
-    in_tree (AND bool)
-    [ in_tree (BASIC true) [] ;
-      in_tree (BASIC false) []].
-
-Fact Basic_BFT_OK : valid_static_fault_tree Basic_BFT.
-Proof.
-    prove_valid_fault_tree.
-Qed.
-
-Lemma Compute_Fault_Tree_Basic_BFT_OK:
-    Compute_Fault_Tree'' Basic_BFT = Some false.
-Proof.
-    trivial.
-Qed.
-
-(*| .. coq:: none |*)
-End Fault_Tree_Bool_Examples.
 
 Section DFT.
 (*| .. coq:: |*)
@@ -585,6 +565,19 @@ Proof.
     trivial.
 Qed.
 
+Check Compute_Fault_Node_m.
+Check Basic_DFT.
+Compute Compute_Fault_Tree_m (m := sum string) Basic_DFT.
+
+(*
+Definition foo (f : DFT) : string + d' :=
+    Compute_Fault_Tree_m (m := sum string)  f.
+
+
+Definition foo `{m : sum string}(f : DFT) : string + d' :=
+    Compute_Fault_Tree_m   f.
+
+*)
 (*| .. coq:: none |*)
 End DFT.
 (*| .. coq:: |*)

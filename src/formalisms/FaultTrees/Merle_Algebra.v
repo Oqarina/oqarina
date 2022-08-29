@@ -607,6 +607,9 @@ Definition n_OR (l : list d) :=
 Definition n_PAND (l : list d) :=
     fold_left (fun a b => (P_PAND a b)) l d_0.
 
+Definition k_out_of_N (k : nat) (l : list d) :=
+    n_OR (map (fun x => n_AND x) (k_of_N k l)).
+
 Section DFT_Rewriting_Rules.
 
 (*| See Formal Verification of Rewriting Rules for Dynamic Fault Trees

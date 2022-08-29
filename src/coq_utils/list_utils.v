@@ -235,6 +235,12 @@ Section GenericLists.
 
   Variable T : Type.
 
+  Lemma length_S: forall (a: T) (l : list T),
+    length (a :: l) = S (length l).
+  Proof.
+    auto.
+  Qed.
+
   Fixpoint clean_options (l : list (option T)) :=
     match l with
     | [] => []
@@ -303,6 +309,33 @@ Section GenericLists.
       end.
 
 End GenericLists.
+
+(*|
+Generating sub-lists
+--------------------
+
+|*)
+
+Section SubLists.
+
+  Variable T : Type.
+
+  (*| :coq:`sublists` generates all possible sublists of list l. |*)
+
+  Fixpoint sublists (l : list T) :=
+      match l with
+          | [] => [[]]
+          | h :: t => let l' := sublists t in
+              map (fun x => h::x) l' ++ l'
+      end.
+
+  (*| :coq:`k_of_N` generates all sublists of size k of list l. |*)
+
+  Definition k_of_N (k : nat) (l : list T) :=
+      let subs := sublists l in
+          filter (fun x => Nat.eqb (List.length x) k) subs.
+
+End SubLists.
 
 Section in_boolean.
 
