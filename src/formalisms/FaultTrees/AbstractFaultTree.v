@@ -64,11 +64,6 @@ Set Strict Implicit.
 ***********
 Fault Trees
 ***********
-Katoen
-
-SOTERIA_PP https://ieeexplore.ieee.org/document/8769216
-
-Target The Annual Reliability and Maintainability Symposium, track CfP for 2024, deadline approx. April
 
 In this module, we provide a basic definition of fault trees as a collection of inductive types. |*)
 
@@ -565,19 +560,6 @@ Proof.
     trivial.
 Qed.
 
-Check Compute_Fault_Node_m.
-Check Basic_DFT.
-Compute Compute_Fault_Tree_m (m := sum string) Basic_DFT.
-
-(*
-Definition foo (f : DFT) : string + d' :=
-    Compute_Fault_Tree_m (m := sum string)  f.
-
-
-Definition foo `{m : sum string}(f : DFT) : string + d' :=
-    Compute_Fault_Tree_m   f.
-
-*)
 (*| .. coq:: none |*)
 End DFT.
 (*| .. coq:: |*)
