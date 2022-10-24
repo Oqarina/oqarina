@@ -32,8 +32,8 @@
 
 (*|
 
-Basic concepts
-==============
+Modeling AADL concepts
+======================
 
 *Note:* the content of this tutorial is in :file:`examples/AADL/full_example.v`.
 

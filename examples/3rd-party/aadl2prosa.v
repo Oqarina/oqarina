@@ -32,8 +32,8 @@
 
 (*|
 
-Scheduling Analysis with PROSA
-==============================
+Scheduling Analysis of AADL with PROSA
+======================================
 
 *Note:* the content of this tutorial is in :file:`examples/3rd-party/aadl2prosa.v`.
 
