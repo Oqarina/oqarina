@@ -60,7 +60,11 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/formalisms/DEVS/classic/all.v \
 	src/formalisms/DEVS/classic/devs.v \
 	src/formalisms/DEVS/classic/coupled.v \
+	src/formalisms/Expressions/BoolExpr.v \
+	src/formalisms/FaultTrees/all.v \
 	src/formalisms/FaultTrees/AbstractFaultTree.v \
+	src/formalisms/FaultTrees/StaticFaultTree.v \
+	src/formalisms/FaultTrees/DynamicFaultTree.v \
 	src/formalisms/FaultTrees/Merle_Algebra.v \
 	src/AADL/all.v \
 	src/AADL/Kernel/categories.v \
@@ -70,7 +74,8 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/AADL/behavior/system.v \
 	src/AADL/resolute/resolute.v \
 	examples/AADL/full_example.v \
-	examples/3rd-party/aadl2prosa.v
+	examples/3rd-party/aadl2prosa.v \
+	examples/FaultTrees/FaultTrees_Examples.v
 
 alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \
