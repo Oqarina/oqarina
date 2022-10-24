@@ -53,8 +53,7 @@ Set Implicit Arguments.
 Classic DEVS
 ************
 
-In this section, we provide a mechanization of the DEVS formalism. We first define the various data types forming the Classic DEVS formalism, then the simulation algorithms for atomic and coupled DEVS models. We follow the conventions from :cite:t:`vantendelooIntroductionClassicDEVS2018`
-.
+In this section, we provide a mechanization of the DEVS formalism. We first define the various data types forming the Classic DEVS formalism, then the simulation algorithms for atomic and coupled DEVS models. We follow the conventions from :cite:t:`vantendelooIntroductionClassicDEVS2018`.
 
 |*)
 

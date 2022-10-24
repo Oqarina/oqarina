@@ -254,7 +254,7 @@ Definition δint_combined
 
     let ext_ids := set_diff identifier_eq_dec INF_ids' IMM_ids in
     let int_ids := set_diff identifier_eq_dec IMM_ids INF_ids' in
-    let conf_ids :=  set_inter identifier_eq_dec IMM_ids INF_ids' in
+    let conf_ids := set_inter identifier_eq_dec IMM_ids INF_ids' in
 
     let x_i_b :=
         (fun (ds : DEVS_Simulator S X Y) =>
