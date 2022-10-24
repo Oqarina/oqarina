@@ -55,7 +55,7 @@ In this section, we define the Temporal model of Boolean operators as presented 
 
 Section Merle_Algebra.
 
-Variable basic_event : Type.
+Variable basic_event : Set.
 
 Definition d := basic_event -> Time.
 
@@ -332,7 +332,7 @@ Proof.
     intros.
     unfold d_plus, d_prod.
     destruct (d1 b); destruct (d2 b) ; simpl ; auto.
-    - apply f_equal. apply Max.max_idempotent.
+    - apply f_equal. apply PeanoNat.Nat.max_id.
     - apply f_equal. apply PeanoNat.Nat.min_max_absorption.
 Qed.
 
