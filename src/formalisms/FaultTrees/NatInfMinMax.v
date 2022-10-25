@@ -247,7 +247,7 @@ Proof.
   - rewrite ni_min_inf_r ; rewrite ni_max_idemp; trivial.
   - simpl. apply f_equal.  rewrite Nat.min_max_absorption ; reflexivity.
   - destruct n3. rewrite ni_max_inf_r. rewrite ni_min_inf_r.
-    * simpl. apply f_equal. rewrite Max.max_comm. rewrite Nat.min_max_absorption ; reflexivity.
+    * simpl. apply f_equal. rewrite Nat.max_comm. rewrite Nat.min_max_absorption ; reflexivity.
     * simpl. apply f_equal. apply Nat.min_max_distr.
 Qed.
 
