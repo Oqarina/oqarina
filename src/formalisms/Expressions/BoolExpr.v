@@ -42,7 +42,6 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Lia.
 Require Import Coq.Sorting.Permutation.
 
-Require Import Oqarina.coq_utils.nodup_incl.
 Require Import Oqarina.coq_utils.all.
 
 Set Implicit Arguments.
@@ -914,7 +913,7 @@ Lemma Eval_DNF_red_incl_1: forall (c1 c2: Clause) v,
     Eval_DNF v [ c1 ; c2 ] = Eval_DNF v [c1].
 Proof.
   intros.
-  destruct (NoDup_incl_reorganize _ c1 H H0).
+  destruct (incl_split H H0).
   rewrite Eval_DNF_red.
   assert (Permutation c2 (c1 ++ x)).
   apply Permutation_sym ; auto.
@@ -1319,7 +1318,7 @@ Proof.
   rewrite H4 at 1.
 
   assert (Permutation (l1 ++ x :: l2) (x :: l1 ++ l2)).
-  perm_simplify.
+  rewrite Permutation_middle. apply Permutation_refl.
 
   assert (Eval_DNF v (l1 ++ x :: l2) = Eval_DNF v ( x :: l1 ++ l2)).
   apply Eval_DNF_permut, H5.

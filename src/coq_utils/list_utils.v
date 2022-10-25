@@ -38,8 +38,6 @@ Require Import Coq.Bool.Bool.
 Require Import Coq.Sorting.Permutation.
 Require Import Lia.
 
-Require Import Oqarina.coq_utils.nodup_incl.
-
 Set Implicit Arguments.
 (* end hide *)
 
@@ -217,6 +215,64 @@ Section in_boolean.
   Qed.
 
 End in_boolean.
+
+Section incl_split.
+
+  Variable A : Type.
+
+  (*| :coq:`NoDup_incl_split` extends Coq's standard library :coq:`in_split` to the case of lists. |*)
+
+  Lemma incl_split: forall (l1 l2 : list A),
+    NoDup l1 -> incl l1 l2 ->
+      exists comp, Permutation (l1 ++ comp) l2.
+  Proof.
+    intros l1.
+    induction l1 as [| x xs IH]; intros l2 nodup_l1 incl_l1_l2.
+
+    - (* l2 is an obvious solution *)
+      exists l2 ; simpl ; apply Permutation_refl.
+
+    - (* Ths general idea is to build a complement to `incl (x::xs) l2`.
+      For that, we have to rely on `in_split` only .. *)
+
+      (* First, we show that x in obviously in l2 .. *)
+      assert (x_in_l2: In x l2).
+      apply (incl_l1_l2 x). apply in_eq.
+
+      (* then we apply in_split to build complements .. *)
+      destruct (in_split _ _ x_in_l2) as [pref [comp]]. subst.
+      inversion nodup_l1; subst.
+
+      (* because of x_in_l2, one can deduce that xs is included
+        in `pref ++ comp`. *)
+      assert (incl xs (pref ++ comp)).
+      unfold incl.
+      intros a a_in.
+      apply in_or_app.
+      apply (incl_app_inv [x] xs) in incl_l1_l2.
+      destruct incl_l1_l2 as [incl_x incl_xs].
+      specialize (incl_xs a a_in).
+      apply in_app_or in incl_xs.
+      destruct incl_xs as [in_pref | [in_x | in_comp]]; intuition.
+      contradict a_in. subst. intuition.
+
+      (* We combine the previous hypotheses with IH to build a
+        candidate. *)
+      destruct (IH _ H2 H) as [comp' perm_comp'].
+      exists comp'.
+
+      (* From here, we massage the final permutation to conclude *)
+      simpl.
+      rewrite Permutation_middle.
+
+      rewrite Permutation_sym
+        with  (l := xs ++ x :: comp') (l' := pref ++ x :: comp).
+      apply Permutation_refl.
+      apply Permutation_elt, perm_comp'.
+  Qed.
+
+
+End incl_split.
 
 Section nodup.
 
@@ -567,7 +623,7 @@ Section BoolList.
     NoDup l1 -> incl l1 l2 -> andbl l1 = orb (andbl l1) (andbl (l2)).
   Proof.
     intros.
-    destruct (NoDup_incl_reorganize _ l1 H H0).
+    destruct (incl_split H H0).
     destruct (andbl_permut H1).
     repeat rewrite andbl_split.
     rewrite absorption_orb.
