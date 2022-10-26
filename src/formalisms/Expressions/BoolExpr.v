@@ -33,8 +33,9 @@
 (*| .. coq:: none |*)
 Require Import Coq.Bool.Bool.
 Require Import Coq.Lists.List.
-Require Import Coq.Lists.ListDec.
+
 Export ListNotations.
+Require Import Coq.Lists.ListDec.
 Require Import Coq.Unicode.Utf8.
 Require Import Coq.ssr.ssrbool.
 Require Import Coq.Relations.Relation_Definitions.
@@ -95,7 +96,6 @@ Proof.
 Qed.
 
 End List_reflect.
-
 
 (*|
 
@@ -192,7 +192,10 @@ Inductive red : relation (PropF) :=
     red (Conj p Top) p
 
   | red_Conj_Bot: forall (p : PropF),
-    red (Conj p Bot) Bot.
+    red (Conj p Bot) Bot
+
+  | red_Impl: forall (p1 p2: PropF),
+    red (Impl p1 p2) (Disj (Neg p1) p2).
 
 Definition Rewrite_PropF (p : PropF) : PropF :=
   match p with
@@ -203,6 +206,8 @@ Definition Rewrite_PropF (p : PropF) : PropF :=
     | p1 ∧ ⊤ => p1
     | p1 ∧ ⊥ => ⊥
     | p1 ∧ p2 => p2 ∧ p1
+
+    | Impl p1 p2 => (Neg p1) ∨ p2
 
     (* default *)
     | _ => p
@@ -233,12 +238,14 @@ Ltac prove_Rewrite_PropF_Complete :=
     | [ |- red (?p1 ∨ ⊥) ?p1  ] => apply red_Disj_Bot
     | [ |- red (?p1 ∨ (Neg ?p2)) _  ] =>
       destruct p2 ; simpl ; try apply red_Disj_comm ; apply red_Disj_Top
+    | [ |- red (Impl ?p1 ?p2) _  ] => apply red_Impl
 end.
 
 Lemma Rewrite_PropF_Complete: forall (p : PropF),
   clos_refl_trans _ red p (Rewrite_PropF p).
 Proof.
   intros ; induction p ; intuition.
+  - case p2 ; prove_Rewrite_PropF_Complete.
   - case p2 ; prove_Rewrite_PropF_Complete.
   - case p2 ; prove_Rewrite_PropF_Complete.
 Qed.
