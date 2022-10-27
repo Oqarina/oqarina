@@ -66,6 +66,7 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/formalisms/FaultTrees/StaticFaultTree.v \
 	src/formalisms/FaultTrees/DynamicFaultTree.v \
 	src/formalisms/FaultTrees/Merle_Algebra.v \
+	src/formalisms/Contracts/Contracts.v \
 	src/AADL/all.v \
 	src/AADL/Kernel/categories.v \
 	src/AADL/Kernel/component.v \
