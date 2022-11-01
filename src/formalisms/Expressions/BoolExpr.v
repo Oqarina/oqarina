@@ -163,6 +163,108 @@ Fixpoint Eval_PropF v A : bool :=
   | Impl B C => (negb (Eval_PropF v B)) || (Eval_PropF v C)
 end.
 
+(*| :coq:`sat_PropF` maps a :coq:`PropF` to a Prop value. We show that :coq:`sat_PropF` is decidable, more speficially we show that one can either build a proof that a :coq:`PropF` is sat or unsat. |*)
+
+Inductive sat_PropF: (PropVars -> Prop) -> PropF -> Prop :=
+| sat_Var (v: PropVars -> Prop) A : sat_PropF v (# A)
+| sat_Bot v : sat_PropF v ⊥
+| sat_Neg v p: unsat_PropF v p -> sat_PropF v (Neg p)
+| sat_And v p1 p2: sat_PropF v p1 -> sat_PropF v p2
+    -> sat_PropF v (p1 ∧ p2)
+| sat_Or_1 v p1 p2: sat_PropF v p1 -> sat_PropF v (p1 ∨ p2)
+| sat_Or_2 v p1 p2: sat_PropF v p2 -> sat_PropF v (p1 ∨ p2)
+| sat_Impl v p1 p2: sat_PropF v (Neg p1) \/ sat_PropF v p2
+    -> sat_PropF v (Impl p1 p2)
+
+with unsat_PropF: (PropVars -> Prop) -> PropF -> Prop :=
+| unsat_Var (v: PropVars -> Prop) A : unsat_PropF v (# A)
+| unsat_Neg v p: sat_PropF v p -> unsat_PropF v (Neg p)
+| unsat_And_1 v p1 p2: unsat_PropF v p1 -> unsat_PropF v (p1 ∧ p2)
+| unsat_And_2 v p1 p2: unsat_PropF v p2 -> unsat_PropF v (p1 ∧ p2)
+| unsat_Or v p1 p2: unsat_PropF v p1 -> unsat_PropF v p2
+    -> unsat_PropF v (p1 ∨ p2)
+| unsat_Impl v p1 p2: sat_PropF v p1 -> unsat_PropF v p2
+    -> unsat_PropF v (Impl p1 p2).
+
+Lemma sat_PropF_and_rewrite: forall v A1 A2,
+    sat_PropF v (A1 ∧ A2) <-> sat_PropF v A1 /\ sat_PropF v A2.
+Proof.
+  split; intro H.
+  - inversion H. intuition.
+  - apply sat_And ; intuition.
+Qed.
+
+Lemma sat_PropF_or_rewrite : forall v A1 A2,
+    sat_PropF v (A1 ∨ A2) <-> sat_PropF v A1 \/ sat_PropF v A2.
+Proof.
+  split; intro H.
+  - inversion H ; intuition.
+  - destruct H.
+    + apply sat_Or_1 ; intuition.
+    + apply sat_Or_2 ; intuition.
+Qed.
+
+Lemma sat_PropF_impl_rewrite: forall v A1 A2,
+    sat_PropF v (Impl A1 A2) <-> sat_PropF v (Neg A1) \/ sat_PropF v A2.
+Proof.
+  split; intro H.
+  - inversion H ; intuition.
+  - destruct H ; apply sat_Impl ; intuition.
+Qed.
+
+Lemma sat_PropF_neg_rewrite: forall v A1,
+    sat_PropF v (Neg A1) <-> unsat_PropF v  A1.
+Proof.
+  split; intro H.
+  - inversion H ; intuition.
+  - apply sat_Neg ; intuition.
+Qed.
+
+Lemma sat_PropF_dec: forall v A,
+  { sat_PropF v A } + { unsat_PropF v A }.
+Proof.
+  induction A.
+
+  - (* Var *)
+    left. apply sat_Var.
+
+  - (* Bot *)
+    left. apply sat_Bot.
+
+  - (* And *)
+    destruct IHA1 as [IHA1a |IHA1b] ;
+    destruct IHA2 as [IHA2a |IHA2b] ; simpl.
+
+    + left. apply sat_PropF_and_rewrite ; intuition.
+    + right. apply unsat_And_2 ; auto.
+
+    + right. apply unsat_And_1 ; auto.
+    + right. apply unsat_And_1 ; auto.
+
+  - (* Or *)
+    destruct IHA1 as [IHA1a |IHA1b] ;
+    destruct IHA2 as [IHA2a |IHA2b] ; simpl.
+
+    + left. apply sat_Or_1 ; intuition.
+    + left. apply sat_Or_1 ; intuition.
+    + left. apply sat_Or_2 ; intuition.
+    + right. apply unsat_Or ; intuition.
+
+  - (* Impl *)
+    destruct IHA1 as [IHA1a |IHA1b] ;
+    destruct IHA2 as [IHA2a |IHA2b] ; simpl.
+
+    + left. apply sat_Impl ; intuition.
+    + right. apply unsat_Impl ; intuition.
+    + left. apply sat_Impl ; intuition.
+    + left. apply sat_Impl. left. apply sat_Neg. intuition.
+
+  - (* Neg *)
+    destruct IHA as [IHAa |IHAb] ; simpl.
+    + right. apply unsat_Neg ; intuition.
+    + left. apply sat_Neg ; intuition.
+Qed.
+
 (*|
 Reduction lemmas
 ----------------
