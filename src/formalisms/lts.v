@@ -38,9 +38,9 @@ Require Import Coq.Classes.RelationClasses.
 
 (*|
 
-**************************************
-Labelled Transitionsition System (LTS)
-**************************************
+*********************************
+Labelled Transitionsition Systems
+*********************************
 
 In this chapter, we define Labelled Transition Systems (or LTS). This definition
 follows the canonical definition of a *deterministic* LTS, see :cite:t:`gorrieriLabeledTransitionSystems2017a` for details. |*)
@@ -134,7 +134,7 @@ Inductive Bisimilar (L : LTS_struct) (p q : States L) : Prop :=
 
 (*| .. coq:: none |*)
 Section Results.
-(*| 
+(*|
 
 ====================================
 Bisimilar as an equivalence relation
