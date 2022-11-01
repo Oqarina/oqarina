@@ -220,14 +220,15 @@ Section incl_split.
 
   Variable A : Type.
 
-  (*| :coq:`NoDup_incl_split` extends Coq's standard library :coq:`in_split` to the case of lists. |*)
+  (*| :coq:`incl_split` extends Coq's standard library :coq:`in_split` to the case of lists. |*)
 
   Lemma incl_split: forall (l1 l2 : list A),
     NoDup l1 -> incl l1 l2 ->
       exists comp, Permutation (l1 ++ comp) l2.
   Proof.
     intros l1.
-    induction l1 as [| x xs IH]; intros l2 nodup_l1 incl_l1_l2.
+    induction l1 as [| x xs IH] ;
+      intros l2 nodup_l1 incl_l1_l2.
 
     - (* l2 is an obvious solution *)
       exists l2 ; simpl ; apply Permutation_refl.
@@ -239,7 +240,8 @@ Section incl_split.
       assert (x_in_l2: In x l2).
       apply (incl_l1_l2 x). apply in_eq.
 
-      (* then we apply in_split to build complements .. *)
+      (* then we apply in_split to build a prefix and
+         the complement .. *)
       destruct (in_split _ _ x_in_l2) as [pref [comp]]. subst.
       inversion nodup_l1; subst.
 
@@ -270,7 +272,6 @@ Section incl_split.
       apply Permutation_refl.
       apply Permutation_elt, perm_comp'.
   Qed.
-
 
 End incl_split.
 
