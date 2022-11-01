@@ -139,30 +139,30 @@ Definition basic_event_value ( p : basic_event) :=
 
 Scheme Equality for basic_event.
 
-Definition iru1 := in_tree (BASIC IRU1) [].
-Definition iru2 := in_tree (BASIC IRU2) [].
-Definition iru3 := in_tree (BASIC IRU3) [].
+Definition iru1 := ltree_cons (BASIC IRU1) [].
+Definition iru2 := ltree_cons (BASIC IRU2) [].
+Definition iru3 := ltree_cons (BASIC IRU3) [].
 
-Definition riu2 := in_tree (BASIC RIU2) [].
-Definition riu6 := in_tree (BASIC RIU6) [].
-Definition riu7 := in_tree (BASIC RIU7) [].
+Definition riu2 := ltree_cons (BASIC RIU2) [].
+Definition riu6 := ltree_cons (BASIC RIU6) [].
+Definition riu7 := ltree_cons (BASIC RIU7) [].
 
-Definition ncd := in_tree (BASIC NCD) [].
-Definition gcd := in_tree (BASIC GCD) [].
+Definition ncd := ltree_cons (BASIC NCD) [].
+Definition gcd := ltree_cons (BASIC GCD) [].
 
-Definition e2n1 := in_tree (OR _) [ riu2; riu6; riu7 ].
-Definition e2n2 := in_tree (OR _) [ iru1; e2n1 ].
-Definition e2n3 := in_tree (OR _) [ riu2; riu6; riu7 ].
-Definition e2n4 := in_tree (OR _) [ iru2; e2n3 ].
-Definition e2n5 := in_tree (OR _) [ riu2; riu6; riu7 ].
-Definition e2n6 := in_tree (OR _) [ iru3; e2n5].
+Definition e2n1 := ltree_cons (OR _) [ riu2; riu6; riu7 ].
+Definition e2n2 := ltree_cons (OR _) [ iru1; e2n1 ].
+Definition e2n3 := ltree_cons (OR _) [ riu2; riu6; riu7 ].
+Definition e2n4 := ltree_cons (OR _) [ iru2; e2n3 ].
+Definition e2n5 := ltree_cons (OR _) [ riu2; riu6; riu7 ].
+Definition e2n6 := ltree_cons (OR _) [ iru3; e2n5].
 
-Definition mg := in_tree (K_OUT_OF_N _ 2) [e2n2 ;e2n4 ; e2n6].
-Definition slide165 := in_tree (OR _) [mg; ncd; gcd].
+Definition mg := ltree_cons (K_OUT_OF_N _ 2) [e2n2 ;e2n4 ; e2n6].
+Definition slide165 := ltree_cons (OR _) [mg; ncd; gcd].
 
 (*| We check that the fault tree is syntactically valid. |*)
 
-Fact slide165_OK : valid_static_fault_tree
+Fact slide165_OK : valid_static_fault_tree'
     (Rewrite_Fault_Tree'' slide165).
 Proof.
     prove_valid_static_fault_tree.
@@ -190,16 +190,16 @@ Definition slide165_cs :=
 Compute slide165_cs.
 
 Lemma slide165_cs_ok: slide165_cs =
-in_tree (OR _)
-    [in_tree (AND _)
-    [in_tree (BASIC IRU1) []; in_tree (BASIC IRU2) []];
-    in_tree (AND _)
-    [in_tree (BASIC IRU1) []; in_tree (BASIC IRU3) []];
-    in_tree (AND _)
-    [in_tree (BASIC IRU2) []; in_tree (BASIC IRU3) []];
-    in_tree (BASIC RIU2) []; in_tree (BASIC RIU6) [];
-    in_tree (BASIC RIU7) []; in_tree (BASIC NCD) [];
-    in_tree (BASIC GCD) []].
+ltree_cons (OR _)
+    [ltree_cons (AND _)
+    [ltree_cons (BASIC IRU1) []; ltree_cons (BASIC IRU2) []];
+    ltree_cons (AND _)
+    [ltree_cons (BASIC IRU1) []; ltree_cons (BASIC IRU3) []];
+    ltree_cons (AND _)
+    [ltree_cons (BASIC IRU2) []; ltree_cons (BASIC IRU3) []];
+    ltree_cons (BASIC RIU2) []; ltree_cons (BASIC RIU6) [];
+    ltree_cons (BASIC RIU7) []; ltree_cons (BASIC NCD) [];
+    ltree_cons (BASIC GCD) []].
  Proof. trivial. Qed.
 
 (*| Finally, we check that the computed probability value is consistent.
@@ -243,20 +243,21 @@ Definition basic_event_values (b : basic_event) :=
         | VarS1  => 3e-5
     end.
 
-Definition T := in_tree (BASIC VarT) [].
-Definition K2 := in_tree (BASIC VarK2) [].
-Definition S := in_tree (BASIC VarS) [].
-Definition K1 := in_tree (BASIC VarK1) [].
-Definition R := in_tree (BASIC VarR) [].
-Definition S1 := in_tree (BASIC VarS1) [].
+Definition T := ltree_cons (BASIC VarT) [].
+Definition K2 := ltree_cons (BASIC VarK2) [].
+Definition S := ltree_cons (BASIC VarS) [].
+Definition K1 := ltree_cons (BASIC VarK1) [].
+Definition R := ltree_cons (BASIC VarR) [].
+Definition S1 := ltree_cons (BASIC VarS1) [].
 
-Definition E5 := in_tree (OR _) [ K1 ; R].
-Definition E4 := in_tree (OR _) [ S1 ; E5].
-Definition E3 := in_tree (AND _) [ S ; E4].
-Definition E2 := in_tree (OR _) [ E3 ; K2].
-Definition E1 := in_tree (OR _) [ T ; E2].
+Definition E5 := ltree_cons (OR _) [ K1 ; R].
+Definition E4 := ltree_cons (OR _) [ S1 ; E5].
+Definition E3 := ltree_cons (AND _) [ S ; E4].
+Definition E2 := ltree_cons (OR _) [ E3 ; K2].
+Definition E1 := ltree_cons (OR _) [ T ; E2].
 
-Fact E1_OK : valid_static_fault_tree E1.
+
+Fact E1_OK : valid_static_fault_tree' E1.
 Proof.
     prove_valid_static_fault_tree.
 Qed.

@@ -67,8 +67,10 @@ Ltac prove_valid_static_fault_tree :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros t H ; destruct H ; subst
     | [ |- valid_static_fault_tree _ ] => unfold valid_static_fault_tree
+    | [ |- valid_static_fault_tree' _ ] =>
+        unfold valid_static_fault_tree' ; compute ; firstorder
     | [ |- valid_dynamic_fault_tree _ ] => unfold valid_dynamic_fault_tree
-    | [ |- tree_fall _ _ ] => apply tree_fall_fix
+    | [ |- ltree_fall _ _ ] => apply ltree_fall_fix
     | [ |-  _ /\ _ ] => split
     | [ |- valid_static_fault_tree_node  _ _ ] => compute; auto
     | [ |- valid_dynamic_fault_tree_node  _ _ ] => compute; auto

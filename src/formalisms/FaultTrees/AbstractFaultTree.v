@@ -44,7 +44,11 @@ Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.formalisms.Expressions.all.
 
+(*
 Require Export Top.tree.
+*)
+
+Require Export Kruskal.tree.ltree.
 
 Set Implicit Arguments.
 Set Strict Implicit.
@@ -105,15 +109,15 @@ Proof.
     repeat decide equality.
 Qed.
 
-Definition fault_tree := tree FT_Node.
+Definition fault_tree := ltree FT_Node.
 
-Definition invalid_tree := in_tree INVALID [].
+Definition invalid_tree := ltree_cons INVALID [].
 
 (*| :coq:`Get_Root_FT_Node` returns the FT_Node of the root of a fault tree. |*)
 
 Definition Get_Root_FT_Node (f : fault_tree) :=
     match f with
-    | in_tree n _ => n
+    | ltree_cons n _ => n
     end.
 
 (*| .. coq:: none |*)
@@ -130,19 +134,19 @@ A Fault Tree can generally be reduced through specifc tree transformations. In t
 
 Inductive red : relation (fault_tree) :=
     | red_AND_1: forall (a: fault_tree),
-        red (in_tree AND [a]) (a)
+        red (ltree_cons AND [a]) (a)
 
     | red_AND_concatenate: forall a l,
-        red (in_tree AND [a; in_tree AND l])
-            (in_tree AND (a :: l))
+        red (ltree_cons AND [a; ltree_cons AND l])
+            (ltree_cons AND (a :: l))
 
     | red_OR_concatenate: forall a l,
-        red (in_tree OR [a; in_tree OR l])
-            (in_tree OR (a :: l))
+        red (ltree_cons OR [a; ltree_cons OR l])
+            (ltree_cons OR (a :: l))
 
     | red_K_OUT_OF_N: forall k l,
-        red (in_tree (K_OUT_OF_N k) l)
-        (in_tree OR (map (fun x => in_tree AND x)
+        red (ltree_cons (K_OUT_OF_N k) l)
+        (ltree_cons OR (map (fun x => ltree_cons AND x)
                         (k_of_N k l))).
 
 Definition Rewrite_Fault_Tree (F : fault_tree)
@@ -150,19 +154,19 @@ Definition Rewrite_Fault_Tree (F : fault_tree)
     :=
 match F with
     (* red_AND_concatenate *)
-    | in_tree AND [a; in_tree AND l] =>
-        in_tree AND (a :: l)
+    | ltree_cons AND [a; ltree_cons AND l] =>
+        ltree_cons AND (a :: l)
 
     (* red_OR_concatenate *)
-    | in_tree OR [a; in_tree OR l] =>
-        in_tree OR (a :: l)
+    | ltree_cons OR [a; ltree_cons OR l] =>
+        ltree_cons OR (a :: l)
 
     (* red_AND_1 *)
-    | in_tree AND (h :: []) => h
+    | ltree_cons AND (h :: []) => h
 
     (* red_K_OUT_OF_N *)
-    | in_tree (K_OUT_OF_N k) l =>
-        in_tree OR (map (fun x => in_tree AND x) (k_of_N k l))
+    | ltree_cons (K_OUT_OF_N k) l =>
+        ltree_cons OR (map (fun x => ltree_cons AND x) (k_of_N k l))
 
     (* tauto *)
     | _ => F
@@ -185,7 +189,7 @@ Lemma Rewrite_Fault_Tree_Complete' :
 Proof.
     intros.
     induction f.
-    case a.
+    case x.
 
     (* INVALID *)
     - intros. simpl. apply rt_refl.
@@ -194,25 +198,25 @@ Proof.
     - intros. simpl. apply rt_refl.
 
     (* OR *)
-    - simpl. case ll.
+    - simpl. case l.
         * apply rt_refl.
-        * intros. case l.
+        * intros. case l1.
             + apply rt_refl.
-            + intros. case l0.
-                ** destruct t0, f ; try apply rt_refl.
+            + intros. case l3.
+                ** destruct l2, f ; try apply rt_refl.
                     apply rt_step, red_OR_concatenate.
-                ** intros. destruct t0.
+                ** intros. destruct l2.
                    destruct f ; apply rt_refl.
 
     (* AND *)
-    - simpl. case ll.
+    - simpl. case l.
         * apply rt_refl.
-        * intros. case l.
+        * intros. case l1.
             + apply rt_step, red_AND_1.
-            + intros. destruct t0, f ; try apply rt_refl.
-              case l0.
+            + intros. destruct l2, f ; try apply rt_refl.
+              case l3.
                 ** apply rt_step, red_AND_concatenate.
-                ** intros. destruct t0. destruct f ; apply rt_refl.
+                ** intros. destruct l0. destruct f ; apply rt_refl.
 
     (* PAND *)
     - simpl. apply rt_refl.
@@ -238,19 +242,19 @@ Qed.
 
 Definition Rewrite_Fault_Tree' : fault_tree -> fault_tree.
 Proof.
-    induction 1 as [ x y IH ] using tree_recursion.
-    apply (Rewrite_Fault_Tree (in_tree x IH)).
+    induction 1 as [ x y IH ] using ltree_recursion.
+    apply (Rewrite_Fault_Tree (ltree_cons x IH)).
 Defined.
 
 Fixpoint Rewrite_Fault_Tree'' (f : fault_tree) :=
-    let 'in_tree x ll := f in
+    let 'ltree_cons x ll := f in
     Rewrite_Fault_Tree
-        (in_tree x (map Rewrite_Fault_Tree'' ll)).
+        (ltree_cons x (map Rewrite_Fault_Tree'' ll)).
 
 Lemma Rewrite_Fault_Tree''_fix: forall x ll,
-    Rewrite_Fault_Tree'' (in_tree x ll) =
+    Rewrite_Fault_Tree'' (ltree_cons x ll) =
         Rewrite_Fault_Tree
-            (in_tree x (map Rewrite_Fault_Tree'' ll)).
+            (ltree_cons x (map Rewrite_Fault_Tree'' ll)).
 Proof. trivial. Qed.
 
 (*| A direct result of :coq:`Rewrite_Fault_Tree'` is that the K_OUT_OF_N gate has been suppressed. |*)
@@ -262,32 +266,30 @@ Lemma Rewrite_Fault_Tree'_postcondition:
 Proof.
     intros.
     induction f.
-    case a ;simpl ; try discriminate.
+    case x ;simpl ; try discriminate.
 
     (* OR gates *)
-    - destruct ll.
+    - destruct l.
         + simpl. discriminate.
-        + simpl. destruct ll.
+        + simpl. destruct l0.
             * simpl. discriminate.
             * simpl.
-              destruct (Rewrite_Fault_Tree'' t0).
+              destruct (Rewrite_Fault_Tree'' l0).
               destruct f ; simpl ; try discriminate.
-              destruct (map Rewrite_Fault_Tree'' ll) ;
+              destruct (map Rewrite_Fault_Tree'' l1) ;
                 simpl ; discriminate.
 
     (** AND gates *)
-    - destruct ll.
+    - destruct l.
         + simpl. discriminate.
         + simpl.
-          destruct (map Rewrite_Fault_Tree'' (ll)).
+          destruct (map Rewrite_Fault_Tree'' l0).
 
-          assert (In t (t::ll)). apply in_eq.
-          apply H, H0.
+          apply H. apply in_eq.
 
-          destruct t0.
+          destruct l1.
           destruct f ; simpl ; try discriminate.
-          destruct l ; simpl ; discriminate.
-
+          destruct l2 ; simpl ; discriminate.
 Qed.
 
 (*| .. coq:: none |*)
@@ -393,7 +395,7 @@ Fixpoint Compute_Fault_Tree''
     (f : fault_tree ) v
     : option basic_event_value
 :=
-     let 'in_tree x ll := f in
+     let 'ltree_cons x ll := f in
         Compute_Fault_Node x v
             (map (fun x => Compute_Fault_Tree'' x v) ll).
 
@@ -401,12 +403,12 @@ Fixpoint Compute_Fault_Tree_2
     (f : fault_tree ) v
     : basic_event_value
 :=
-    let 'in_tree x ll := f in
+    let 'ltree_cons x ll := f in
         Compute_Fault_Node_2 x v
             (map (fun x => Compute_Fault_Tree_2 x v) ll).
 
 Lemma Compute_Fault_Tree_2_fix: forall x ll v,
-    Compute_Fault_Tree_2 (in_tree x ll) v =
+    Compute_Fault_Tree_2 (ltree_cons x ll) v =
         Compute_Fault_Node_2 x v
             (map (fun x => Compute_Fault_Tree_2 x v) ll).
 Proof. trivial. Qed.

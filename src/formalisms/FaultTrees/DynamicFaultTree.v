@@ -86,23 +86,22 @@ Lemma valid_dynamic_fault_tree_node_dec:
         { ~ valid_dynamic_fault_tree_node n l }.
 Proof.
     prove_dec.
-    apply List.list_eq_dec, tree_eq_dec, FT_Node_eq_dec.
+    apply List.list_eq_dec, ltree_eq_dec, FT_Node_eq_dec.
     apply basic_event_eq_dec.
     apply PeanoNat.Nat.eq_dec. apply Compare_dec.le_dec.
 Qed.
 
 Definition valid_dynamic_fault_tree (dft : fault_tree basic_event) :=
-    tree_fall valid_dynamic_fault_tree_node dft.
+    ltree_fall valid_dynamic_fault_tree_node dft.
 
 Lemma valid_dynamic_fault_tree_dec:
     forall (dft : fault_tree basic_event),
     { valid_dynamic_fault_tree dft } +
         { ~ valid_dynamic_fault_tree dft }.
 Proof.
-    apply tree_fall_dec.
+    apply ltree_fall_dec.
     apply valid_dynamic_fault_tree_node_dec.
 Qed.
-
 
 (*|
 
@@ -144,9 +143,9 @@ Definition DFT := fault_tree d'.
 (*| From these definitions, one can directly built a fault tree, check it is correct, and evaluate it. |*)
 
 Example Basic_DFT : DFT :=
-    in_tree (PAND d')
-    [ in_tree (BASIC (d_0 basic_event)) [] ;
-      in_tree (BASIC (d_0 basic_event)) []].
+    ltree_cons (PAND d')
+    [ ltree_cons (BASIC (d_0 basic_event)) [] ;
+      ltree_cons (BASIC (d_0 basic_event)) []].
 (*
 Fact Basic_DFT_OK : valid_dynamic_fault_tree Basic_DFT.
 Proof.

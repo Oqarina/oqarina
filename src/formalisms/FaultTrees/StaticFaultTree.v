@@ -99,28 +99,29 @@ Lemma valid_static_fault_tree_node_dec:
         { ~ valid_static_fault_tree_node n l }.
 Proof.
     prove_dec.
-    apply List.list_eq_dec,tree_eq_dec, FT_Node_eq_dec.
+    apply List.list_eq_dec.
+    apply ltree_eq_dec, FT_Node_eq_dec.
     apply basic_event_eq_dec.
 Qed.
 
 Definition valid_static_fault_tree
     (sft : fault_tree basic_event)
 :=
-    tree_fall valid_static_fault_tree_node sft.
+    ltree_fall valid_static_fault_tree_node sft.
 
 Lemma valid_static_fault_tree_dec:
     forall (sft : fault_tree basic_event),
     { valid_static_fault_tree sft } +
         { ~ valid_static_fault_tree sft }.
 Proof.
-    apply tree_fall_dec.
+    apply ltree_fall_dec.
     apply valid_static_fault_tree_node_dec.
 Qed.
 
 Fixpoint valid_static_fault_tree'
     (f : fault_tree basic_event)
 :=
-    let 'in_tree x ll := f in
+    let 'ltree_cons x ll := f in
     valid_static_fault_tree_node x ll /\
         All valid_static_fault_tree' ll.
 
@@ -133,16 +134,16 @@ Proof.
     simpl.
     apply dec_sumbool_and.
     - apply valid_static_fault_tree_node_dec.
-    - induction ll.
+    - induction l.
         * simpl ; auto.
         * simpl. apply dec_sumbool_and.
             + apply X ; simpl ; auto.
-            + apply IHll. intuition.
+            + apply IHl. intuition.
 Qed.
 
 Lemma valid_static_fault_tree'_children:
     forall a ll,
-        valid_static_fault_tree' (in_tree a ll) ->
+        valid_static_fault_tree' (ltree_cons a ll) ->
             forall x, In x ll ->
             valid_static_fault_tree' x.
 Proof.
@@ -156,7 +157,7 @@ Proof.
 Qed.
 
 Lemma valid_static_fault_tree'_car: forall a a0 ll,
-    valid_static_fault_tree' (in_tree a (a0 ::ll)) ->
+    valid_static_fault_tree' (ltree_cons a (a0 ::ll)) ->
     valid_static_fault_tree' a0.
 Proof.
     intros.
@@ -166,8 +167,8 @@ Proof.
 Qed.
 
 Lemma valid_static_fault_tree'_cons: forall a a0 ll,
-    valid_static_fault_tree' (in_tree a (a0 ::ll)) ->
-    valid_static_fault_tree' (in_tree a ll).
+    valid_static_fault_tree' (ltree_cons a (a0 ::ll)) ->
+    valid_static_fault_tree' (ltree_cons a ll).
 Proof.
     intros.
     unfold valid_static_fault_tree' in *.
@@ -365,7 +366,7 @@ Fixpoint Map_Fault_Tree_to_BoolExpr'
     (f : fault_tree basic_event)
     : PropF basic_event
 :=
-    let 'in_tree x ll := f in
+    let 'ltree_cons x ll := f in
         Map_Fault_Node_to_BoolExpr x (map Map_Fault_Tree_to_BoolExpr' ll).
 
 Definition Map_Fault_Tree_to_BoolExpr
@@ -385,28 +386,28 @@ Proof.
 
     (* We do a case analysis on the value of the gate 'a'
       and expedite trivial cases via intuition. *)
-    case a ; intuition ; induction ll.
+    case x ; intuition ; induction l.
 
     (* OR *)
     - intuition.
 
-    - assert (forall x, In x ll -> valid_static_fault_tree' x ->
+    - assert (forall x, In x l -> valid_static_fault_tree' x ->
                 Compute_Fault_Tree_2 x v =
                 Eval_PropF v (Map_Fault_Tree_to_BoolExpr' x)).
      intuition. (* Consequence of H0 *)
 
-     assert (Compute_Fault_Tree_2 (in_tree (OR basic_event) ll) v =
+     assert (Compute_Fault_Tree_2 (ltree_cons (OR basic_event) l) v =
         Eval_PropF v
             (Map_to_OR
-            (map (Map_Fault_Tree_to_BoolExpr') ll))).
-     apply IHll. apply H1.
+            (map (Map_Fault_Tree_to_BoolExpr') l))).
+     apply IHl. apply H1.
 
      apply valid_static_fault_tree'_cons in H0. apply H0.
 
      simpl. rewrite orbl_cons.
 
-     assert (Compute_Fault_Tree_2 a0 v =
-                Eval_PropF v (Map_Fault_Tree_to_BoolExpr' a0)).
+     assert (Compute_Fault_Tree_2 a v =
+                Eval_PropF v (Map_Fault_Tree_to_BoolExpr' a)).
      apply H. apply in_eq.
 
      apply valid_static_fault_tree'_car in H0. apply H0.
@@ -417,22 +418,22 @@ Proof.
     (* AND *)
     - intuition.
 
-    - assert (forall x, In x ll -> valid_static_fault_tree' x ->
+    - assert (forall x, In x l -> valid_static_fault_tree' x ->
                 Compute_Fault_Tree_2 x v =
                 Eval_PropF v (Map_Fault_Tree_to_BoolExpr' x)).
       intuition. (* Consequence of H0 *)
 
-     assert (Compute_Fault_Tree_2 (in_tree (AND basic_event) ll) v =
+     assert (Compute_Fault_Tree_2 (ltree_cons (AND basic_event) l) v =
         Eval_PropF v
             (Map_to_AND
-            (map (Map_Fault_Tree_to_BoolExpr') ll))).
-     apply IHll. apply H1.
+            (map (Map_Fault_Tree_to_BoolExpr') l))).
+     apply IHl. apply H1.
      apply valid_static_fault_tree'_cons in H0. apply H0.
 
      simpl. rewrite andbl_cons.
 
-     assert (Compute_Fault_Tree_2 a0 v =
-                Eval_PropF v (Map_Fault_Tree_to_BoolExpr' a0)).
+     assert (Compute_Fault_Tree_2 a v =
+                Eval_PropF v (Map_Fault_Tree_to_BoolExpr' a)).
      apply H. apply in_eq.
 
      apply valid_static_fault_tree'_car in H0. apply H0.
@@ -450,13 +451,13 @@ Fixpoint Map_BoolExpr_to_Fault_Tree
     : fault_tree basic_event
 :=
     match b with
-        | Var b => in_tree (BASIC b) []
+        | Var b => ltree_cons (BASIC b) []
 
-        | Conj b1 b2 => in_tree (AND _)
+        | Conj b1 b2 => ltree_cons (AND _)
             [ Map_BoolExpr_to_Fault_Tree b1 ;
               Map_BoolExpr_to_Fault_Tree b2 ]
 
-        | Disj b1 b2 => in_tree (OR _)
+        | Disj b1 b2 => ltree_cons (OR _)
             [ Map_BoolExpr_to_Fault_Tree b1 ;
               Map_BoolExpr_to_Fault_Tree b2 ]
 
@@ -478,7 +479,6 @@ Proof.
     - simpl. rewrite IHp1, IHp2. intuition.
     - simpl.
 *)
-
 
 (*| .. coq:: none |*)
 End Fault_Tree_to_Bool_Expr.
