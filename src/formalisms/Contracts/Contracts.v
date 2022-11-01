@@ -31,7 +31,14 @@
 ***)
 
 (*| .. coq:: none |*)
+Require Import Coq.Classes.RelationClasses.
 Require Import Coq.Logic.Decidable.
+Require Import Coq.Logic.FunctionalExtensionality.
+Require Import Coq.Logic.PropExtensionality.
+Require Import Coq.Relations.Relation_Definitions.
+
+Set Implicit Arguments.
+Set Strict Implicit.
 
 Section Contracts_Meta_Theory.
 (*| .. coq:: |*)
@@ -44,7 +51,7 @@ Contract theory
 
 In this chapter, we mechanize the meta-theory of contracts, along with in Assume/Guarantee instantiation. Definitions follow :cite:`benvenisteContractsSystemsDesign`.
 
-In :cite:`DBLP:journals/corr/abs-2108-13647`, the authors propose a mechanization of these contracts using a set-theoretical approach. In our formalization, we opted for the Coq :coq:`Prop` type instead.
+In :cite:`DBLP:journals/corr/abs-2108-13647`, the authors propose a mechanization of these contracts using a set-theoretical approach. In our formalization, we opted for the Coq :coq:`Prop` type instead. Ultimately, they are equivalent in that the authors use decidable set appartenance.
 
 
 Prolegomena
@@ -83,8 +90,8 @@ Rationale: the original paper provides little fundations for the definition of c
 |*)
 
 Record Contract := {
-    Mc : Model -> Prop;
     Ec : Model -> Prop;
+    Mc : Model -> Prop;
 }.
 
 Hypothesis Decidable_Contract_c:
@@ -130,7 +137,7 @@ A contract refines another if it follows Liskow-like principles on :coq:`Mc` and
 
  |*)
 
-Definition refines c' c  :=
+Definition refines c' c :=
     forall m, (m ⊢m c' -> m ⊢m c) /\ (m ⊢e c -> m ⊢e c' ).
 
 Notation "c1 ≼ c2" := (refines c1 c2) (at level 70, no associativity).
@@ -153,21 +160,33 @@ Proof.
     intuition.
 Qed.
 
-(*| Two contracts are equivalent iff. they refine each other. |*)
+(*| Two contracts are equivalent iff. they refine each other. :coq:`equiv` an equivalence relation. |*)
 
 Definition equiv c1 c2 := (c1 ≼ c2) /\ (c2 ≼ c1).
 
 Notation "c1 ≍ c2" := (equiv c1 c2) (at level 70 , no associativity).
 
-(*| :coq:`refines` is reflexive, transitive, and antisymmetric. |*)
+Lemma equiv_refl: reflexive _ equiv.
+Proof. firstorder. Qed.
 
-Theorem refines_refl : forall c1, c1 ≼ c1.
-Proof.
-    firstorder.
-Qed.
+Theorem equiv_trans: transitive _ equiv.
+Proof. firstorder. Qed.
 
-Theorem refines_trans : forall c1 c2 c3,
-    c1 ≼ c2 -> c2 ≼ c3 -> c1 ≼ c3.
+Theorem equiv_sym: symmetric _ equiv.
+Proof. firstorder. Qed.
+
+Global Instance equiv_Equivalence : Equivalence (equiv) := {|
+    Equivalence_Reflexive := equiv_refl ;
+    Equivalence_Symmetric := equiv_sym ;
+    Equivalence_Transitive := equiv_trans;
+|}.
+
+(*| :coq:`refines` is reflexive, transitive, and antisymmetric. In other words, it is a partial order. |*)
+
+Theorem refines_refl : reflexive Contract refines.
+Proof. firstorder. Qed.
+
+Theorem refines_trans : transitive Contract refines.
 Proof.
     unfold refines.
     intros c1 c2 c3 H0 H1 m.
@@ -176,10 +195,25 @@ Proof.
     split ; auto.
 Qed.
 
+Global Instance refines_PreOrder : PreOrder (refines) := {|
+    PreOrder_Reflexive := refines_refl ;
+    PreOrder_Transitive := refines_trans;  |}.
+
+Global Instance refines_PartialOrder:
+    PartialOrder equiv refines.
+Proof.
+    split.
+    - (* Equivalence implies inclusion *)
+        firstorder.
+    - (* Inclusion implies equivalence *)
+        firstorder.
+Defined.
+
 Theorem refines_antisym : forall c1 c2,
     c1 ≼ c2 -> c2 ≼ c1 -> c1 ≍ c2.
 Proof.
-  unfold equiv ; auto.
+    intros.
+    unfold equiv ; auto.
 Qed.
 
 (*|
@@ -234,20 +268,12 @@ Definition contract_compose c1 c2 := {|
 Notation "c1 ⊗ c2" := (contract_compose c1 c2)
     (at level 71, left associativity).
 
-Definition contract_composition_well_defined' (* XXX *)
+Definition contract_composition_well_defined
     (c1 c2: Contract)
     : Prop
 :=
     forall (m1 m2 e: Model),
-        (m1 ⊢m c1) /\ (m2 ⊢m c2) /\ (e ⊢e (c1 ⊗ c2)) ->
-        ((m1 × m2) ⊢m (c1 ⊗ c2)) /\ ((e × m2) ⊢e c1) /\ ((e × m1) ⊢e c2).
-
-Definition contract_composition_well_defined
-        (c1 c2: Contract)
-        : Prop
-    :=
-        forall (m1 m2 e: Model),
-            (m1 ⊢m c1) /\ (m2 ⊢m c2) -> (valid_model (m1 × m2)).
+        (m1 ⊢m c1) /\ (m2 ⊢m c2) -> (valid_model (m1 × m2)).
 
 (*|
 
@@ -331,8 +357,7 @@ Lemma contract_compose_assoc: forall c1 c2 c3,
 Proof.
     intros.
     unfold contract_compose, equiv, refines.
-    simpl.
-    firstorder.
+    simpl ; firstorder.
 Qed.
 
 Lemma contract_compose_comm: forall c1 c2,
@@ -345,4 +370,142 @@ Qed.
 
 (*| .. coq:: none |*)
 End Contracts_Meta_Theory.
+
+Module Contract_Notations.
+
+Notation "m ⊢m c" := (Implements_Contract m c)
+    (at level 70, no associativity).
+
+Notation "e ⊢e c" := (Is_Compatible_Contract e c)
+    (at level 70, no associativity).
+
+Notation "c1 ≍ c2" := (equiv c1 c2) (at level 70 , no associativity).
+
+End Contract_Notations.
+
+Section Assume_Guarantee_Contracts.
 (*| .. coq:: |*)
+
+(*|
+
+A/G Contracts
+=============
+
+In this section, we define the notion of Assume/Guarantee contracts (or A/G contract). A :coq:`AG_Contract` refines the notion of contract from the meta-theory to components.
+
+Without loss of generality, we define a component as a set of variables (:coq:`V`) that validates a specific assertion, i.e. a function whose signature is :coq:`list V -> Prop`. For instance, the set of static configuration parameters of a component, or a trace generated by some behavioral description.
+
+For an A/G contract, an assumption (A) states assumptions made on the environment by a model and a guarantee (G) states guarantees offered by a model. They are both assertions on the same set of variables.
+
+A/G contracts trivially meet all the meta-theory lemmas proved above.
+We only prove a subset of them. Proofs follow the same schema: we map
+an A/G contract to a general contract and conclude.
+
+|*)
+
+Import Contract_Notations.
+
+Variable V : Type.
+
+Definition Assertion: Type := list V -> Prop.
+Definition Component := Assertion.
+Definition Environment := Assertion.
+
+Record AG_Contract := {
+    A: Assertion ;
+    G: Assertion ;
+}.
+
+Definition AG_Contract_to_Contract (AG : AG_Contract) := {|
+    Ec := AG.(A) ;
+    Mc := AG.(G) ;
+|}.
+
+Notation "@ c" := (AG_Contract_to_Contract c) (at level 70 , no associativity).
+
+(*| A saturated contract is an A/G contract defines by the following rule predicate. It is an idemptotent function. |*)
+
+Definition Saturate (AG : AG_Contract) := {|
+    A := AG.(A);
+    G := fun x => (AG.(A) x -> AG.(G) x);
+|}.
+
+Lemma Saturate_idempotent: forall ag,
+    (@Saturate ag) ≍ (@ Saturate (Saturate ag )).
+Proof.
+    intros.
+    unfold AG_Contract_to_Contract.
+    simpl.
+
+    assert (
+        (fun x => A ag x -> G ag x) =
+        (fun x => A ag x -> A ag x -> G ag x)
+    ).
+    apply functional_extensionality. intros.
+    apply propositional_extensionality.
+    firstorder.
+
+    rewrite H. reflexivity.
+Qed.
+
+(*| A saturated contract is equivalent to the original contract if
+the environment is compatible with the contract.
+
+Note: :cite:`benvenisteContractsSystemsDesign`, p36 introduces this lemma without proof. It misses the hypothesis on the environment. |*)
+
+Lemma Saturate_equiv: forall ag,
+    (forall v, v ⊢e (@ ag)) ->
+        (@ Saturate ag) ≍ (@ ag).
+Proof.
+    intros. unfold Saturate.
+    unfold AG_Contract_to_Contract.
+    simpl. firstorder.
+Qed.
+
+(*| The notion of contract refinement and composition is directly inherited from the meta-theory.
+
+We demonstrate that a saturated contract preserves some initial properties, e.g. equivalence, compatibility, etc. |*)
+
+Theorem contract_extensionality : forall (c1 c2 : AG_Contract),
+    (@c1) ≍ (@c2) -> Saturate c1 = Saturate c2.
+Proof.
+    intros. firstorder.
+    unfold refines in *.
+    simpl in *.
+    unfold Saturate.
+
+    assert (
+        (fun x : list V => A c1 x -> G c1 x) =
+        (fun x : list V => A c2 x -> G c2 x)
+    ).
+    apply functional_extensionality. intros.
+    specialize (H x).
+    specialize (H0 x).
+    apply propositional_extensionality. firstorder.
+
+    assert (forall m, A c1 m = A c2 m).
+    intros.
+    specialize (H m).
+    specialize (H0 m).
+    apply propositional_extensionality. firstorder.
+
+    assert (A c1 = A c2).
+    apply functional_extensionality. apply H2.
+
+    rewrite H1. rewrite H3. reflexivity.
+Qed.
+
+Lemma implements_implements_saturate: forall c v,
+    v ⊢m (@c) -> v ⊢m (@(Saturate c)).
+Proof.
+    simpl. firstorder.
+Qed.
+
+Lemma implements_saturate_implements: forall c v,
+    (forall v, v ⊢e (@ c)) ->
+        v ⊢m (@(Saturate c)) -> v ⊢m (@c).
+Proof.
+    simpl. firstorder.
+Qed.
+
+End Assume_Guarantee_Contracts.
