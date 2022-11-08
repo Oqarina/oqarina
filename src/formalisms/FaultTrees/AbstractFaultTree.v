@@ -39,16 +39,13 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Unicode.Utf8.
 Require Import Coq.Bool.Bool.
 
+(* KruskalTrees *)
+Require Export KruskalTrees.tree.ltree.
+
 (* Oqarina Library*)
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.formalisms.Expressions.all.
-
-(*
-Require Export Top.tree.
-*)
-
-Require Export Kruskal.tree.ltree.
 
 Set Implicit Arguments.
 Set Strict Implicit.

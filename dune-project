@@ -19,5 +19,6 @@
   (coq-ext-lib :dev)         ;; BSD 2-Clause, https://github.com/coq-community/coq-ext-lib/blob/master/LICENSE
   (coq-simple-io (>= 1.6.0)) ;; MIT, https://github.com/Lysxia/coq-simple-io/blob/master/LICENSE
   (coq-json :dev)            ;; BSD 3-Clause, https://github.com/liyishuai/coq-json/blob/comrade/LICENSE
+  (coq-kruskal-trees :dev)   ;; CeCILL-B, https://github.com/DmxLarchey/Kruskal-Trees 
 ))
 

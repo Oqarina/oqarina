@@ -36,6 +36,7 @@ jobs:
           before_install: |
             opam repo add  --all-switches --set-default coq-released https://coq.inria.fr/opam/released || true
             opam repo add  --all-switches --set-default coq-extra-dev https://coq.inria.fr/opam/extra-dev/ || true
+            opam pin add -n -y coq-kruskal-trees https://github.com/DmxLarchey/Kruskal-Trees.git || true
             opam repo list
 
           opam_file: 'coq-oqarina.opam'
