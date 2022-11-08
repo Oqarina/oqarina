@@ -17,6 +17,7 @@ jobs:
         coq_version:
           - 'coqorg/coq:8.16'
           - 'coqorg/coq:dev'
+        ocaml_version: ['default']
       max-parallel: 4
       fail-fast: false
 
