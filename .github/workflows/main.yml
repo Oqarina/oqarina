@@ -15,8 +15,8 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          - '8.16.1'
-          - dev
+          - 'coqorg/coq:8.16'
+          - 'coqorg/coq:dev'
       max-parallel: 4
       fail-fast: false
 
