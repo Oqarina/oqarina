@@ -125,7 +125,7 @@ Qed.
 Section NatinfTotalOrder.
 
 Lemma ni_min_case : forall d d':natinf,
-{ ni_min d d' = d } + { ni_min d d' = d'}.
+  { ni_min d d' = d } + { ni_min d d' = d'}.
 Proof.
   destruct d.
   - right. exact (ni_min_inf_l d').
@@ -298,6 +298,13 @@ Proof.
   apply ni_le_le in H.
   simpl.
   rewrite Nat.max_r ; auto.
+Qed.
+
+Lemma ni_max_max: forall x y : natinf, ni_max (ni_max x y) x = ni_max x y.
+Proof.
+  intros.
+  unfold ni_max.
+  destruct x, y ; intuition.
 Qed.
 
 End NatinfTotalOrder.

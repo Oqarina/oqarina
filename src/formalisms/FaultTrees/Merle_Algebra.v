@@ -410,7 +410,6 @@ Proof.
       - intros. apply ni_max_inf_r.
 Qed.
 
-
 Lemma d_3_20_b: forall (d1 : d) (b : basic_event),
     (⊥ ◁ d1) b = ⊥ b.
 Proof.
@@ -523,6 +522,51 @@ Qed.
 Lemma d_incl_before_idem: forall (d1:d), (d1 ◁̳ d1) = d1.
 Proof.
     prove_extensionality_from_lemma d_incl_before_idem_b.
+Qed.
+
+(*| (3.64) |*)
+
+Lemma d_3_64_b:
+    forall (d1 d2: d) (b: basic_event),
+        ((d1 ✕ (d2 ◁̳ d1)) ＋ (d2 ✕ (d1 ◁̳ d2))) b = (d1 ✕ d2) b.
+Proof.
+    intros.
+    unfold d_incl_before, d_prod, d_plus.
+    rewrite cmp_antisym.
+    destruct (compare' (d1 b) (d2 b)) ; simpl.
+    - rewrite ni_max_comm. rewrite ni_min_idemp. reflexivity.
+    - rewrite ni_max_inf_r. rewrite ni_min_inf_l. rewrite ni_max_comm. reflexivity.
+    - rewrite ni_max_inf_r. rewrite ni_min_inf_r. reflexivity.
+Qed.
+
+Lemma d_3_64:
+    forall (d1 d2: d),
+        ((d1 ✕ (d2 ◁̳ d1)) ＋ (d2 ✕ (d1 ◁̳ d2))) = (d1 ✕ d2).
+Proof.
+    prove_extensionality_from_lemma d_3_64_b.
+Qed.
+
+Lemma d_3_64_b':
+    forall (d1 d2: d) (b: basic_event),
+        (((d2 ✕ d1) ✕ (d2 ◁̳ d1)) ＋ ((d1 ✕ d2) ✕ (d1 ◁̳ d2))) b = (d1 ✕ d2) b.
+Proof.
+    intros.
+    unfold d_incl_before, d_prod, d_plus.
+    rewrite cmp_antisym.
+    destruct (compare' (d1 b) (d2 b)) ; simpl.
+    - repeat rewrite ni_max_max. rewrite ni_max_comm. rewrite ni_min_idemp.
+      reflexivity.
+    - rewrite ni_max_inf_r. rewrite ni_max_max. rewrite ni_min_inf_l.
+      reflexivity.
+    - rewrite ni_max_inf_r. rewrite ni_min_inf_r. rewrite  ni_max_max.
+      rewrite ni_max_comm. reflexivity.
+Qed.
+
+Lemma d_3_64':
+    forall (d1 d2: d),
+        (((d2 ✕ d1) ✕ (d2 ◁̳ d1)) ＋ ((d1 ✕ d2) ✕ (d1 ◁̳ d2))) = (d1 ✕ d2).
+Proof.
+    prove_extensionality_from_lemma d_3_64_b'.
 Qed.
 
 (*| Definition of DFT gates from Chapter 3 |*)
@@ -698,7 +742,7 @@ Proof.
 Qed.
 
 Lemma Rule_10: forall (l1 l2: list d),
-    n_PAND  ([ n_PAND l1 ] ++ l2) = n_PAND (l1 ++ l2).
+    n_PAND ([ n_PAND l1 ] ++ l2) = n_PAND (l1 ++ l2).
 Proof.
     intros.
     induction l1 ; simpl; auto.
@@ -709,7 +753,7 @@ Proof.
 Qed.
 
 Lemma Rule_11: forall (x : d) (l: list d),
-    n_AND  ([ x ; x ]++ l) = n_AND ( [x] ++ l ).
+    n_AND ([ x ; x ]++ l) = n_AND ( [x] ++ l ).
 Proof.
     intros.
     simpl.
@@ -758,6 +802,16 @@ Proof.
     rewrite d_prod_comm at 1.
     rewrite <- d_3_7.
     rewrite d_prod_comm ; auto.
+Qed.
+
+Lemma Rule_18: forall (x y:d),
+    D_OR (P_PAND x y) (P_PAND y x) = D_AND x y.
+Proof.
+    intros.
+    unfold D_AND, D_OR, P_PAND.
+    rewrite d_3_64' with (d2 := x) (d1 := y).
+    rewrite d_prod_comm.
+    reflexivity.
 Qed.
 
 End DFT_Rewriting_Rules.
