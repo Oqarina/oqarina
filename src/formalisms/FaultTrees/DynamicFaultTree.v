@@ -133,9 +133,9 @@ Instance Merle_Basic_Event_Operators : Basic_Event_Operators d' :=
 Instance Merle_Basic_Event_Operators_Facts
     : Basic_Event_Operators_Facts Merle_Basic_Event_Operators :=
 {
-    b_ANDl_singleton := Rule_4 basic_event ;
-    b_ANDl_concatenate := Rule_8' basic_event ;
-    b_ORl_concatenate := Rule_9' basic_event ;
+    b_ANDl_singleton := Theorem_4 basic_event ;
+    b_ANDl_concatenate := Theorem_8' basic_event ;
+    b_ORl_concatenate := Theorem_9' basic_event ;
 }.
 
 Definition DFT := fault_tree d'.

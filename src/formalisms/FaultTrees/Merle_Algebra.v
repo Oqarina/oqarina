@@ -280,6 +280,11 @@ Proof.
     prove_extensionality_from_lemma d_3_10_b.
 Qed.
 
+Lemma d_3_10_r: forall (d1 : d), d_prod ⊥ d1 = ⊥.
+Proof.
+    intros. rewrite d_prod_comm. apply d_3_10.
+Qed.
+
 Lemma d_3_11_b:
 forall (d1 d2 d3:d) (b:basic_event),
     d_plus d1 (d_prod d2 d3) b = d_prod (d_plus d1 d2) (d_plus d1 d3) b.
@@ -309,6 +314,12 @@ Lemma d_3_12:
 forall (d1 : d), d_plus d1 ⊤ = ⊤ .
 Proof.
     prove_extensionality_from_lemma d_3_12_b.
+Qed.
+
+Lemma d_3_12_r:
+forall (d1 : d), d_plus ⊤ d1 = ⊤ .
+Proof.
+    intros. rewrite d_plus_comm. apply d_3_12.
 Qed.
 
 Lemma d_3_13_b:
@@ -575,6 +586,12 @@ Definition D_OR := d_plus.
 
 Definition D_AND := d_prod.
 
+Lemma D_AND_TRUE_l:
+    forall (d1 : d), D_AND ⊤ d1 = d1.
+Proof.
+    unfold D_AND. apply d_3_9_r.
+Qed.
+
 Lemma D_AND_TRUE_r:
 forall (d1 : d), D_AND d1 ⊤ = d1.
 Proof.
@@ -592,6 +609,20 @@ Proof.
     rewrite d_3_9_r.
     rewrite d_3_50'.
     rewrite d_3_9 ; auto.
+Qed.
+
+Lemma P_PAND_inf_r: forall (d1 : d),
+    P_PAND d1 ⊥ = ⊥.
+Proof.
+    intros.
+    unfold P_PAND. rewrite d_3_10. rewrite d_3_10_r. reflexivity.
+Qed.
+
+Lemma P_PAND_inf_l: forall (d1 : d),
+    P_PAND  ⊥ d1 = ⊥.
+Proof.
+    intros.
+    unfold P_PAND. rewrite d_3_10_r. reflexivity.
 Qed.
 
 (*| (3.51) d_incl_before is idempotent |*)
@@ -645,11 +676,45 @@ Admitted.
 Definition n_AND (l : list d) :=
     fold_right (fun a b => (D_AND a b)) d_0 l.
 
+Lemma n_AND_split: forall (l1 l2: list d),
+    n_AND (l1 ++ l2) = D_AND (n_AND l1) (n_AND l2).
+Proof.
+    intros. induction l1.
+    - simpl. unfold D_AND. rewrite d_3_9_r. reflexivity.
+    - simpl. rewrite IHl1. unfold D_AND. rewrite d_prod_associative_l. reflexivity.
+Qed.
+
 Definition n_OR (l : list d) :=
     fold_right (fun a b => (D_OR a b)) d_inf l.
 
+Lemma n_OR_split: forall (l1 l2: list d),
+    n_OR (l1 ++ l2) = D_OR (n_OR l1) (n_OR l2).
+Proof.
+    intros. induction l1.
+    - intuition.
+    - simpl. rewrite IHl1. unfold D_OR. rewrite d_plus_associative_l. reflexivity.
+Qed.
+
 Definition n_PAND (l : list d) :=
     fold_left (fun a b => (P_PAND a b)) l d_0.
+
+Lemma n_PAND_simpl: forall (d1 d2: d),
+    n_PAND [d1 ; d2] = P_PAND d1 d2.
+Proof.
+    intros. unfold n_PAND.
+    simpl. rewrite P_PAND_0_d. reflexivity.
+Qed.
+
+Lemma n_PAND_assoc: forall (l : list d) (d1 : d),
+    n_PAND (l ++ [d1]) = P_PAND (n_PAND l) d1.
+Proof.
+    intros.
+    unfold n_PAND.
+    repeat rewrite fold_left_cons.
+    repeat rewrite P_PAND_0_d.
+    rewrite fold_left_app. simpl.
+    reflexivity.
+Qed.
 
 Definition k_out_of_N (k : nat) (l : list d) :=
     n_OR (map (fun x => n_AND x) (k_of_N k l)).
@@ -658,9 +723,9 @@ Section DFT_Rewriting_Rules.
 
 (*| See Formal Verification of Rewriting Rules for Dynamic Fault Trees
 Yassmeen Elderhalli1(B), Matthias Volk2, Osman Hasan1, Joost-Pieter Katoen2, and Sofi`ene Tahar1 from
-https://doi.org/10.1007/978-3-030-30446-1_27 |*)
+https://doi.org/10.1007/978-3-030-30446-1_27. The following theorems are from section 5 |*)
 
-Lemma Rule_1: forall (l1 l2: list d), Permutation l1 l2 -> n_AND l1 = n_AND l2.
+Lemma Theorem_1: forall (l1 l2: list d), Permutation l1 l2 -> n_AND l1 = n_AND l2.
 Proof.
     apply Permutation_ind_bis ; auto.
     - intros. simpl. rewrite H0. auto.
@@ -670,7 +735,7 @@ Proof.
     - intros. rewrite H0. auto.
 Qed.
 
-Lemma Rule_2: forall (l1 l2: list d), Permutation l1 l2 -> n_OR l1 = n_OR l2.
+Lemma Theorem_2: forall (l1 l2: list d), Permutation l1 l2 -> n_OR l1 = n_OR l2.
 Proof.
     apply Permutation_ind_bis ; auto.
     - intros. simpl. rewrite H0. auto.
@@ -681,17 +746,17 @@ Proof.
     - intros. rewrite H0. auto.
 Qed.
 
-Lemma Rule_4: forall d, n_AND [ d ] = d.
+Lemma Theorem_4: forall d, n_AND [ d ] = d.
 Proof.
     simpl. unfold D_AND. apply d_3_9.
 Qed.
 
-Lemma Rule_5: forall d, n_OR [ d ] = d.
+Lemma Theorem_5: forall d, n_OR [ d ] = d.
 Proof.
     simpl. unfold D_OR. apply d_3_8.
 Qed.
 
-Lemma Rule_7: forall (d1 :d) (b : basic_event), n_PAND [ d1 ] = d1.
+Lemma Theorem_7: forall (d1 :d) (b : basic_event), n_PAND [ d1 ] = d1.
 Proof.
     intros.
     simpl. unfold n_PAND.
@@ -702,7 +767,7 @@ Proof.
     rewrite d_3_9 ; auto.
 Qed.
 
-Lemma Rule_8: forall (l1 l2: list d),
+Lemma Theorem_8: forall (l1 l2: list d),
     n_AND ([ n_AND l1 ] ++ l2) = n_AND (l1 ++ l2).
 Proof.
     intros.
@@ -712,7 +777,7 @@ Proof.
       unfold D_AND in IHl1. rewrite IHl1; auto.
 Qed.
 
-Lemma Rule_8': forall (a :d) (l1: list d),
+Lemma Theorem_8': forall (a :d) (l1: list d),
     n_AND ([a] ++ [ n_AND l1 ] ) = n_AND (a :: l1).
 Proof.
     intros.
@@ -721,7 +786,7 @@ Proof.
     - simpl ; rewrite d_3_9 ; auto.
 Qed.
 
-Lemma Rule_9: forall (l1 l2: list d),
+Lemma Theorem_9: forall (l1 l2: list d),
     n_OR  ([ n_OR l1 ] ++ l2) = n_OR (l1 ++ l2).
 Proof.
     intros.
@@ -731,7 +796,7 @@ Proof.
       unfold D_OR in IHl1. rewrite IHl1; auto.
 Qed.
 
-Lemma Rule_9': forall (a :d) (l1: list d),
+Lemma Theorem_9': forall (a :d) (l1: list d),
     n_OR ([a] ++ [ n_OR l1 ] ) = n_OR (a :: l1).
 Proof.
     intros.
@@ -741,7 +806,7 @@ Proof.
       rewrite d_3_8 ; auto.
 Qed.
 
-Lemma Rule_10: forall (l1 l2: list d),
+Lemma Theorem_10: forall (l1 l2: list d),
     n_PAND ([ n_PAND l1 ] ++ l2) = n_PAND (l1 ++ l2).
 Proof.
     intros.
@@ -752,7 +817,7 @@ Proof.
     rewrite fold_left_app ; auto.
 Qed.
 
-Lemma Rule_11: forall (x : d) (l: list d),
+Lemma Theorem_11: forall (x : d) (l: list d),
     n_AND ([ x ; x ]++ l) = n_AND ( [x] ++ l ).
 Proof.
     intros.
@@ -761,7 +826,7 @@ Proof.
     rewrite d_prod_idem ; auto.
 Qed.
 
-Lemma Rule_12: forall (x : d) (l: list d),
+Lemma Theorem_12: forall (x : d) (l: list d),
     n_OR  ([ x ; x ]++ l) = n_OR ( [x] ++ l ).
 Proof.
     intros.
@@ -770,7 +835,7 @@ Proof.
     rewrite d_plus_idem ; auto.
 Qed.
 
-Lemma Rule_13: forall (x : d) (l: list d),
+Lemma Theorem_13: forall (x : d) (l: list d),
     n_PAND  ([ x ; x ]++ l) = n_PAND ( [x] ++ l ).
 Proof.
     intros.
@@ -780,21 +845,21 @@ Proof.
     auto.
 Qed.
 
-Lemma Rule_14: forall (x y: d), D_AND x (D_OR x y) = x.
+Lemma Theorem_14: forall (x y: d), D_AND x (D_OR x y) = x.
 Proof.
     intros.
     unfold D_AND, D_OR.
     rewrite d_3_14 ; auto.
 Qed.
 
-Lemma Rule_15: forall (x y: d), D_OR x (D_AND x y) = x.
+Lemma Theorem_15: forall (x y: d), D_OR x (D_AND x y) = x.
 Proof.
     intros.
     unfold D_AND, D_OR.
     rewrite d_3_13 ; auto.
 Qed.
 
-Lemma Rule_16: forall (x y z: d),
+Lemma Theorem_16: forall (x y z: d),
     D_OR (D_AND x y) (D_AND y z) = D_AND (D_OR x z) y.
 Proof.
     intros.
@@ -804,7 +869,94 @@ Proof.
     rewrite d_prod_comm ; auto.
 Qed.
 
-Lemma Rule_18: forall (x y:d),
+Lemma Theorem_17: forall (l1 l2: list d),
+    n_OR ( l1 ++ [ ⊥ ] ++ l2 ) = n_OR (l1 ++ l2).
+Proof.
+    intros. induction l2.
+    - simpl. repeat rewrite n_OR_split. simpl. unfold D_OR.
+      repeat rewrite d_3_8. reflexivity.
+    - repeat rewrite n_OR_split. simpl. rewrite d_3_8.
+      rewrite d_3_8_r. reflexivity.
+Qed.
+
+Lemma Theorem_18: forall (l1 l2: list d),
+    n_OR ( l1 ++ [ ⊤ ] ++ l2 ) = ⊤.
+Proof.
+    intros.
+    repeat rewrite n_OR_split.
+    simpl. rewrite d_3_12_r. apply d_3_12.
+Qed.
+
+Lemma Theorem_19: forall (l1 l2: list d),
+    n_AND( l1 ++ [ ⊥ ] ++ l2 ) = ⊥.
+Proof.
+    intros.
+    repeat rewrite n_AND_split.
+    simpl. unfold D_AND. rewrite d_3_10. reflexivity.
+Qed.
+
+Lemma Theorem_20: forall (l : list d),
+    n_PAND (l ++ [⊥]) = ⊥.
+Proof.
+    intros.
+    rewrite <- Theorem_10. simpl.
+    rewrite n_PAND_simpl. rewrite P_PAND_inf_r. reflexivity.
+Qed.
+
+Lemma Theorem_21: forall (l : list d),
+    n_PAND (⊥ :: l) = ⊥.
+Proof.
+    intros.
+    induction l.
+    - trivial.
+    -
+    (* First, we simplify the expression. We eliminate a. *)
+      assert ( n_PAND (⊥ :: a :: l) = n_PAND ([⊥ ; a] ++ l)).
+      simpl ; reflexivity.
+
+      rewrite H.
+      unfold n_PAND.
+      rewrite fold_left_app. simpl.
+      rewrite P_PAND_inf_r. rewrite P_PAND_inf_l.
+
+    (* Then, we show this is equivalent to IHl *)
+      unfold n_PAND in IHl.
+      simpl in IHl. rewrite P_PAND_inf_r in IHl.
+
+      auto.
+Qed.
+
+Lemma Theorem_22: forall (l1 l2 : list d),
+    n_PAND (l1 ++ [⊥] ++ l2) = ⊥.
+Proof.
+    intros.
+    simpl.
+    unfold n_PAND. rewrite fold_left_app.
+    simpl. rewrite P_PAND_inf_r.
+    induction l2.
+    - trivial.
+    - simpl. rewrite P_PAND_inf_l. auto.
+Qed.
+
+Lemma Theorem_23: forall (l : list d),
+    n_AND (⊤ :: l) = n_AND l.
+Proof.
+    intros.
+    unfold n_AND.
+    rewrite fold_right_cons.
+    rewrite D_AND_TRUE_l. reflexivity.
+Qed.
+
+Lemma Theorem_24: forall (l : list d),
+    n_PAND (⊤ :: l) = n_PAND l.
+Proof.
+    intros.
+    unfold n_PAND.
+    rewrite fold_left_cons.
+    rewrite P_PAND_0_d. reflexivity.
+Qed.
+
+Lemma Theorem_27: forall (x y:d),
     D_OR (P_PAND x y) (P_PAND y x) = D_AND x y.
 Proof.
     intros.

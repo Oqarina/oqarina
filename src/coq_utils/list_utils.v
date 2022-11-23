@@ -135,6 +135,17 @@ Section FoldLeft.
 
 End FoldLeft.
 
+Section FoldRight.
+
+  Variable A B : Type.
+  Variables (f : A -> B -> B) (i : B).
+
+  Lemma fold_right_cons : forall x l,
+    fold_right f i (x::l) = f x (fold_right f i l) .
+  Proof. auto. Qed.
+
+End FoldRight.
+
 Section in_boolean.
 
   Variable A : Type.
