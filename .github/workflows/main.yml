@@ -15,8 +15,9 @@ jobs:
     strategy:
       matrix:
         coq_version:
-          - 'coqorg/coq:8.16'
-          - 'coqorg/coq:dev'
+          - '8.16'
+          - 'dev'
+        ocaml_version: ['default']
       max-parallel: 4
       fail-fast: false
 
