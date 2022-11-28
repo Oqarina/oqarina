@@ -619,7 +619,7 @@ Proof.
 Qed.
 
 Lemma P_PAND_inf_l: forall (d1 : d),
-    P_PAND  ⊥ d1 = ⊥.
+    P_PAND ⊥ d1 = ⊥.
 Proof.
     intros.
     unfold P_PAND. rewrite d_3_10_r. reflexivity.
