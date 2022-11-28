@@ -869,7 +869,7 @@ Proof.
 Qed.
 
 Lemma k_of_N_cons: forall k a l, k > 1 ->
-  k_of_N k (a::l) = ( map (fun x => a::x) (k_of_N (k-1) l)) ++ (k_of_N k l).
+  k_of_N k (a::l) = (map (fun x => a::x) (k_of_N (k-1) l)) ++ (k_of_N k l).
 Proof.
   (* This proof is a mere rewriting of the various terms. *)
 
