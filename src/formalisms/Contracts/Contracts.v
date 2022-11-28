@@ -306,10 +306,10 @@ Qed.
 
  (* Lemma 1 p25 *)
 
- Lemma Lemma_1: forall c1 c2 c1' c2',
- c1' ≼ c1 -> c2' ≼ c2
-     -> (contract_composition_well_defined c1 c2)
-         -> (contract_composition_well_defined c1' c2').
+Lemma Lemma_1: forall c1 c2 c1' c2',
+    c1' ≼ c1 -> c2' ≼ c2
+        -> (contract_composition_well_defined c1 c2)
+            -> (contract_composition_well_defined c1' c2').
 Proof.
     intros c1 c2 c1' c2' H H1.
     unfold contract_composition_well_defined in *.
@@ -339,7 +339,7 @@ Proof.
     apply Property_3a ; auto.
 
     assert ((x ⊢e (c1' ⊗ c2'))).
-    apply refines_compatible with (c:=c1 ⊗ c2 ) ; auto.
+    apply refines_compatible with (c:=c1 ⊗ c2) ; auto.
     exists x ; auto.
 Qed.
 
