@@ -59,7 +59,9 @@ Static Fault Trees
 
 A static fault tree, based on Dugan definition, has only three gates: OR, AND, and K-out-of-N. Note that K-out-of-N are rewritten as a collection of OR and AND gates (see :coq:`Rewrite_Fault_Tree_r` in  :doc:`formalisms__FaultTrees_AbstractFaultTree.v` ). We do not consider K-out-of_N gates in the following.
 
-We provide definitions for a valid fault tree (section :ref:`Definitions`). Them, we provide implementations of boolean-valued fault trees (section :ref:`Boolean-valued fault trees`) and float-value fault trees (:ref:`Floating-point valued fault trees`).
+We provide definitions for a valid fault tree (section :ref:`Definitions`). Then, we provide implementations of boolean-valued fault trees (section :ref:`Boolean-valued fault trees`) and float-value fault trees (:ref:`Floating-point valued fault trees`).
+
+Finally, we provide a mapping from a fault tree to an equivalent minimal cutset and show the mapping is sound (:ref:`Minimal cutset of a static fault tree`).
 
 |*)
 
@@ -85,7 +87,7 @@ Definition valid_static_fault_tree_node
     match n with
         | INVALID _ => False
         | BASIC _ => l = []
-        | K_OUT_OF_N _ k => False (* rewritten *)
+        | K_OUT_OF_N _ k => False (* k < List.length l *)
         | FDEP _ => False
         | SPARE _ => False
         | PAND _ => False
@@ -102,6 +104,7 @@ Proof.
     apply List.list_eq_dec.
     apply ltree_eq_dec, FT_Node_eq_dec.
     apply basic_event_eq_dec.
+   (* apply Compare_dec.le_dec. *)
 Qed.
 
 Definition valid_static_fault_tree
@@ -184,58 +187,6 @@ Qed.
 (*| .. coq:: none |*)
 End Static_Fault_Tree.
 
-Section k_out_of_n.
-(*|
-k-out-of-N gate
-===============
-
-We provide a definition of the k-out-of-N gate for the boolean case, along with two simplification results.
-
-|*)
-
-Definition k_out_of_n_bool (k : nat) (l : list bool)  :=
-    if Nat.leb k (count_occ bool_dec l true)
-    then true else false.
-
-Lemma k_out_of_N_OR: forall (l : list bool),
-    k_out_of_n_bool 1 l = orbl l.
-Proof.
-    intros.
-    unfold k_out_of_n_bool.
-    induction l.
-    - intuition.
-    - destruct a.
-        * rewrite count_occ_cons_eq.
-            + simpl ; rewrite orbl_true ; reflexivity.
-            + intuition.
-        * rewrite count_occ_cons_neq.
-            + rewrite orbl_false. apply IHl.
-            + intuition.
-Qed.
-
-Lemma k_out_of_N_AND: forall (l : list bool),
-        k_out_of_n_bool (List.length l) l = andbl l.
-Proof.
-    unfold k_out_of_n_bool. simpl.
-    induction l.
-    - intuition.
-    - destruct a.
-        * rewrite count_occ_cons_eq.
-            + rewrite andbl_true. rewrite length_S.
-              assert (Nat.leb (S (List.length l)) (S (count_occ bool_dec l true)) = Nat.leb (List.length l) (count_occ bool_dec l true)). intuition.
-              apply IHl.
-            + intuition.
-        * rewrite count_occ_cons_neq.
-            + intros. rewrite length_S.
-              assert (Nat.leb (S (Datatypes.length l)) (count_occ bool_dec l true) = false).
-              rewrite PeanoNat.Nat.leb_gt.
-              generalize count_occ_bound ; intuition. rewrite H. rewrite andbl_false ; reflexivity.
-            + intuition.
-Qed.
-
-(*| .. coq:: none|*)
-End k_out_of_n.
-
 Section Fault_Tree_Bool.
 (*| .. coq:: |*)
 
@@ -273,10 +224,64 @@ Instance bool_Basic_Event_Operators_Facts : Basic_Event_Operators_Facts bool_Bas
     b_ORl_concatenate := orbl_concatenate ;
 }.
 
-Definition BFT := fault_tree bool.
-
 (*| .. coq:: none |*)
 End Fault_Tree_Bool.
+
+Section Results.
+
+(*| We show that rewriting a fault tree (:coq:`Rewrite_Fault_Tree` and :coq:`Rewrite_Fault_Tree''`) preserves the value computed by :coq:`Compute_Fault_Tree_2`. |*)
+
+Variable basic_event : Set.
+
+Lemma Compute_Rewrite_Fault_Tree_sound:
+    forall (f: fault_tree basic_event) v,
+        Compute_Fault_Tree_2 f v =
+        Compute_Fault_Tree_2 (Rewrite_Fault_Tree f) v.
+Proof.
+    intros.
+    induction f.
+    case x ; trivial.
+
+    (* OR gates *)
+    - induction l.
+        * simpl ; reflexivity.
+        * unfold Rewrite_Fault_Tree. destruct l.
+            + reflexivity.
+            + destruct l; trivial. destruct f ; trivial.
+              destruct l0 ; auto. simpl.
+              rewrite orbl_concatenate ; reflexivity.
+
+    (* AND gates *)
+    - induction l.
+        * simpl ; reflexivity.
+        * unfold Rewrite_Fault_Tree. destruct l.
+            + reflexivity.
+            + destruct l; trivial. destruct f ; trivial.
+              destruct l0 ; auto. simpl.
+              rewrite andbl_concatenate ; reflexivity.
+Qed.
+
+Lemma Compute_Rewrite_Fault_Tree''_sound:
+    forall (f: fault_tree basic_event) (v: basic_event -> bool),
+        Compute_Fault_Tree_2 f v =
+        Compute_Fault_Tree_2 (Rewrite_Fault_Tree'' f) v.
+Proof.
+    intros.
+
+    induction f.
+    rewrite Rewrite_Fault_Tree''_fix.
+
+    Print Compute_Rewrite_Fault_Tree_sound.
+    rewrite <- Compute_Rewrite_Fault_Tree_sound.
+
+    repeat rewrite Compute_Fault_Tree_2_fix.
+    rewrite map_map.
+
+    f_equal.
+    apply map_ext_in, H.
+Qed.
+
+End Results.
 
 Section Fault_Tree_Float.
 (*| .. coq:: |*)
@@ -312,11 +317,8 @@ Instance float_Basic_Event_Operators : Basic_Event_Operators float :=
     b_PANDl := (fun x => None) ;
 }.
 
-Definition FFT := fault_tree float.
-
 (*| .. coq:: none |*)
 End Fault_Tree_Float.
-
 
 (*|
 
@@ -359,6 +361,8 @@ Definition Map_Fault_Node_to_BoolExpr
         | BASIC b => Var b
         | OR _     => Map_to_OR l
         | AND _    => Map_to_AND l
+        | K_OUT_OF_N  _ k =>
+           Map_to_OR (map (fun x => Map_to_AND x) (k_of_N k l))
         | _        => Bot basic_event
 end.
 
@@ -464,21 +468,31 @@ Fixpoint Map_BoolExpr_to_Fault_Tree
         | _ => invalid_tree basic_event
     end.
 
-    (*
 Lemma Map_BoolExpr_to_Fault_Tree_sound:
     forall (p: PropF basic_event) (v : basic_event -> bool),
-        Compute_Fault_Tree_2 (Map_BoolExpr_to_Fault_Tree p) v =
-        Eval_PropF v p.
+        is_Boolean_Expr p ->
+            Compute_Fault_Tree_2 (Map_BoolExpr_to_Fault_Tree p) v =
+            Eval_PropF v p.
 Proof.
-    intros p v.
+    intros p v i.
     induction p.
 
+    (* Var *)
     - simpl. intuition.
+
+    (* Bot *)
     - simpl. intuition.
-    - simpl. rewrite IHp1, IHp2. intuition.
-    - simpl. rewrite IHp1, IHp2. intuition.
-    - simpl.
-*)
+
+    (* Conj *)
+    - simpl. rewrite IHp1, IHp2. intuition. destruct i. auto. destruct i. auto.
+
+    (* Disj *)
+    - simpl. rewrite IHp1, IHp2. intuition. destruct i. auto. destruct i. auto.
+
+    (* Impl *)
+    - destruct i. (* contradiction *)
+
+    - Admitted.
 
 (*| .. coq:: none |*)
 End Fault_Tree_to_Bool_Expr.
@@ -494,15 +508,106 @@ Minimal cutset of a static fault tree
 Section Minimal_cutset.
 (*| .. coq:: |*)
 
+(*| From all these definitions, we can finally go to the final interesting result. First, we define :coq:`Map_Fault_Tree_to_Cutset`  that maps a fault tree to a proposition. Then, we show that it computes to the same original fault tree in :coq:`Map_Fault_Tree_to_Cutset_sound`.  |*)
+
 Variable basic_event : Set.
 Variable basic_event_beq: basic_event → basic_event → bool.
+Hypothesis basic_event_eq_dec : forall x y : basic_event,
+    { x = y } + { x <> y }.
+Hypothesis basic_event_reflect: forall x y,
+    reflect (x = y) (basic_event_beq x y).
+
+Definition Map_Fault_Tree_to_Cutset'
+    (f : fault_tree basic_event)
+    : PropF basic_event
+:=
+    Rewrite_PropF_r
+        (PropF_to_cutset basic_event_beq (Map_Fault_Tree_to_BoolExpr' f)).
 
 Definition Map_Fault_Tree_to_Cutset
     (f : fault_tree basic_event)
     : PropF basic_event
 :=
-    Rewrite_PropF_r
-        (PropF_to_cutset basic_event_beq (Map_Fault_Tree_to_BoolExpr f)).
+    Map_Fault_Tree_to_Cutset' (Rewrite_Fault_Tree'' f).
+
+Lemma Map_Fault_Tree_to_Cutset'_sound:
+    forall (f: fault_tree basic_event) v,
+        valid_static_fault_tree' f ->
+            Compute_Fault_Tree_2 f v =
+            Eval_PropF v (Map_Fault_Tree_to_Cutset' f).
+Proof.
+    intros.
+    unfold Map_Fault_Tree_to_Cutset'.
+
+    rewrite Map_Fault_Tree_to_BoolExpr'_sound ; auto.
+    rewrite PropF_to_cutset_sound with (PropVars_beq := basic_event_beq) ; auto.
+    rewrite Rewrite_PropF_r_Sound.
+
+    reflexivity.
+Qed.
+
+Lemma valid_Rewrite_Fault_Tree:
+    forall (f: fault_tree basic_event),
+        valid_static_fault_tree' f ->
+            valid_static_fault_tree' (Rewrite_Fault_Tree f).
+Proof.
+    intros.
+    induction f.
+    destruct x ; trivial.
+
+    (* OR gates *)
+    - induction l.
+        * simpl ; intuition.
+        * unfold Rewrite_Fault_Tree. destruct l.
+            + apply H.
+            + destruct l; destruct f ; trivial.
+              destruct l0 ; intuition. simpl in *. intuition.
+
+    (* AND gates *)
+    - induction l.
+        * simpl ; intuition.
+        * unfold Rewrite_Fault_Tree. destruct l.
+          + simpl in H. intuition.
+          + destruct l; trivial. destruct f ; trivial.
+              destruct l0 ; auto. simpl in *. intuition.
+Qed.
+
+Lemma valid_Rewrite_Fault_Tree'':
+    forall (f: fault_tree basic_event),
+        valid_static_fault_tree' f ->
+            valid_static_fault_tree' (Rewrite_Fault_Tree'' f).
+Proof.
+    intros.
+    induction f.
+    rewrite Rewrite_Fault_Tree''_fix.
+    apply valid_Rewrite_Fault_Tree.
+
+    simpl in *. intuition.
+
+    - destruct x ; intuition.
+      simpl. simpl in H1. subst. intuition.
+
+    - induction l ; simpl ; intuition.
+      + apply H0 ; intuition. destruct H2. auto.
+      + apply IHl ; intuition.
+        * destruct x ; intuition. simpl in H1. contradict H1.
+        discriminate.
+        * destruct H2. apply H2.
+Qed.
+
+Lemma Map_Fault_Tree_to_Cutset_sound:
+    forall (f: fault_tree basic_event) v,
+        valid_static_fault_tree' f ->
+            Compute_Fault_Tree_2 f v =
+            Eval_PropF v (Map_Fault_Tree_to_Cutset f).
+Proof.
+   intros.
+   unfold Map_Fault_Tree_to_Cutset.
+   rewrite <- Map_Fault_Tree_to_Cutset'_sound ; auto.
+   apply Compute_Rewrite_Fault_Tree''_sound.
+   apply valid_Rewrite_Fault_Tree''.
+   apply H.
+Qed.
 
 (*| .. coq:: none |*)
 End  Minimal_cutset.

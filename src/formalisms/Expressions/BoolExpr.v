@@ -40,7 +40,6 @@ Require Import Coq.Unicode.Utf8.
 Require Import Coq.ssr.ssrbool.
 Require Import Coq.Relations.Relation_Definitions.
 Require Import Coq.Relations.Relation_Operators.
-Require Import Lia.
 Require Import Coq.Sorting.Permutation.
 
 Require Import Oqarina.coq_utils.all.
@@ -263,6 +262,28 @@ Proof.
     destruct IHA as [IHAa |IHAb] ; simpl.
     + right. apply unsat_Neg ; intuition.
     + left. apply sat_Neg ; intuition.
+Qed.
+
+(*|
+Boolean Expressions
+-------------------
+
+|*)
+
+Fixpoint is_Boolean_Expr A : Prop :=
+  match A with
+  | # P   => True
+  | ⊥     => True
+  | Neg B => is_Boolean_Expr B
+  | B ∨ C => is_Boolean_Expr B /\ is_Boolean_Expr C
+  | B ∧ C => is_Boolean_Expr B /\ is_Boolean_Expr C
+  | Impl B C => False
+end.
+
+Lemma is_Boolean_Expr_dec: forall A,
+  { is_Boolean_Expr A } + { ~ is_Boolean_Expr A} .
+Proof.
+  induction A ; unfold is_Boolean_Expr ; intuition.
 Qed.
 
 (*|
@@ -1580,7 +1601,6 @@ Proof.
   rewrite DNF_Rewrite_rule_3_DNF_Rewrite_rule_3'_eq.
   apply DNF_Rewrite_rule_3_sound.
 Qed.
-
 
 (*|
 

@@ -63,8 +63,6 @@ Then, we introduce reduction functions that rewrite fault trees using simpler te
 
 In section :ref:`Evaluation of a fault tree`, we define a generic evaluation function for fault trees as a typeclass. This function can be specialized for various types (e.g. boolean, floats, ...).
 
-Finally, we introduce functions to compute the minimum cutset of a fault tree (section :ref:`Minimum cut-set of a fault tree`).
-
 |*)
 
 (*| .. coq:: none |*)
@@ -139,12 +137,7 @@ Inductive red : relation (fault_tree) :=
 
     | red_OR_concatenate: forall a l,
         red (ltree_cons OR [a; ltree_cons OR l])
-            (ltree_cons OR (a :: l))
-
-    | red_K_OUT_OF_N: forall k l,
-        red (ltree_cons (K_OUT_OF_N k) l)
-        (ltree_cons OR (map (fun x => ltree_cons AND x)
-                        (k_of_N k l))).
+            (ltree_cons OR (a :: l)).
 
 Definition Rewrite_Fault_Tree (F : fault_tree)
     : fault_tree
@@ -161,10 +154,6 @@ match F with
     (* red_AND_1 *)
     | ltree_cons AND (h :: []) => h
 
-    (* red_K_OUT_OF_N *)
-    | ltree_cons (K_OUT_OF_N k) l =>
-        ltree_cons OR (map (fun x => ltree_cons AND x) (k_of_N k l))
-
     (* tauto *)
     | _ => F
 end.
@@ -175,7 +164,7 @@ Lemma Rewrite_Fault_Tree_Sound : forall (f f': fault_tree),
     red f f' -> Rewrite_Fault_Tree f = f'.
 Proof.
     intros.
-    inversion H ; simpl ; auto.
+    inversion H ; simpl ; intuition.
 Qed.
 
 (*| Then the opposite lemma. |*)
@@ -225,7 +214,7 @@ Proof.
     - simpl. apply rt_refl.
 
     (* K_OUT_OF_N *)
-    - intros. simpl. apply rt_step, red_K_OUT_OF_N.
+    - intros. simpl. apply rt_refl. (*apply rt_step, red_K_OUT_OF_N.*)
 Qed.
 
 Lemma Rewrite_Fault_Tree_Complete : forall (f f': fault_tree),
@@ -255,7 +244,7 @@ Lemma Rewrite_Fault_Tree''_fix: forall x ll,
 Proof. trivial. Qed.
 
 (*| A direct result of :coq:`Rewrite_Fault_Tree'` is that the K_OUT_OF_N gate has been suppressed. |*)
-
+(*
 Lemma Rewrite_Fault_Tree'_postcondition:
     forall (f : fault_tree) k,
         Get_Root_FT_Node (Rewrite_Fault_Tree'' f)
@@ -265,7 +254,7 @@ Proof.
     induction f.
     case x ;simpl ; try discriminate.
 
-    (* OR gates *)
+
     - destruct l.
         + simpl. discriminate.
         + simpl. destruct l0.
@@ -276,7 +265,7 @@ Proof.
               destruct (map Rewrite_Fault_Tree'' l1) ;
                 simpl ; discriminate.
 
-    (** AND gates *)
+
     - destruct l.
         + simpl. discriminate.
         + simpl.
@@ -288,7 +277,7 @@ Proof.
           destruct f ; simpl ; try discriminate.
           destruct l2 ; simpl ; discriminate.
 Qed.
-
+*)
 (*| .. coq:: none |*)
 End Fault_Tree_Reduction.
 
