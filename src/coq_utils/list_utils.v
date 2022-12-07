@@ -836,14 +836,18 @@ Section SubLists.
     intuition.
   Qed.
 
+End SubLists.
+
+Section k_of_N.
+
+  Variable T : Type.
+
   (*| :coq:`k_of_N` generates all sublists of size k of list l. |*)
 
   Definition k_of_N (k : nat) (l : list T) :=
       if Nat.eqb k 0 then [] else
       let subs := sublists l in
           filter (fun x => Nat.eqb (List.length x) k) subs.
-
-Print k_of_N.
 
   Lemma k_of_N_nil: forall k, k_of_N k [] = [].
   Proof.
@@ -915,7 +919,6 @@ Proof.
   - assert (Nat.eqb k 0 = false).
     apply PeanoNat.Nat.eqb_neq. lia.
 
-
     unfold k_of_N.
     rewrite H0.
 
@@ -931,7 +934,7 @@ Proof.
     reflexivity.
 Qed.
 
-End SubLists.
+End k_of_N.
 
 Section filter_ext.
 

@@ -113,7 +113,6 @@ Fixpoint list_alter {A} (pos : nat) (l: list A) (f : A -> A) :=
 End Lists_Misc.
 (* end hide *)
 
-
 Section Iterate.
 
 (* Function iteration. XXX double check this does not exist in the

@@ -47,11 +47,13 @@ Require Export Oqarina.formalisms.FaultTrees.DynamicFaultTree.
 Fault Trees
 ***********
 
-In this section, we provide a mechanization of the DEVS formalism. We first define the various data types forming the Classic DEVS formalism, then the simulation algorithms for atomic and coupled DEVS models. We follow the conventions from :cite:t:`vantendelooIntroductionClassicDEVS2018`.
+In this section, we provide a mechanization of fault trees.
 
 * :doc:`formalisms__FaultTrees_AbstractFaultTree.v` provides generic definitions about fault trees.
 
 * :doc:`formalisms__FaultTrees_StaticFaultTree.v` provides an instantiation for static fault trees.
+
+* :doc:`formalisms__FaultTrees_DynamicFaultTree.v` provides an instantiation for dynamic fault trees.
 
 Here is the detailed list of contents:
 
