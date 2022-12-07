@@ -2,8 +2,6 @@
 
 Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.
 
-
-
 ## Directory structure
 
 * `examples`: tutorial and examples to illustrate Oqarina
@@ -20,11 +18,11 @@ Oqarina has been tested using Coq version 8.16 and either VSCoq extension for Vi
 
 The following packages should be installed separately using opam:
 
-* `https://github.com/liyishuai/coq-json`: JSON manipulation
-* `https://github.com/Lysxia/coq-simple-io`: IO monad with user-definable primitive operations
-* `https://github.com/coq-community/coq-ext-lib`: Additional theories for Coq
-* `https://github.com/DmxLarchey/Kruskal-Trees`: rose tree library with proper (nested) induction principles
-* `https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs`: PROSA scheduling library
+* https://github.com/liyishuai/coq-json: JSON manipulation
+* https://github.com/Lysxia/coq-simple-io: IO monad with user-definable primitive operations
+* https://github.com/coq-community/coq-ext-lib: Additional theories for Coq
+* https://github.com/DmxLarchey/Kruskal-Trees: rose tree library with proper (nested) induction principles
+* https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs: PROSA scheduling library
 
 Use `make install_deps` to install them.
 
