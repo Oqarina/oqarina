@@ -51,10 +51,11 @@ Import ListNotations. (* from List *)
 Require Import Coq.ZArith.ZArith.
 
 (* PROSA library *)
-Require Export prosa.proofgen.FP.refinements_FP. (* .in *)
-Require Export prosa.proofgen.FP.assumption_less. (* .in *)
-Require Export prosa.results.fixed_priority.rta.fully_preemptive. (* .in *)
-Require Export prosa.proofgen.FP.preemptive_sched. (* .in *)
+Require Export prosa.implementation.refinements.FP.fast_search_space.
+Require Export prosa.implementation.refinements.FP.refinements.
+Require Export prosa.implementation.facts.job_constructor.
+Require Export prosa.results.fixed_priority.rta.fully_preemptive.
+Require Export prosa.implementation.refinements.FP.preemptive_sched.
 Require Export NArith.
 
 (* Oqarina library *)
@@ -163,7 +164,7 @@ Proof.
     prove_dec.
     destruct (hd_error (processor_set r) ).
     apply Scheduling_Protocol_eq_dec.
-    auto.
+    apply Scheduling_Protocol_eq_dec.
 Defined.
 (*| .. coq:: |*)
 
@@ -209,17 +210,17 @@ corresponding PROSA arrival bound. |*)
 
 Definition Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound
     (c: component)
-    : task_arrivals_bound
+    : task_arrivals_bound_T
 :=
     let dispatch_protocol := Map_Dispatch_Protocol (c->properties) in
     match dispatch_protocol with
-        | Periodic => arrival_bound.Periodic
+        | Periodic => Periodic_T
             (Z.to_N (Map_Period (c->properties)))
 
-        | Sporadic => arrival_bound.Sporadic
+        | Sporadic => Sporadic_T
             (Z.to_N (Map_Period (c->properties)))
 
-        | _ => ArrivalPrefix (0%nat, [::(0%nat, 0%nat)])
+        | _ => ArrivalPrefix_T (0%N, [::(0%N, 0%N)])
     end.
 
 (*| Then, :coq:`Map_AADL_Deadline_to_PROSA_deadline` extracts the deadline of a
@@ -238,13 +239,13 @@ a thread component, then for a complete thread hierarchy. |*)
 
 Definition Map_AADL_Thread_to_PROSA_concrete_task
     (c: component)
-    : concrete_task
+    : task_T
 := {|
-    task_id := 0; (* dummy value, no semantics *)
-    task_cost :=  Z.to_N (snd (Map_Compute_Execution_Time (c->properties)));
-    task_arrival := Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound c ;
-    task_priority := Z.to_N (Map_Priority (c->properties));
-    task_deadline := Map_AADL_Deadline_to_PROSA_deadline c
+    task_id_T := 0%N; (* dummy value, no semantics *)
+    task_cost_T :=  Z.to_N (snd (Map_Compute_Execution_Time (c->properties)));
+    task_arrival_T := Map_AADL_Dispatch_Protocol_to_PROSA_task_arrivals_bound c ;
+    task_priority_T := Z.to_N (Map_Priority (c->properties));
+    task_deadline_T := Map_AADL_Deadline_to_PROSA_deadline c
 |}.
 
 Definition Map_AADL_Root_System_to_PROSA_concrete_task_seq_unsafe
@@ -422,18 +423,22 @@ Definition ts := Eval compute in ts_aadl.
 (*| .. coq:: none |*)
 (* We define this constant only to help in the hd below. *)
 Definition null_tsk := {|
-    task_id := 0;
-    task_cost := 0%N;
-    task_deadline := 0%N;
-    task_arrival := arrival_bound.Periodic 0%N ;
-    task_priority := 0%N |}.
+    task_id_T := 0%N;
+    task_cost_T := 0%N;
+    task_deadline_T := 0%N;
+    task_arrival_T := Periodic_T 0%N ;
+    task_priority_T := 0%N |}.
 (*| .. coq:: |*)
 
 (*| *Note:* In the following, we only prove that :coq:`tsk`, the first task in :coq:`ts_aadl`, is schedulable. The proof for the other tasks follows the same pattern.
 |*)
 
-Definition tsk := Eval compute in hd null_tsk ts_aadl.
+#[local] Existing Instance ideal.processor_state.
+#[local] Existing Instance fully_preemptive_job_model.
+#[local] Existing Instance NumericFPAscending.
 
+Definition tsk := Eval compute in hd null_tsk ts_aadl.
+Print ts.
 Definition L := 100%N. (* length of the busy interval *)
 Definition R := 100%N. (* upper bound of the reponse time *)
 
@@ -449,24 +454,20 @@ Print valid_taskset_arrival_curve.
 Print valid_arrival_curve.
 
 Lemma arrival_curve_is_valid :
-    valid_taskset_arrival_curve ts max_arrivals.
+    valid_taskset_arrival_curve (map taskT_to_task ts) max_arrivals.
 Proof.
     move => task IN.
     split.
-    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); apply/eqP;
-       last by done.
-        all: rewrite /max_arrivals /MaxArrivals
-                /fast_search_space.MaxArrivals.
-        all: by clear; rewrite [_ == _]refines_eq;vm_compute. }
-    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]);
-        last by done.
-        all: rewrite /max_arrivals /MaxArrivals /PGMaxArrivals
-                /task_arrival.
-        have TR1 := leq_steps_is_transitive.
-        all: apply extrapolated_arrival_curve_is_monotone;
-        [ by apply/eqP/eqP; clear; rewrite [_ == _]refines_eq
+    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); apply/eqP; last by done.
+      all: rewrite /max_arrivals /MaxArrivals /MaxArrivals.
+      all: by clear; rewrite [_ == _]refines_eq; vm_compute. }
+    { repeat (move: IN; rewrite in_cons => /orP [/eqP -> | IN]); last by done.
+      all: rewrite /max_arrivals /MaxArrivals /concrete_max_arrivals /task_arrival.
+      have TR1 := leq_steps_is_transitive.
+      all: apply extrapolated_arrival_curve_is_monotone;
+        [ by apply/eqP/eqP; clear; rewrite [_ == _]refines_eq; vm_compute
         | by rewrite /sorted_leq_steps -[sorted _  _]eqb_id; clear;
-            rewrite [_ == _]refines_eq ]. }
+          rewrite [_ == _]refines_eq; vm_compute ]. }
 Qed.
 
 
@@ -476,11 +477,12 @@ Print task_set_with_valid_arrivals.
 Print valid_arrivals.
 
 Lemma task_set_has_valid_arrivals:
-    task_set_with_valid_arrivals ts.
+    task_set_with_valid_arrivals (map taskT_to_task ts).
 Proof.
     intros task IN.
     repeat (move: IN; rewrite in_cons => /orP [/eqP EQtsk | IN]); subst; last by done.
-    all: try by apply/eqP/eqP; clear; rewrite [_ == _]refines_eq.
+    all: try by (* apply/eqP/eqP; *) clear; rewrite [_ == _]refines_eq; vm_compute.
+    all: by apply/valid_arrivals_P; rewrite [valid_arrivals _]refines_eq; vm_compute.
 Qed.
 
 (*| 3. :coq:`L` is a fixed-point of the total cost function of all higher-or equal-priority jobs. |*)
@@ -488,20 +490,21 @@ Qed.
 Print total_hep_rbf.
 Print total_hep_request_bound_function_FP.
 
-Lemma L_fixed_point: total_hep_rbf ts tsk L = L.
+Lemma L_fixed_point:
+    total_hep_rbf (map taskT_to_task ts) (taskT_to_task tsk) L = L.
 Proof.
-    rewrite /tsk. apply /eqP.
-    by clear; rewrite [_ == _]refines_eq.
+    rewrite /tsk; apply /eqP.
+    by clear; rewrite [_ == _]refines_eq; vm_compute.
 Qed.
 
 (*| From these 3 initial results, we can now instantite the schedulabiltiy problem. First we build a couple of hypotheses from the task set. |*)
 
 Variable arr_seq : arrival_sequence Job.
 Hypothesis H_arr_seq_is_a_set : arrival_sequence_uniq arr_seq.
-Hypothesis H_all_jobs_from_taskset : all_jobs_from_taskset arr_seq ts.
+Hypothesis H_all_jobs_from_taskset : all_jobs_from_taskset arr_seq (map taskT_to_task ts).
 Hypothesis H_arrival_times_are_consistent : consistent_arrival_times arr_seq.
 Hypothesis H_valid_job_cost: arrivals_have_valid_job_costs arr_seq.
-Hypothesis H_is_arrival_curve : taskset_respects_max_arrivals arr_seq ts.
+Hypothesis H_is_arrival_curve : taskset_respects_max_arrivals arr_seq (map taskT_to_task ts).
 
 Instance sequential_ready_instance : JobReady Job (ideal.processor_state Job) :=
 sequential_ready_instance arr_seq.
@@ -515,8 +518,8 @@ Definition sched := uni_schedule arr_seq.
 
 Lemma A_in_search_space:
     forall (A : duration),
-        is_in_search_space tsk L A ->
-        A \in search_space_emax_FP L tsk.
+        is_in_search_space (taskT_to_task tsk) L A ->
+        A \in search_space_emax_FP (taskT_to_task tsk) L.
 Proof.
     move => A IN.
     eapply search_space_subset_FP.
@@ -524,48 +527,53 @@ Proof.
     - by clear; apply/eqP/eqP; clear; rewrite [_ == _]refines_eq; vm_compute.
     - by clear; rewrite !in_cons /tsk eq_refl.
     - rewrite mem_filter.
-        apply /andP; split; first by done.
-        by rewrite mem_iota; move: IN => /andP[LT _].
+    apply /andP; split; first by done.
+    by rewrite mem_iota; move: IN => /andP[LT _].
 Qed.
 
-Let Fs_tsk_0 := m_b2n [R%N].
-
+Let Fs : seq N := [:: 100%N].
+Print Fs.
+Compute Fs.
 (*| The following lemmas go further, first we assess that R is actually an upper bound for the response time.|*)
 
 Lemma R_is_maximum:
     forall (A : duration),
-        is_in_search_space tsk L A ->
+        is_in_search_space (taskT_to_task tsk) L A ->
         exists (F : duration),
-        task_rbf tsk (A + ε) + total_ohep_rbf ts tsk (A + F) <= A + F /\
-        F <= R.
+            task_rbf (taskT_to_task tsk) (A + ε) + total_ohep_rbf (map taskT_to_task ts) (taskT_to_task tsk) (A + F) <= A + F /\
+            F <= R.
 Proof.
     move => A SS; move: (A_in_search_space A SS) => IN; clear SS.
-    unfold search_space_emax_FP in IN.
-    cut_search_space (nat_of_bin 1%N) IN.
-    solve_fixpoint_FP ts tsk R A IN Fs_tsk_0.
-    apply ss_split_in_nil in IN; first by done.
-    by clear; rewrite [_ == _]refines_eq; vm_compute.
+    move: A IN; apply forall_exists_implied_by_forall_in_zip with
+    (P_bool := check_point_FP (map taskT_to_task ts) (taskT_to_task tsk) R).
+    by intros; split; intros; apply/andP.
+    exists (map nat_of_bin Fs); split.
+    - by apply/eqP; clear; rewrite [_ == _]refines_eq; vm_compute.
+    - by clear; rewrite [_ == _]refines_eq; vm_compute.
 Qed.
 
+Ltac find_refl :=
+    match goal with
+    | [  |-  (is_true (?X == ?X) ) \/ _ ] => left; apply eq_refl
+    | _ => right
+    end.
+
 Theorem uniprocessor_response_time_bound_fully_preemptive_fp_inst:
-    task_response_time_bound arr_seq sched tsk R.
+    task_response_time_bound arr_seq sched (taskT_to_task tsk) R.
 Proof.
     move: (sched_valid arr_seq) => [ARR READY].
     specialize (sequential_readiness_nonclairvoyance arr_seq) => NON_CL.
     eapply uniprocessor_response_time_bound_fully_preemptive_fp
-        with (ts := ts) (H3 := fast_search_space.MaxArrivals) (L := L).
-    - by done.
+    with (ts := (map taskT_to_task ts)) (H3 := concrete_max_arrivals) (L := L).
     - by done.
     - by done.
     - by done.
     - by apply arrival_curve_is_valid.
     - by done.
-    - unfold ts, tsk.
-        repeat (rewrite in_cons; apply/orP;
-                try (by left; clear; rewrite [_ == _]refines_eq); right).
+    - by rewrite !in_cons /tsk; repeat(apply/orP; find_refl).
     - by done.
-    - by apply NFP_is_reflexive.
-    - by apply NFP_is_transitive.
+    - by apply NFPA_is_reflexive.
+    - by apply NFPA_is_transitive.
     - by apply uni_schedule_work_conserving.
     - by apply respects_policy_at_preemption_point.
     - by clear; rewrite [_ < _]refines_eq; vm_compute.
@@ -573,14 +581,15 @@ Proof.
     - by apply R_is_maximum.
 Qed.
 
+
 (*| The final conclusion is that all deadlines are respected, i.e., R is an upperbound of the response-time and this uppoer-bound is less than the task_deadline. |*)
 
 Corollary deadline_is_respected:
-    task_response_time_bound arr_seq sched tsk R /\ R <= task_deadline tsk.
+    task_response_time_bound arr_seq sched (taskT_to_task tsk) R /\ R <= task_deadline (taskT_to_task tsk).
 Proof.
     split.
     - by apply uniprocessor_response_time_bound_fully_preemptive_fp_inst.
-    - by clear; rewrite [_ <= _]refines_eq.
+    - by clear; rewrite [_ <= _]refines_eq; vm_compute.
 Qed.
 
 (*| .. coq:: none |*)
