@@ -51,12 +51,12 @@ Import ListNotations. (* from List *)
 Require Import Coq.ZArith.ZArith.
 
 (* PROSA library *)
-Require Export prosa.implementation.refinements.FP.fast_search_space.
-Require Export prosa.implementation.refinements.FP.refinements.
-Require Export prosa.implementation.facts.job_constructor.
-Require Export prosa.results.fixed_priority.rta.fully_preemptive.
-Require Export prosa.implementation.refinements.FP.preemptive_sched.
-Require Export NArith.
+Require Import prosa.implementation.refinements.FP.fast_search_space.
+Require Import prosa.implementation.refinements.FP.refinements.
+Require Import prosa.implementation.facts.job_constructor.
+Require Import prosa.results.fixed_priority.rta.fully_preemptive.
+Require Import prosa.implementation.refinements.FP.preemptive_sched.
+Require Import NArith.
 
 (* Oqarina library *)
 Require Import Oqarina.core.all. (* core definitions, identifier, time, etc. *)
@@ -199,8 +199,6 @@ Mapping an AADL model to a PROSA taskset
 ----------------------------------------
 
 PROSA defines a more general notion of arrival that replaces the notion of period in the previous model, it defines a general arrival prefix, in addition to periodic and sporadic arrival models. |*)
-
-Print concrete_task.
 
 (*| We proceed in multiple basic steps: we map each AADL concept to the
 corresponding concept in PROSA.
@@ -438,7 +436,7 @@ Definition null_tsk := {|
 #[local] Existing Instance NumericFPAscending.
 
 Definition tsk := Eval compute in hd null_tsk ts_aadl.
-Print ts.
+
 Definition L := 100%N. (* length of the busy interval *)
 Definition R := 100%N. (* upper bound of the reponse time *)
 
@@ -449,9 +447,6 @@ Section Certificate.
 (*| Proving the schedulability of the task set builds on the following intermediate results, see :cite:`DBLP:conf/ecrts/BozhkoB20` for more details. |*)
 
 (*| 1. the arrival curve presented in the task set is valid, i.e. the arrival curve is a monotonic function. See the following definitions: |*)
-
-Print valid_taskset_arrival_curve.
-Print valid_arrival_curve.
 
 Lemma arrival_curve_is_valid :
     valid_taskset_arrival_curve (map taskT_to_task ts) max_arrivals.
@@ -470,11 +465,7 @@ Proof.
           rewrite [_ == _]refines_eq; vm_compute ]. }
 Qed.
 
-
 (*| 2. the task set has valid arrivals. All our tasks are  periodic, this is therefore trivial. |*)
-
-Print task_set_with_valid_arrivals.
-Print valid_arrivals.
 
 Lemma task_set_has_valid_arrivals:
     task_set_with_valid_arrivals (map taskT_to_task ts).
@@ -486,9 +477,6 @@ Proof.
 Qed.
 
 (*| 3. :coq:`L` is a fixed-point of the total cost function of all higher-or equal-priority jobs. |*)
-
-Print total_hep_rbf.
-Print total_hep_request_bound_function_FP.
 
 Lemma L_fixed_point:
     total_hep_rbf (map taskT_to_task ts) (taskT_to_task tsk) L = L.
@@ -531,9 +519,8 @@ Proof.
     by rewrite mem_iota; move: IN => /andP[LT _].
 Qed.
 
-Let Fs : seq N := [:: 100%N].
-Print Fs.
-Compute Fs.
+Let Fs : seq N := [:: R%N].
+
 (*| The following lemmas go further, first we assess that R is actually an upper bound for the response time.|*)
 
 Lemma R_is_maximum:
@@ -580,7 +567,6 @@ Proof.
     - by symmetry; apply L_fixed_point.
     - by apply R_is_maximum.
 Qed.
-
 
 (*| The final conclusion is that all deadlines are respected, i.e., R is an upperbound of the response-time and this uppoer-bound is less than the task_deadline. |*)
 

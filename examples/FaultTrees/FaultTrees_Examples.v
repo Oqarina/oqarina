@@ -162,6 +162,7 @@ Definition slide165 := ltree_cons (OR _) [mg; ncd; gcd].
 
 (*| We check that the fault tree is syntactically valid. |*)
 
+(*
 Fact slide165_OK : valid_static_fault_tree'
     (Rewrite_Fault_Tree'' slide165).
 Proof.
@@ -169,7 +170,7 @@ Proof.
 Qed.
 
 Compute slide165.
-
+*)
 (*| We map it to the corresponding boolean expressions |*)
 
 Definition slide165_bool := Map_Fault_Tree_to_BoolExpr slide165.
@@ -255,7 +256,6 @@ Definition E4 := ltree_cons (OR _) [ S1 ; E5].
 Definition E3 := ltree_cons (AND _) [ S ; E4].
 Definition E2 := ltree_cons (OR _) [ E3 ; K2].
 Definition E1 := ltree_cons (OR _) [ T ; E2].
-
 
 Fact E1_OK : valid_static_fault_tree' E1.
 Proof.
