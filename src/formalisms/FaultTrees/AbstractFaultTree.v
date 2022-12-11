@@ -93,6 +93,7 @@ Inductive FT_Node : Type :=
     | BASIC (b : basic_event)
     | OR
     | AND
+    | NOT
     | PAND
     | SPARE
     | FDEP
@@ -204,6 +205,9 @@ Proof.
                 ** apply rt_step, red_AND_concatenate.
                 ** intros. destruct l0. destruct f ; apply rt_refl.
 
+    (* NOT *)
+    - simpl. apply rt_refl.
+
     (* PAND *)
     - simpl. apply rt_refl.
 
@@ -306,6 +310,7 @@ Class Basic_Event_Operators (A : Type):=
 
     b_AND : A -> A -> A ;
     b_OR : A -> A -> A ;
+    b_NOT : A -> A ;
 
     b_ANDl : list A -> A ;
 
@@ -354,6 +359,10 @@ Definition Compute_Fault_Node
         | BASIC b => Some(v b)
         | OR => Some (b_ORl l')
         | AND => Some (b_ANDl l')
+        | NOT => match l' with
+                | [] => None
+                | h::t => Some (b_NOT h)
+                end
         | K_OUT_OF_N k => Some (b_k_out_of_N k l')
         | FDEP => None
         | PAND => b_PANDl l'
@@ -371,6 +380,10 @@ Definition Compute_Fault_Node_2
         | BASIC b => v b
         | OR => b_ORl l
         | AND => b_ANDl l
+        | NOT => match l with
+            | [] => F
+            | h::t => b_NOT h
+            end
         | K_OUT_OF_N k => b_k_out_of_N k l
         | FDEP => F
         | PAND => F (* XXX *)

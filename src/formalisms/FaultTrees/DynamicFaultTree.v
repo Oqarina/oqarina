@@ -57,6 +57,9 @@ Set Strict Implicit.
 Dynamic Fault Trees
 *******************
 
+In the following, we use the fornulation of Dynamic Fault Tree from
+:cite:t:`merle:tel-00502012`. One critical aspect is that this formulation assumes that events are non-repairable and that basic events are statistically independent. In addition, the NOT gate cannot be defined.
+
 |*)
 
 Section Dynamic_Fault_Tree.
@@ -78,6 +81,7 @@ Definition valid_dynamic_fault_tree_node
         | SPARE _ => (List.length l) = 3%nat
         | PAND _ => True
         | AND _ | OR _ => True
+        | NOT _ => False (* Cannot be defined using Merle's algebra *)
     end.
 
 Lemma valid_dynamic_fault_tree_node_dec:
@@ -125,6 +129,8 @@ Instance Merle_Basic_Event_Operators : Basic_Event_Operators d' :=
 
     b_OR := D_OR basic_event ;
     b_ORl := n_OR basic_event ;
+
+    b_NOT := fun x =>  d_inf basic_event ;
 
     b_PANDl := (fun x => Some (n_PAND basic_event x));
 }.

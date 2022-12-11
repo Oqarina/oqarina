@@ -45,6 +45,8 @@ Require Import Oqarina.formalisms.Expressions.all.
 Static Fault Tree Analysis
 ==========================
 
+In this section, we illustrate some aspects of the Fault Tree Analsis capabilities. We present mapping of boolean expressions to cutset (:ref:`NUREG Example VII-10`), mapping of fault trees to cutset and proof of correctness (:ref:`Sample IMA Architecture` and :ref:`NUREG Example VIII-14`).
+
 Note: in the following, we use Coq primitive floats (see :cite:t:`DBLP:conf/itp/BertholonMR19` for details) to represent the probability of occurence of some basic events. The rounding algorithms used to parse float values like 0.1 introduces some numerical discrepencies. We instruct Coq to silence those warnings and report differences from the original examples we used as a comparison.
 |*)
 
@@ -131,13 +133,22 @@ Import PropF_Notations.
 Inductive basic_event : Set :=
     IRU1 | IRU2 | IRU3 | RIU2 | RIU6 | RIU7 | NCD | GCD.
 
+(*| We define helper function for equality. |*)
+Scheme Equality for basic_event.
+
+Lemma basic_event_reflect: forall x y : basic_event,
+    Bool.reflect (x = y) (basic_event_beq x y).
+Proof.
+    induction x, y ; simpl ; intuition.
+Qed.
+
+(*| Actual definition of the basic event propability values and the fault tree. |*)
+
 Definition basic_event_value ( p : basic_event) :=
     match p with
     | IRU1 | IRU2 | IRU3 | RIU2 | RIU6 | RIU7 => 1.0e-6
     | NCD | GCD => 2.0e-10
     end.
-
-Scheme Equality for basic_event.
 
 Definition iru1 := ltree_cons (BASIC IRU1) [].
 Definition iru2 := ltree_cons (BASIC IRU2) [].
@@ -179,7 +190,7 @@ Compute slide165_bool.
 (*| We can compute and display the corresponding cutset either as a boolean expression or as a fault tree. |*)
 
 Definition slide165_cs_bool :=
-    Map_Fault_Tree_to_Cutset basic_event_beq slide165.
+    Map_Fault_Tree_to_Cutset_PropF basic_event_beq slide165.
 Compute slide165_cs_bool.
 (* = Var IRU1 ∧ Var IRU2
     ∨ Var IRU1 ∧ Var IRU3
@@ -187,7 +198,7 @@ Compute slide165_cs_bool.
         ∨ Var RIU2 ∨ Var RIU6 ∨ Var RIU7 ∨ Var NCD ∨ Var GCD *)
 
 Definition slide165_cs :=
-    Rewrite_Fault_Tree'' (Map_BoolExpr_to_Fault_Tree slide165_cs_bool).
+    Map_Fault_Tree_to_Cutset basic_event_beq slide165.
 Compute slide165_cs.
 
 Lemma slide165_cs_ok: slide165_cs =
@@ -232,8 +243,17 @@ Open Scope float_scope.
 Import PropF_Notations.
 
 Inductive basic_event := VarT | VarK2 | VarS | VarK1 | VarR | VarS1.
+
+(*| We define helper function for equality. |*)
 Scheme Equality for basic_event.
 
+Lemma basic_event_reflect: forall x y : basic_event,
+    Bool.reflect (x = y) (basic_event_beq x y).
+Proof.
+    induction x, y ; simpl ; intuition.
+Qed.
+
+(*| Actual definition of the basic event propability values and the fault tree. |*)
 Definition basic_event_values (b : basic_event) :=
     match b with
         | VarT  => 5e-6
@@ -257,22 +277,31 @@ Definition E3 := ltree_cons (AND _) [ S ; E4].
 Definition E2 := ltree_cons (OR _) [ E3 ; K2].
 Definition E1 := ltree_cons (OR _) [ T ; E2].
 
+(*| We prove that the fault tree is valid in :coq:`E1_OK`, map to its cutset and the cutset is correct (:coq:`E1_cs_OK`). |*)
+
 Fact E1_OK : valid_static_fault_tree' E1.
 Proof.
     prove_valid_static_fault_tree.
 Qed.
 
-Definition E1_cs_bool :=
-    Map_Fault_Tree_to_Cutset basic_event_beq E1.
-Compute E1_cs_bool.
-
 Definition E1_cs :=
-    Rewrite_Fault_Tree'' (Map_BoolExpr_to_Fault_Tree E1_cs_bool).
+    Map_Fault_Tree_to_Cutset basic_event_beq E1.
 Compute E1_cs.
+
+Lemma E1_cs_OK: forall (v: basic_event -> bool),
+    Compute_Fault_Tree_2 E1 v= Compute_Fault_Tree_2 E1_cs v.
+Proof.
+    unfold E1_cs.
+    intros.
+    apply Map_Fault_Tree_to_Cutset_sound.
+    apply basic_event_eq_dec.
+    apply basic_event_reflect.
+    apply E1_OK.
+Qed.
 
 (*| The authors in  :cite:`w.e.FaultTreeHandbook1981` use some simplification heuristics and provide an approximation value of 3.4e-05. This example is also evaluated in :cite:`siuSafeOptimalTechniques2019`, section 4.1.2, p16. It conforms to the value we compute below. |*)
 
-Lemma E1_value_OK : Compute_Fault_Tree'' E1 basic_event_values
+Lemma E1_value_OK : Compute_Fault_Tree'' E1_cs basic_event_values
                 = Some 3.5016000000000005e-05.
 Proof. trivial. Qed.
 
