@@ -49,7 +49,7 @@ Require Import Oqarina.formalisms.FaultTrees.NatInfMinMax.
 Merle Algebra
 #############
 
-In this section, we define the Temporal model of Boolean operators as presented in Merle's PhD thesis [XXX]
+In this section, we define the temporal model of Boolean operators as presented in Merle's PhD thesis :cite:t:`merle:tel-00502012`.
 
 |*)
 
