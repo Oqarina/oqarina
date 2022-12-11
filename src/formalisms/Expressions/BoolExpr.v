@@ -460,6 +460,25 @@ Proof.
     - rewrite IHp ; reflexivity.
 Qed.
 
+Lemma is_Boolean_Expr_Rewrite_PropF_r : forall bexpr ,
+    is_Boolean_Expr bexpr -> is_Boolean_Expr (Rewrite_PropF_r bexpr).
+Proof.
+    intros.
+    induction bexpr ; intuition.
+    - simpl in H. simpl. destruct H.
+      destruct bexpr2 ; simpl ; intuition.
+      simpl in H2. destruct bexpr2 ; simpl ; intuition.
+
+    - simpl in H. simpl. destruct H.
+      destruct bexpr2 ; simpl ; intuition.
+      + destruct bexpr1 ; simpl ; intuition.
+      + destruct bexpr1 ; simpl ; intuition.
+      + destruct bexpr1 ; simpl ; intuition.
+      + destruct bexpr1 ; simpl ; intuition.
+      + destruct bexpr1 ; simpl ; intuition.
+      + destruct bexpr1, bexpr2 ; simpl ; intuition.
+Qed.
+
 (*|
 Negation Normal Form
 --------------------
@@ -768,6 +787,17 @@ Definition DNFClausetoPropF := map_fold_right LiteraltoPropF Conj ⊤.
 
 Definition DNFtoPropF :=
   map_fold_right DNFClausetoPropF Disj Bot.
+
+Lemma is_Boolean_Expr_DNFtoPropF: forall dnf ,
+  is_Boolean_Expr (DNFtoPropF dnf).
+Proof.
+  intros.
+  induction dnf.
+  - simpl ; intuition.
+  - simpl ; intuition. induction a.
+      + simpl ; intuition.
+      + simpl ; intuition. induction a ; simpl ; intuition.
+Qed.
 
 Definition To_DNF (p : PropF) := Rewrite_PropF_r (DNFtoPropF (NNFtoDNF (PropFtoNNF p))).
 
@@ -1650,6 +1680,16 @@ Proof.
   repeat rewrite Eval_PropF_DNF.
   rewrite DNF_cutset_sound. reflexivity.
   apply NNFtoDNF_not_nil.
+Qed.
+
+Lemma is_Boolean_Expr_PropF_to_cutset: forall (bexpr : PropF),
+    is_Boolean_Expr bexpr ->
+        is_Boolean_Expr (PropF_to_cutset  bexpr).
+Proof.
+    intros.
+    unfold PropF_to_cutset.
+    apply is_Boolean_Expr_Rewrite_PropF_r.
+    apply is_Boolean_Expr_DNFtoPropF.
 Qed.
 
 (*| .. coq:: none |*)
