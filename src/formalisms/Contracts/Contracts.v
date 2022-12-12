@@ -508,4 +508,6 @@ Proof.
     simpl. firstorder.
 Qed.
 
+(*| .. coq:: none |*)
 End Assume_Guarantee_Contracts.
+(*| .. coq:: |*)
