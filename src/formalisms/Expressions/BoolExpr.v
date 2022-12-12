@@ -377,7 +377,7 @@ Qed.
 
 Fixpoint Rewrite_PropF_r (p : PropF) : PropF :=
   match p with
-    | p1 ∨ ⊤ => ⊤
+    | _ ∨ ⊤ => ⊤
     | p1 ∨ ⊥ => Rewrite_PropF_r p1
     | ⊥ ∨  p1 => Rewrite_PropF_r p1
     | p1 ∧ ⊤ => Rewrite_PropF_r p1
@@ -1716,9 +1716,10 @@ Module PropF_Notations.
   Notation "A ∧ B" := (Conj A B) (at level 80, right associativity) : PropF_scope.
 
   Notation "~ A" := (Neg A) (at level 75, right associativity) : PropF_scope.
-  Notation "¬ x" := (~x) (at level 75, right associativity) : type_scope.
+  Notation "¬ x" := (~x) (at level 75, right associativity) : PropF_scope.
 
   Notation "⊥" := Bot (at level 0)  : PropF_scope.
   Notation "⊤" := (¬ ⊥) (at level 0) : PropF_scope.
 
 End PropF_Notations.
+
