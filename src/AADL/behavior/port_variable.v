@@ -268,7 +268,7 @@ Definition Store_
     | DropNewest => Store_DropNewest p name value
     | DropOldest => Store_DropOldest p name value
     | Error => p
-    | Overflow_Handling_Protocol_Unspecified => p
+    | Unspecified_Overflow_Handling_Protocol => p
     end
   else
     p.

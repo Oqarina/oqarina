@@ -445,7 +445,7 @@ Definition Enabled (th : thread_state_variable) :=
   | Timed => Timed_Enabled th
   | Hybrid => Hybrid_Enabled th
   | Background => Background_Enabled th
-  | Unspecified => False
+  | Unspecified_Dispatch_Protocol => False
   end.
 
 (*|
@@ -537,7 +537,7 @@ Definition Frozen (p : port_variable) (th : thread_state_variable) : Prop :=
   | NoIo => False
   | Start _ => False
   | Completion _ => False
-  | IO_Time_Spec_Unspecified => False
+  | Unspecified_IO_Time_Spec => False
   end.
 
 Lemma Frozen_dec: forall p th,  { Frozen p th } + { ~ Frozen p th }.
