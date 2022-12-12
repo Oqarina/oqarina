@@ -171,26 +171,28 @@ Definition e2n6 := ltree_cons (OR _) [ iru3; e2n5].
 Definition mg := ltree_cons (K_OUT_OF_N _ 2) [e2n2 ;e2n4 ; e2n6].
 Definition slide165 := ltree_cons (OR _) [mg; ncd; gcd].
 
+Compute slide165.
+
+(*| This fault tree has a K_OUT_OF_N gate, we eliminate it. |*)
+
+Definition slide165' := Expand_Fault_Tree' slide165.
+
 (*| We check that the fault tree is syntactically valid. |*)
 
-(*
-Fact slide165_OK : valid_static_fault_tree'
-    (Rewrite_Fault_Tree'' slide165).
+Fact slide165_OK : valid_static_fault_tree' slide165'.
 Proof.
     prove_valid_static_fault_tree.
 Qed.
 
-Compute slide165.
-*)
 (*| We map it to the corresponding boolean expressions |*)
 
-Definition slide165_bool := Map_Fault_Tree_to_BoolExpr slide165.
+Definition slide165_bool := Map_Fault_Tree_to_BoolExpr slide165'.
 Compute slide165_bool.
 
 (*| We can compute and display the corresponding cutset either as a boolean expression or as a fault tree. |*)
 
 Definition slide165_cs_bool :=
-    Map_Fault_Tree_to_Cutset_PropF basic_event_beq slide165.
+    Map_Fault_Tree_to_Cutset_PropF basic_event_beq slide165'.
 Compute slide165_cs_bool.
 (* = Var IRU1 ∧ Var IRU2
     ∨ Var IRU1 ∧ Var IRU3

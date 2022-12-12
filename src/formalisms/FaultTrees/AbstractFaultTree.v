@@ -39,7 +39,8 @@ Require Import Coq.Relations.Relation_Operators.
 Require Import Coq.Unicode.Utf8.
 Require Import Coq.Bool.Bool.
 
-(* KruskalTrees *)
+(* KruskalTrees: provide all the core theories for uniform trees as lists of
+trees with induction principles and related results. *)
 Require Export KruskalTrees.tree.ltree.
 
 (* Oqarina Library*)
@@ -117,6 +118,69 @@ Definition Get_Root_FT_Node (f : fault_tree) :=
     end.
 
 (*| .. coq:: none |*)
+Section Fault_Tree_Expansion.
+(*| .. coq:: |*)
+
+Definition Expand_Fault_Tree (F : fault_tree)
+    : fault_tree
+    :=
+match F with
+    (* red_K_OUT_OF_N *)
+    | ltree_cons (K_OUT_OF_N k) l =>
+        ltree_cons OR (map (fun x => ltree_cons AND x) (k_of_N k l))
+
+    (* tauto *)
+    | _ => F
+end.
+
+(*| A direct result of :coq:`Expand_Fault_Tree'` is that the K_OUT_OF_N gate has been suppressed.
+
+Note: here we use some intermediate lemmas to leverage :coq:`ltree_fall` (forall for a ltree).
+
+|*)
+
+Definition Expand_Fault_Tree_postcondition_def f: Prop :=
+    forall k, Get_Root_FT_Node (Expand_Fault_Tree f)
+    <> K_OUT_OF_N k.
+
+Lemma Expand_Fault_Tree_postcondition:
+    forall (f : fault_tree), Expand_Fault_Tree_postcondition_def f.
+Proof.
+    induction f.
+    case x ;simpl ; try discriminate.
+Qed.
+
+Definition Expand_Fault_Tree_postcondition_def_2
+    (X: FT_Node) (l: list (ltree FT_Node)) :=
+    Expand_Fault_Tree_postcondition_def (ltree_cons X l).
+
+Lemma Expand_Fault_Tree_postcondition_2:
+    forall (X: FT_Node) (l: list (ltree FT_Node)),
+    Expand_Fault_Tree_postcondition_def_2 X l.
+Proof.
+    intros.
+    apply Expand_Fault_Tree_postcondition.
+Qed.
+
+Fixpoint Expand_Fault_Tree' (f : fault_tree) :=
+    let 'ltree_cons x ll := f in
+    Expand_Fault_Tree
+        (ltree_cons x (map Expand_Fault_Tree' ll)).
+
+Lemma Expand_Fault_Tree'_postcondition:
+    forall (f: fault_tree),
+        ltree_fall Expand_Fault_Tree_postcondition_def_2 f.
+Proof.
+    induction f.
+    apply ltree_fall_fix.
+    split.
+    apply Expand_Fault_Tree_postcondition_2.
+    apply H.
+Qed.
+
+(*| .. coq:: none |*)
+End Fault_Tree_Expansion.
+
 Section Fault_Tree_Reduction.
 (*| .. coq:: |*)
 
@@ -247,41 +311,6 @@ Lemma Rewrite_Fault_Tree''_fix: forall x ll,
             (ltree_cons x (map Rewrite_Fault_Tree'' ll)).
 Proof. trivial. Qed.
 
-(*| A direct result of :coq:`Rewrite_Fault_Tree'` is that the K_OUT_OF_N gate has been suppressed. |*)
-(*
-Lemma Rewrite_Fault_Tree'_postcondition:
-    forall (f : fault_tree) k,
-        Get_Root_FT_Node (Rewrite_Fault_Tree'' f)
-            <> K_OUT_OF_N k.
-Proof.
-    intros.
-    induction f.
-    case x ;simpl ; try discriminate.
-
-
-    - destruct l.
-        + simpl. discriminate.
-        + simpl. destruct l0.
-            * simpl. discriminate.
-            * simpl.
-              destruct (Rewrite_Fault_Tree'' l0).
-              destruct f ; simpl ; try discriminate.
-              destruct (map Rewrite_Fault_Tree'' l1) ;
-                simpl ; discriminate.
-
-
-    - destruct l.
-        + simpl. discriminate.
-        + simpl.
-          destruct (map Rewrite_Fault_Tree'' l0).
-
-          apply H. apply in_eq.
-
-          destruct l1.
-          destruct f ; simpl ; try discriminate.
-          destruct l2 ; simpl ; discriminate.
-Qed.
-*)
 (*| .. coq:: none |*)
 End Fault_Tree_Reduction.
 
