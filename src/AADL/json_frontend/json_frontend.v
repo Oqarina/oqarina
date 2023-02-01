@@ -274,11 +274,11 @@ Definition Map_JSON_String_To_Component (s : string) :=
     Map_JSON_Root_To_Component (from_string s).
 
 Definition Get_Instance (c : option string + list component) :=
-match c with
-| inr c' =>
-  match c' with
-  | h :: _ =>  h
-  | _ => nil_component
-  end
-| _ => nil_component
-end.
+  match c with
+    | inr c' =>
+      match c' with
+        | h :: _ => h
+        | _ => nil_component
+      end
+    | _ => nil_component
+  end.
