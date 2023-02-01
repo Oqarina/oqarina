@@ -32,6 +32,8 @@
 (* begin hide *)
 (** Coq Library *)
 From Coq Require Import
+    Floats
+    PrimInt63
     Decimal
     DecimalString
     Strings.Ascii
@@ -49,10 +51,9 @@ Definition parse_int s : Z :=
   end.
 
 (** [parse_bool] parses a bool value from [s] or return false *)
-
 Definition parse_bool s : bool :=
-  if eqb "true" s then true
-  else if eqb "false" s then true
+  if eqb "true"%string s then true
+  else if eqb "false"%string s then true
   else false. (* error reporting *)
 
 (** [split_dot] splits [s] in two substrings delimited by a '.'. [pending] is used as an accumulator during recursion. *)
@@ -75,3 +76,43 @@ Definition parse_decimal s : decimal :=
       | Some x, Some y => Decimal x y
       | Some x, None => Decimal x Decimal.zero
     end.
+
+(** [parse_float] parses a float value from [s] *)
+
+Fixpoint build_decimal_part (f: float) (n:nat) : float :=
+  match n with
+  | 0 => f
+  | S n => build_decimal_part (f/10) n
+  end.
+
+Definition build_float (i : Z) (d: uint) : float :=
+  of_uint63 (Uint63.of_Z i) +
+  build_decimal_part
+    (of_uint63 (Uint63.of_Z (Z.of_uint d)))
+    (nb_digits d).
+
+Definition parse_float s : float :=
+  let values := split_dot "" s in
+  let value_a := NilEmpty.int_of_string (fst values) in
+  let value_b := NilEmpty.uint_of_string (snd values) in
+    match value_a, value_b with
+      | None, _ => PrimFloat.zero
+
+      | Some x, Some y =>
+        let x_z := Z.of_int x in
+          match x_z with
+          | Z0 => build_float Z.zero y
+
+          | Zpos x => build_float x_z y
+
+          | Zneg x => - build_float (- x_z) y
+        end
+
+      | Some x, None => build_float (Z.of_int x) Decimal.zero
+
+    end.
+
+Compute parse_float ".01".
+Compute parse_float "1.01".
+Compute parse_float "1.0112121".
+Compute parse_float "-1.0112121".
