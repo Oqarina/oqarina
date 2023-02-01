@@ -58,7 +58,7 @@ Example An_AADL_System_LTS_1 :=
     step_lts (Init An_AADL_System_LTS) (i X_system Y_system 0).
 
 (* After initialization, both system are offline *)
-Fact Am_AADL_System_LTS_1_OK :
+Fact An_AADL_System_LTS_1_OK :
     Print_DEVS_Simulator An_AADL_System_LTS_1 =
     dbg 0 1
          [{| st := system_offline; e := 0 |};

@@ -214,7 +214,7 @@ Fixpoint Has_Done (l : list Synchronization_Message_Type) :
 DEVS Simulator
 ==============
 
-A :coq:`DEVS_Simulator` is an instance of a :coq:`DEVS_Atomic_Model`, i.e.the specification of an atomic DEVS with the various state variables defining its state. We provide two helper functions to initialize a DEVS simulator with default values inherited from the DEVS model, and a function to reset the outputs. |*)
+A :coq:`DEVS_Simulator` is an instance of a :coq:`DEVS_Atomic_Model`, i.e., the specification of an atomic DEVS with the various state variables defining its state. We provide two helper functions to initialize a DEVS simulator with default values inherited from the DEVS model, and a function to reset the outputs. |*)
 
 Record DEVS_Simulator : Type := {
     devs_simulator_id : identifier ;
