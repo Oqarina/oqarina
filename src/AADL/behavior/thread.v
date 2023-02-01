@@ -1170,7 +1170,7 @@ Definition Update_Q
 (*|
 * :coq:`δint_thread` updates the internal state of the thread
 
-  - (1) if the thread is Idle, we evaluate its enable function using eval_enabled_thread_state. If the thread is Readym we enter the performing thread conputation
+  - (1) if the thread is Idle, we evaluate its enabled function using eval_enabled_thread_state. If the thread is Ready, we enter the performing thread conputation
 
   - (2) if the thread is Running, and if its compute execution time is equal to its WCET, the thread becomes suspended (external AADL state) and Idle .
 
