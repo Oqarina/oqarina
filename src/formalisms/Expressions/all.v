@@ -31,5 +31,6 @@
 ***)
 
 (*| .. coq:: none |*)
+Require Export Oqarina.formalisms.Expressions.Propositions.
 Require Export Oqarina.formalisms.Expressions.BoolExpr.
 (*| .. coq:: |*)
