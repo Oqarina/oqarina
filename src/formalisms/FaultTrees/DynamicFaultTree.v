@@ -45,7 +45,7 @@ Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.formalisms.FaultTrees.AbstractFaultTree.
 Require Import Oqarina.formalisms.FaultTrees.Merle_Algebra.
-Require Import Oqarina.formalisms.Expressions.all.
+Require Import Oqarina.formalisms.Expressions.Propositions.
 
 Set Implicit Arguments.
 Set Strict Implicit.

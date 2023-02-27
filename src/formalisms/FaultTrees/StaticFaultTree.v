@@ -44,7 +44,7 @@ Require Import Floats. Open Scope float_scope.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.formalisms.FaultTrees.AbstractFaultTree.
-Require Import Oqarina.formalisms.Expressions.all.
+Require Import Oqarina.formalisms.Expressions.Propositions.
 
 Set Implicit Arguments.
 Set Strict Implicit.
@@ -93,7 +93,7 @@ Definition valid_static_fault_tree_node
         | FDEP _ => False
         | SPARE _ => False
         | PAND _ => False
-        | AND _| OR _=> True
+        | AbstractFaultTree.AND _ | AbstractFaultTree.OR _=> True
         | NOT _ => List.length l <= 1%nat
     end.
 

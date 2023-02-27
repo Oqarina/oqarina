@@ -379,9 +379,9 @@ Definition d_incl_before (d1 d2 : d) : d :=
         | Gt => d_inf b
     end).
 
-Notation "a '＋' b" := (d_plus a b) (at level 90).
+Notation "a '＋' b" := (d_plus a b) (at level 40, left associativity).
 
-Notation "a '✕' b" := (d_prod a b) (at level 90).
+Notation "a '✕' b" := (d_prod a b) (at level 50, left associativity).
 
 Notation "a '△' b" := (d_simultaneous a b) (at level 90).
 
