@@ -34,14 +34,12 @@
 (* Coq Library *)
 Require Import List.
 
-
 Require Export Oqarina.formalisms.FaultTrees.AbstractFaultTree.
 Require Export Oqarina.formalisms.FaultTrees.StaticFaultTree.
 Require Export Oqarina.formalisms.FaultTrees.DynamicFaultTree.
 (*| .. coq:: |*)
 
 (*|
-
 
 ***********
 Fault Trees
