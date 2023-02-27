@@ -38,7 +38,7 @@ Require Import Floats. Open Scope float_scope.
 
 (* Oqarina Library *)
 Require Import Oqarina.formalisms.FaultTrees.all.
-Require Import Oqarina.formalisms.Expressions.all.
+Require Import Oqarina.formalisms.Expressions.Propositions.
 (*| .. coq:: |*)
 
 (*|
