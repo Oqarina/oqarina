@@ -35,6 +35,7 @@ Require Export Coq.ZArith.Zmax.
 Require Import Coq.ZArith.ZArith.
 Require Import Coq.NArith.Ndist.
 Require Import Coq.Arith.PeanoNat.
+Require Import Lia.
 
 Scheme Equality for natinf.
 
@@ -161,6 +162,20 @@ Definition ni_max (d d':natinf) :=
             | ni n' => ni (max n n')
             end
   end.
+
+Lemma ni_max_split: forall (d d':natinf),
+  ni_max d d' = infty \/ ni_max d d' = d \/ ni_max d d' = d'.
+Proof.
+  intros.
+  unfold ni_max.
+  destruct d.
+  - left. trivial.
+  - destruct d'.
+    + left. trivial.
+    + right.
+      assert (H: max n n0 = n \/ max n n0 = n0).
+      lia. destruct H ;  rewrite H; auto.
+Qed.
 
 Lemma ni_max_idemp : forall d:natinf, ni_max d d = d.
 Proof.
