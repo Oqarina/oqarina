@@ -42,7 +42,7 @@ Relations, transitive closures
 
 For a relation :coq:`R`, :coq:`clos_refl_trans_1n` defines the notion of direct reflexive-transitive closure on the left of this relation.
 
-We extend Coq standard library :coq:`Coq.Relqtions.Relation_Operators` with additional results, as suggested in the course "Mechanized semantics" given by Xavier Leroy at Collège de France in 2019-2020. Although a Coq development serves as a companion for this class, we proposed a different set of definitions that builds on top of the Coq standard library.
+We extend Coq standard library :coq:`Coq.Relations.Relation_Operators` with additional results, as suggested in the course "Mechanized semantics" given by Xavier Leroy at Collège de France in 2019-2020. Although a Coq development serves as a companion for this class, we proposed a different set of definitions that builds on top of the Coq standard library.
 
 |*)
 
