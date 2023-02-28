@@ -44,6 +44,8 @@ Oqarina builds on a couple of well-known formalisms to provide analysis or simul
 
 * :doc:`formalisms__DEVS_classic_all.v` is a mechanization of the DEVS simulation formalism in Coq.
 
+* :doc:`formalisms__DEVS_parallel_all.v` is a mechanization of the P-DEVS simulation formalism in Coq.
+
 * :doc:`formalisms__FaultTrees_all.v` introduces a representation for both static and dynamic Fault Trees, with reduction lemmas and computations.
 
 They rely on the following libraries for internal computations and manipulations:
@@ -64,6 +66,7 @@ Here is the detailed list of contents:
    :maxdepth: 2
 
    formalisms__DEVS_classic_all.v.rst
+   formalisms__DEVS_parallel_all.v.rst
    formalisms__FaultTrees_all.v.rst
    formalisms__Expressions_Propositions.v.rst
    formalisms__Expressions_BoolExpr.v.rst
