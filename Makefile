@@ -56,10 +56,15 @@ test:               ## Run testsuite
 # rst syntax which provides more flexibilty to generate either a PDF or HTML
 # pages
 
-ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
+ALECTRYON_FILES= \
+	src/formalisms/all.v \
+	src/formalisms/lts.v \
 	src/formalisms/DEVS/classic/all.v \
 	src/formalisms/DEVS/classic/devs.v \
 	src/formalisms/DEVS/classic/coupled.v \
+	src/formalisms/DEVS/parallel/all.v \
+	src/formalisms/DEVS/parallel/devs.v \
+	src/formalisms/DEVS/parallel/coupled.v \
 	src/formalisms/Expressions/BoolExpr.v \
 	src/formalisms/FaultTrees/all.v \
 	src/formalisms/FaultTrees/AbstractFaultTree.v \
@@ -67,6 +72,7 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/formalisms/FaultTrees/DynamicFaultTree.v \
 	src/formalisms/FaultTrees/Merle_Algebra.v \
 	src/formalisms/Contracts/Contracts.v \
+	src/MoC/ravenscar.v \
 	src/AADL/all.v \
 	src/AADL/Kernel/categories.v \
 	src/AADL/Kernel/component.v \
@@ -74,6 +80,10 @@ ALECTRYON_FILES=src/formalisms/all.v src/formalisms/lts.v \
 	src/AADL/behavior/port_variable.v \
 	src/AADL/behavior/system.v \
 	src/AADL/resolute/resolute.v \
+	src/CoqExt/PeanoNat_Ext.v  \
+	src/CoqExt/Reflexive_Transitive_Closure_Ext.v \
+	src/CoqExt/all.v \
+	src/CoqExt/strong_ind.v \
 	examples/AADL/full_example.v \
 	examples/3rd-party/aadl2prosa.v \
 	examples/FaultTrees/FaultTrees_Examples.v
