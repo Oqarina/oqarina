@@ -33,6 +33,7 @@
 (*| .. coq:: none |*)
 Require Export Oqarina.CoqExt.PeanoNat_Ext.
 Require Export Oqarina.CoqExt.Reflexive_Transitive_Closure_Ext.
+Require Export Oqarina.CoqExt.strong_ind.
 (*| .. coq::  |*)
 
 (*|
@@ -50,5 +51,5 @@ Here is the detailed list of contents:
 
    CoqExt__PeanoNat_Ext.v.rst
    CoqExt__Reflexive_Transitive_Closure_Ext.v.rst
-
+   CoqExt__strong_ind.v.rst
 |*)
