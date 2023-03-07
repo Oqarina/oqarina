@@ -72,8 +72,7 @@ An atomic parallel DEVS model is defined as a 8-tuple :math:`<X,Y,S,s_{0},ta,\de
 * :math:`s_{0}\in S` is the initial state;
 * :math:`ta:S\rightarrow \mathbb {T} ^{\infty }` is the time advance function;
 * :math:`\delta _{ext}:Q\times X^b\rightarrow S` is the external transition function which defines how a bag of input events changes a state of the system. We define :math:`Q=\{(s,t_{e})|s\in S,t_{e}\in ({\mathbb {T}}\cap [0,ta(s)])\}` as the total state of a system, with s the current state of the system and :math:`t_{e}` the elapsed time since the last event;
-* :math:'\delta _{con}:S\times X^{b}\rightarrow' the confluent transition function, with
-:math:' \delta _{con}(s,\emptyset )=\delta _{int}(s)'
+* :math:`\delta _{con}:S\times X^{b}\rightarrow` the confluent transition function, with :math:`\delta _{con}(s,\emptyset )=\delta _{int}(s)`
 * :math:`\delta _{{int}}:S\rightarrow S` is the internal transition function which defines how a state of the system changes internally, for instance when the elapsed time reaches to the lifetime of the state;
 * :math:`\lambda :S\rightarrow Y^{\phi }` is the output function where :math:`Y^{\phi }=Y\cup \{\phi \}` and :math:`\phi \not \in Y` is a silent event or an unobserved event. This function defines how a state of the system generates an output event (e.g. when the elapsed time reaches to the lifetime of the state).
 
