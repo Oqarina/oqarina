@@ -619,7 +619,8 @@ Proof.
 
       -- inversion H. eapply rexec_while_false. apply H2.
 
-    + (* SKIP *) intros. inversion H. apply rexec_skip.
+    + (* SKIP *)
+      intros. inversion H. apply rexec_skip.
 Qed.
 
 (*| :coq:`Eval_cont'_end` shows that if :coq:`Eval_cont'` converges to some value, then :coq:`fuel > 0`. |*)
@@ -812,6 +813,413 @@ Proof.
     assert (n > fuel1). lia.
     assert (Eval n s c = (s', true)). apply IHrexec1'. lia.
     rewrite H5. apply IHrexec2'. lia.
+Qed.
+
+Fixpoint Eval2 (fuel : nat) (st :thread_state) (s : statements)
+  : thread_state * bool * nat
+:=
+  match fuel with
+  | 0 => (st, false, 9)
+  | S fuel' =>
+
+  match s with
+    (* A sequential execution step *)
+    | COMP t => (Update_CET st s, true, ICET s)
+
+    (* Operations on protected objects *)
+    | PO_FUNCTION _ _ | PO_ENTRY _ _ => (Update_CET st s, true, ICET s)
+
+    (* Delay until some time *)
+    | DELAY_UNTIL_NEXT_PERIOD => (Set_Next_Dispatch_Time st, true, ICET s)
+
+    | SKIP => (st, true, ICET s)
+
+    | WHILE b s1 =>
+      if beval b then
+
+        match Eval2 fuel' st s1 with
+        | (st', false, _) => (st', false, 0)
+        | (st', true, cet) => Eval2 (fuel' - cet) st' (WHILE b s1)
+        end
+
+      (*  Eval2 fuel' st (s1 ;; (WHILE b s1)) *)
+      else (st, true, 0)
+
+    | SEQ s1 s2 =>
+      match Eval2 fuel' st s1 with
+      | (st', false, _) => (st', false, 0)
+      | (st', true, cet) => Eval2 (fuel' - cet) st' s2
+      end
+  end
+end.
+
+(*| :coq:`Eval_cont'_end` shows that if :coq:`Eval_cont'` converges to some value, then :coq:`fuel > 0`. |*)
+Lemma Eval2_end: forall fuel st s st' cet,
+  Eval2 fuel st s = (st', true, cet) -> fuel > 0.
+Proof.
+  induction fuel as [ | fuel ].
+  - discriminate.
+  - intuition.
+Qed.
+
+Lemma Eval2_split_seq: forall fuel st s1 s2 st' cet,
+  Eval2 (S fuel) st (s1;; s2) = (st', true, cet) ->
+    exists st'' cet'',
+      Eval2 fuel st s1 = (st'', true, cet'') /\
+      Eval2 (fuel - cet'') st'' s2 = (st', true, cet).
+Proof.
+  intros.
+  simpl in H.
+  destruct (Eval2 fuel st s1).
+  destruct p.
+  exists t. exists (n).
+  destruct b.
+  - auto.
+  - inversion H.
+Qed.
+
+Lemma Eval2_split_while: forall fuel st b s1 st' cet,
+  Eval2 (S fuel) st (WHILE b s1) = (st', true, cet) ->
+    ((beval b = true) /\
+      (exists st'' cet', (Eval2 fuel st s1 = (st'', true, cet')) /\
+                    (Eval2 (fuel - cet') st'' (WHILE b s1)) = (st', true, cet)))
+    \/ ((beval b = false) /\ st = st' /\ cet = 0).
+Proof.
+  intros.
+  simpl in H.
+  destruct (beval b).
+  - destruct (Eval2 fuel st s1) eqn:Eval2.
+    destruct p.
+    left. split.
+
+    + trivial.
+    + assert (fuel > 0). eapply Eval2_end.
+      destruct b0.
+      apply Eval2. inversion H.
+
+      assert (exists n, fuel = S n).
+      apply zero_or_succ_positive. lia.
+      destruct H1 as (p, H1).
+      subst.
+
+      exists t. exists n.
+      destruct b0. auto. inversion H.
+  - right. split. trivial. inversion H. split; trivial.
+Qed.
+
+Lemma Eval2_complete: forall s c s',
+  rexec s c s' -> exists fuel1 cet,
+    forall fuel, (fuel >= fuel1)%nat -> Eval2 fuel s c = (s', true, cet).
+Proof.
+  induction 1 ; intuition.
+
+  - (* SKIP *)
+    exists 1. exists 0. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H.
+    destruct H0 as (n, H0).
+    subst. simpl ; trivial.
+
+  - (* PO_FUNCTION *)
+    exists 1. exists 0. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H.
+    destruct H0 as (n, H0).
+    subst. simpl ; trivial.
+
+  - (* PO_ENTRY *)
+    exists 1. exists 0. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H.
+    destruct H0 as (n, H0).
+    subst. simpl ; trivial.
+
+  - (* SEQ *)
+    intros.
+    destruct IHrexec1 as (fuel1, IHrexec1).
+    destruct IHrexec1 as (cet1, IHrexec1).
+
+    destruct IHrexec2 as (fuel2, IHrexec2).
+    destruct IHrexec2 as (cet2, IHrexec2).
+
+    exists (fuel1 + fuel2 + 2 + cet1).
+    exists cet2.
+    intros.
+    assert (fuel > 0). lia.
+
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H2.
+    destruct H3 as (n, H3).
+    subst. simpl.
+
+    assert (n > fuel1). lia.
+    assert (Eval2 n s c1 = (s', true, cet1)). apply IHrexec1. lia.
+    rewrite H4.
+    apply IHrexec2. lia.
+
+  - (* COMP *)
+    exists 1. exists t. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H.
+    destruct H0 as (n, H0).
+    subst. simpl ; trivial.
+
+  - (* DELAY_UNTIL_NEXT_PERIOD *)
+    exists 1. exists 0. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H.
+    destruct H0 as (n, H0).
+    subst. simpl ; trivial.
+
+  - (* WHILE / false *)
+    exists 1. exists 0. intros.
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H0.
+    destruct H1 as (n, H1).
+    subst. simpl. rewrite H. trivial.
+
+  - (* WHILE / true *)
+
+    destruct IHrexec1 as (fuel1, IHrexec1).
+    destruct IHrexec1 as (cet1, IHrexec1).
+
+    destruct IHrexec2 as (fuel2, IHrexec2).
+    destruct IHrexec2 as (cet2, IHrexec2).
+
+    exists (fuel1 + fuel2 + 2 + cet1).
+    exists cet2.
+    intros.
+    assert (fuel > 0). lia.
+
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive , H3.
+    destruct H4 as (n, H4).
+    subst. simpl.
+    rewrite H.
+
+    assert (n > fuel1). lia.
+    assert (Eval2 n s c = (s', true, cet1)). apply IHrexec1. lia.
+
+    rewrite H5.
+
+    assert (Hm: exists m, n = S m).
+    apply zero_or_succ_positive. lia.
+    destruct Hm as (m, Hm).
+    subst. simpl.
+
+    assert (Eval2 m s c = (s', true, cet1)). apply IHrexec1. lia.
+    apply IHrexec2.
+    destruct cet1 ; lia.
+Qed.
+
+Require Import Oqarina.CoqExt.strong_ind.
+
+Lemma Eval2_end_fix: forall s fuel st st' cet,
+  Eval2 fuel st s = (st', true, cet) -> Eval2 (S fuel) st s = (st', true, cet).
+Proof.
+  induction s.
+  - (* COMP *)
+    intros.
+    assert (Hfuel: fuel > 0). eapply Eval2_end. apply H.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    simpl in H. simpl. apply H.
+
+  - (* PO_FUNCTION *)
+    intros.
+    assert (Hfuel: fuel > 0). eapply Eval2_end. apply H.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    simpl in H. simpl. apply H.
+
+  - (* PO_ENTRY *)
+    intros.
+    assert (Hfuel: fuel > 0). eapply Eval2_end. apply H.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    simpl in H. simpl. apply H.
+
+  - (* DELAY_UNTIL_NEXT_PERIOD *)
+    intros.
+    assert (Hfuel: fuel > 0). eapply Eval2_end. apply H.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    simpl in H. simpl. apply H.
+
+  - (* SEQ *)
+    intros.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H.
+
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct H0 as (n, H0).
+    subst.
+
+    apply Eval2_split_seq in H.
+    destruct H as (st'' ,H).
+    destruct H as (cet'', H).
+
+    assert (H1 : Eval2 (S (S n)) st (s1;; s2) =
+                match Eval2 (S n) st s1 with
+                | (st'', false, _) => (st'', false, 0)
+                | (st'', true, cet) => Eval2 (S n - cet) st'' s2
+                end).
+      intuition.
+
+      assert (H2: Eval2 (S n) st s1 = (st'', true, cet'')).
+      apply IHs1 ; apply H.
+      rewrite H2 in H1.
+
+      assert (H3: Eval2 (S (n - cet'')) st'' s2 = (st', true, cet)).
+      apply IHs2 ; apply H.
+
+      assert (n - cet'' > 0).
+      eapply Eval2_end. apply H.
+
+      assert (S (n - cet'') = S n - cet'').
+      lia.
+
+      rewrite H4 in H3.
+      rewrite H3 in H1.
+      trivial.
+
+  -  (* WHILE *)
+    strong induction fuel.
+
+    intros.
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H0.
+
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct H1 as (n, H1).
+    subst.
+
+    assert (H1 : Eval2 (S (S n)) st (WHILE b s) =
+          if (beval b) then
+
+          match Eval2 (S n) st s with
+          | (st'', false, _) => (st'', false, 0)
+          | (st'', true, cet') => Eval2 (S n - cet') st'' (WHILE b s)
+          end
+           (* Eval2 (S n) st (s ;; WHILE b s) *)
+          else (st, true, 0)).
+    intuition.
+    apply Eval2_split_while in H0.
+
+    destruct (beval b).
+
+    * destruct H0.
+
+      -- destruct H0.
+         destruct H2 as (st'', H2).
+         destruct H2 as (cet', H2).
+         destruct H2.
+
+         assert (H4: Eval2 (S n) st s = (st'', true, cet')).
+         apply IHs; trivial.
+         rewrite H4 in H1.
+
+         destruct (cet').
+         ++ rewrite H1.
+            assert (S n - 0 = S n). lia. rewrite H5.
+            eapply H. lia. rewrite <- H3.
+            assert (n - 0 = n). lia. rewrite H6. reflexivity.
+         ++ rewrite H1.
+
+            assert (n - S n0 > 0). eapply Eval2_end. apply H3.
+            assert (S n - S n0 = S (n - S n0)). lia.
+            rewrite H6.
+            eapply H. lia. apply H3.
+
+      -- inversion H0. inversion H2.
+
+    * destruct H0.
+      -- destruct H0. inversion H0.
+      -- destruct H0. destruct H2. subst. apply H1.
+
+  - (* SKIP *)
+    intros.
+    assert (Hfuel: fuel > 0). eapply Eval2_end. apply H.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    simpl in H. simpl. apply H.
+Qed.
+
+Lemma Eval2_sound: forall c fuel s s' cet,
+  Eval2 fuel s c = (s', true, cet) -> rexec s c s'.
+Proof.
+  intros c fuel.
+  generalize dependent fuel.
+
+  induction c.
+  - induction fuel. discriminate. intros. inversion H. apply rexec_comp.
+  - induction fuel. discriminate. intros. inversion H. apply rexec_po_function.
+  - induction fuel. discriminate. intros. inversion H. apply rexec_po_entry.
+  - induction fuel. discriminate. intros. inversion H. apply rexec_delay_until.
+
+  - (* SEQ *)
+    intros.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H.
+
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn).
+    subst. simpl in H.
+
+    destruct (Eval2 n s c1) eqn:H2. destruct p.
+    apply rexec_seq with (s' := t).
+
+    eapply IHc1.
+    destruct b eqn:H0. apply H2. inversion H.
+
+    eapply IHc2.
+    destruct b eqn:H0. apply H. inversion H.
+
+  - (* WHILE *)
+
+    strong induction fuel.
+    intros.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H0.
+
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+    apply Eval2_split_while in H0.
+
+    destruct H0.
+    + destruct H0.
+      destruct H1 as (st'', H1).
+      destruct H1 as (cet', H1).
+      destruct H1.
+
+      apply rexec_while_true with (s' := st'').
+      * apply H0.
+      * eapply IHc. apply H1.
+      * eapply H with (s := st'') (n := n - cet'). lia. apply H2.
+
+    + destruct H0. destruct H1. subst.
+      eapply rexec_while_false. apply H0.
+
+  - (* SKIP *)
+  induction fuel. discriminate. intros. inversion H. apply rexec_skip.
 Qed.
 
 (*|
