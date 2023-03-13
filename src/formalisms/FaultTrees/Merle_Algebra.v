@@ -74,6 +74,20 @@ Definition d_inf : d := (fun b : basic_event => infty).
 Notation "⊥" := d_inf.
 Notation "⊤" := d_0.
 
+Lemma d_prod_simpl: forall (d1 d2 : d) (b : basic_event),
+    (d_prod d1 d2) b = ni_max (d1 b) (d2 b).
+Proof.
+    intros.
+    unfold d_prod. reflexivity.
+Qed.
+
+Lemma d_plus_simpl: forall (d1 d2 : d) (b : basic_event),
+    (d_plus d1 d2) b = ni_min (d1 b) (d2 b).
+Proof.
+    intros.
+    unfold d_plus. reflexivity.
+Qed.
+
 (*| In the following, we prove all lemmas, numerotation follows the original manuscript. |*)
 
 (*| This auxiliary lemma proves lemmas in the form forall d1, d2, .., (f d1 d2 ..) = (g d1 d2 ..) rom lemma in the form of forall b (f d1 d2 ..) b = (g d1 d2 ..) b. |*)
@@ -389,6 +403,17 @@ Notation "a '◁' b" := (d_before a b) (at level 90).
 
 Notation "a '◁̳' b" := (d_incl_before a b) (at level  90).
 
+Lemma plop: forall (d1 d2 : d) (b : basic_event),
+     (d1 ✕ (d1 ◁ d2)) b = (d1 ◁ d2) b.
+Proof.
+    intros.
+    unfold d_before, d_prod.
+    destruct (compare' (d1 b) (d2 b)).
+    - rewrite ni_max_inf_r ; auto.
+    - apply ni_max_idemp.
+    - rewrite ni_max_inf_r ; auto.
+Qed.
+
 Lemma d_3_16_b: forall (d1 d2 : d) (b : basic_event),
      (d1 ◁̳ d2) b = ((d1 ◁ d2) ＋ (d1 △ d2)) b.
 Proof.
@@ -535,6 +560,25 @@ Proof.
     prove_extensionality_from_lemma d_incl_before_idem_b.
 Qed.
 
+(*| (3.62) |*)
+Lemma d_3_62_b: forall (d1 d2 : d) (b : basic_event),
+    (d1 ✕ (d1 ◁̳ d2)) b = (d1 ◁̳ d2) b.
+Proof.
+    intros.
+    rewrite d_prod_simpl.
+    unfold d_incl_before.
+    destruct (compare' (d1 b) (d2 b)).
+    - apply ni_max_idemp.
+    - apply ni_max_idemp.
+    - apply ni_max_inf_r.
+Qed.
+
+Lemma d_3_62: forall (d1 d2 : d),
+    (d1 ✕ (d1 ◁̳ d2)) = (d1 ◁̳ d2).
+Proof.
+    prove_extensionality_from_lemma d_3_62_b.
+Qed.
+
 (*| (3.64) |*)
 
 Lemma d_3_64_b:
@@ -578,6 +622,58 @@ Lemma d_3_64':
         (((d2 ✕ d1) ✕ (d2 ◁̳ d1)) ＋ ((d1 ✕ d2) ✕ (d1 ◁̳ d2))) = (d1 ✕ d2).
 Proof.
     prove_extensionality_from_lemma d_3_64_b'.
+Qed.
+
+(*| (3.72) |*)
+
+Lemma d_3_72_b: forall (d1 d2 : d) (b : basic_event),
+     ((d2 ◁̳ d1) ✕ (d1 ◁ d2)) b = ⊥ b.
+Proof.
+    intros.
+    rewrite d_3_16. (* (d1 ◁̳ d2) = (d1 ◁ d2) ＋ (d1 △ d2) *)
+    rewrite d_prod_simpl, d_plus_simpl.
+    unfold d_before, d_simultaneous.
+    rewrite cmp_antisym.
+    destruct (compare' (d1 b) (d2 b)).
+    - simpl. rewrite ni_max_inf_r. auto.
+    - trivial.
+    - simpl. rewrite ni_max_inf_r. auto.
+Qed.
+
+Lemma d_3_72: forall (d1 d2 : d),
+     ((d2 ◁̳ d1) ✕ (d1 ◁ d2)) = ⊥.
+Proof.
+    prove_extensionality_from_lemma d_3_72_b.
+Qed.
+
+(* (3.75)
+
+Note that we added the hypothesis d1 <> d2 which corresponds to lemma (3.15) but is actually an assumption that two events cannot happen simulataneously.
+*)
+
+Lemma d_3_75_b: forall (d1 d2 : d) (b : basic_event),
+    (compare' (d1 b) (d2 b) <> Eq) ->
+    ((d1 ✕ (d2 ◁ d1)) ＋ (d1 △ d2) ＋ (d2 ✕ (d1 ◁ d2))) b
+        = (d1 ✕ d2) b.
+Proof.
+    intros.
+    repeat rewrite d_plus_simpl.
+    repeat rewrite d_prod_simpl.
+    unfold d_simultaneous.
+    unfold d_before.
+    rewrite cmp_antisym.
+    destruct (compare' (d1 b) (d2 b)).
+    - contradiction.
+    - simpl ;
+        repeat rewrite ni_max_inf_r ;
+        try rewrite ni_min_inf_l ;
+        try repeat rewrite ni_min_inf_r.
+        rewrite ni_max_comm. reflexivity.
+    - simpl ;
+        repeat rewrite ni_max_inf_r ;
+        try rewrite ni_min_inf_l ;
+        try repeat rewrite ni_min_inf_r.
+        rewrite ni_max_comm. reflexivity.
 Qed.
 
 (*| Definition of DFT gates from Chapter 3 |*)
@@ -647,7 +743,7 @@ Qed.
 Definition P_FDEP (T A B: d) : d * d :=
     (( T ＋  A ◁̳ T), ( T ＋  B ◁̳ T) ).
 
-(* This is the model of a SPARE gate with only one spare (B), Ba being the FT for the case B is active, and Bd the FT for the case B is dormant *)
+(* This is the model of a SPARE gate with only one spare (B), Ba being the FT for the case B is active, and Bd the FT for the case B is dormant. (From section 4.3.4). *)
 
 Definition P_SPARE (A Ba Bd : d) : d :=
     (Ba ✕ (A ◁ Ba )) ＋  (A ✕ (Bd ◁  A)).
@@ -667,11 +763,23 @@ Proof.
     reflexivity.
 Qed.
 
-Lemma P_SPARE_Hot_Spare: forall (A Ba Bd :d),
-    Bd = Ba -> P_SPARE A Ba Bd = (Ba ＋ A).
+Lemma P_SPARE_Hot_Spare: forall (A Ba Bd :d) b,
+    (compare' (Ba b) (A b) <> Eq)  (* Lemma (3.15) *) ->
+    Bd = Ba -> (P_SPARE A Ba Bd) b = (Ba ✕ A) b.
 Proof.
     intros. subst. unfold P_SPARE.
-Admitted.
+    unfold d_before.
+
+    rewrite d_plus_simpl.
+    repeat rewrite d_prod_simpl.
+    unfold d_plus.
+    unfold d_before.
+    rewrite cmp_antisym.
+    destruct (compare' (Ba b) (A b)).
+    - contradiction.
+    - simpl. rewrite ni_max_inf_r. rewrite ni_min_inf_l. rewrite ni_max_comm. reflexivity.
+    - simpl. rewrite ni_max_inf_r. rewrite ni_min_inf_r. reflexivity.
+Qed.
 
 Definition n_AND (l : list d) :=
     fold_right (fun a b => (D_AND a b)) d_0 l.
