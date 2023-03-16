@@ -42,7 +42,7 @@ Require Export Oqarina.CoqExt.strong_ind.
 Extensions to the Coq standard library
 **************************************
 
-In the following, we list a set of additional lemma and definitions that extends the default Coq standard library.
+In the following, we list a set of additional lemma and definitions that extends the Coq standard library.
 
 Here is the detailed list of contents:
 
