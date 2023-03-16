@@ -8,9 +8,11 @@ _Note: this is a work-in-progress, the organization may evolve as we add more el
 
 ### Library elements
 
+* `CoqExt`: extensions to the Coq standard library
 * `coq_utils`: additonal elements not found in the Coq standard library;
 * `core`: reusable libraries for basic types, e.g. identifiers, queues, etc.;
 * `formalisms`: abstract types for expressing formalisms such as Labelled Transition Systems, DEVS, etc.
+* `MoC`: model of computations
 
 ### Definition of AADL models
 
