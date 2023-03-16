@@ -37,6 +37,9 @@ Require Import Lia.
 (*|
 Natural numbers
 ===============
+
+The following extends some results from Coq natural numbers and the :coq:`PeanoNat.Nat` module.
+
 |*)
 
 (*| .. coq:: none |*)
@@ -44,7 +47,9 @@ Section PeanoNat_Nat_Ext.
 (*| .. coq:: |*)
 
 (*|
-We provide a variant of :coq:`PeanoNat.Nat.zero_or_succ` to simplify our proofs.
+.. index:: zero_or_succ_positive, CoqExt; zero_or_succ_positive
+
+* :coq:`zero_or_succ_positive` is a variant of :coq:`PeanoNat.Nat.zero_or_succ` to simplify our proofs.
 
 |*)
 
@@ -57,6 +62,20 @@ Proof.
     destruct H0.
     contradict H. lia.
     trivial.
+Qed.
+
+(*|
+.. index:: nat_split, CoqExt; nat_split
+
+* :coq:`nat_plit` is a technical trivial lemma to split a natural number that is known to be higher than another.
+
+|*)
+
+Lemma nat_split: forall n m: nat,
+    n > m -> exists p, n = m + p.
+Proof.
+    intros.
+    exists (n - m) ; lia.
 Qed.
 
 (*| .. coq:: none |*)

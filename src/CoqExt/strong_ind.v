@@ -38,18 +38,24 @@ Require Import Lia.
 (*|
 Strong Induction Principle
 ==========================
+
+Coq generates general induction principles. In some cases, we need a strong induction princple that is introduced in this section.
+
 |*)
 
 (*| .. coq:: none |*)
 Section StrongInduction.
 (*| .. coq:: |*)
 
-(*| Let's assume we have a proposition indexed by a natural number and the stronger inductive hypothesis. |*)
+(*|
+.. index:: strong induction, CoqExt; strong induction (tactic)
+
+Let's assume we have a proposition indexed by a natural number and the stronger inductive hypothesis :coq:`IH`. |*)
 
 Variable P : nat -> Prop.
 Hypothesis IH : forall m, (forall n, n < m -> P n) -> P m.
 
-(*| A direct result is that :coq:`P (0)` holds. |*)
+(*| A direct result is that :coq:`P (0)` always holds. |*)
 
 Lemma P0 : P 0.
 Proof.
@@ -92,7 +98,7 @@ Check strong_induction.
        (forall m : nat, (forall n : nat, n < m -> P n) -> P m) ->
        forall n : nat, P n *)
 
-(*| We provide the tactic :coq:`strong induction` to use this new principle. |*)
+(*| We provide the tactic :coq:`strong induction` to use this new principle in our proofs. |*)
 
 Tactic Notation "strong" "induction" ident(n) :=
     induction n using strong_induction.

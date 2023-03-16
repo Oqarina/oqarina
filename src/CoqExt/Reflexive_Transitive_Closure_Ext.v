@@ -37,12 +37,14 @@ Require Import Coq.Relations.Relation_Operators.
 
 (*|
 
+.. index:: transitive closue, CoqExt; clos_refl_trans_1n, CoqExt; rt1n_trans'
+
 Relations, transitive closures
 ==============================
 
 For a relation :coq:`R`, :coq:`clos_refl_trans_1n` defines the notion of direct reflexive-transitive closure on the left of this relation.
 
-We extend Coq standard library :coq:`Coq.Relations.Relation_Operators` with additional results, as suggested in the course "Mechanized semantics" given by Xavier Leroy at Collège de France in 2019-2020. Although a Coq development serves as a companion for this class, we proposed a different set of definitions that builds on top of the Coq standard library.
+We extend Coq standard library :coq:`Coq.Relations.Relation_Operators` with additional results, as suggested in the course "Mechanized semantics" given by Xavier Leroy at Collège de France in 2019-2020. Although a Coq development serves as a companion for this class, we propose a different set of definitions that builds on top of the Coq standard library.
 
 |*)
 
@@ -64,7 +66,7 @@ Proof.
     - eapply rt1n_trans. apply H. auto.
 Qed.
 
-(*| We define the transitive closure of a relation from :coq:`clos_refl_trans_1n`. This allows one to reason on zero, one, or many steps (:coq:`clos_refl_trans_1n`), or one or many (:coq:`clos_refl_trans_1n_plus`). This is important for definiing equivalences between relations. |*)
+(*| We define the transitive closure of a relation from :coq:`clos_refl_trans_1n`. This allows one to reason on zero, one, or many steps (:coq:`clos_refl_trans_1n_star`), or one or many (:coq:`clos_refl_trans_1n_plus`). This is important for definiing equivalences between relations. |*)
 
 Inductive clos_refl_trans_1n_plus : A -> A -> Prop :=
   | plus_trans: forall a b c,
