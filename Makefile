@@ -80,6 +80,7 @@ ALECTRYON_FILES= \
 	src/AADL/behavior/port_variable.v \
 	src/AADL/behavior/system.v \
 	src/AADL/resolute/resolute.v \
+	src/CoqExt/Classes.v  \
 	src/CoqExt/PeanoNat_Ext.v  \
 	src/CoqExt/Reflexive_Transitive_Closure_Ext.v \
 	src/CoqExt/all.v \

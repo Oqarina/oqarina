@@ -31,27 +31,32 @@
 ***)
 
 (*| .. coq:: none |*)
-Require Export Oqarina.CoqExt.Classes.
-Require Export Oqarina.CoqExt.PeanoNat_Ext.
-Require Export Oqarina.CoqExt.Reflexive_Transitive_Closure_Ext.
-Require Export Oqarina.CoqExt.strong_ind.
-(*| .. coq::  |*)
+Require Import Coq.Classes.SetoidClass.
+
+Set Implicit Arguments.
+Set Strict Implicit.
+
+Section Classes.
+(*| .. coq:: |*)
 
 (*|
+Classes
+=======
 
-**************************************
-Extensions to the Coq standard library
-**************************************
+We define utility classes: setoid-based semigroup and commutative operator, and decision procedure.
 
-In the following, we list a set of additional lemma and definitions that extends the Coq standard library.
-
-Here is the detailed list of contents:
-
-.. toctree::
-   :maxdepth: 2
-
-   CoqExt__Classes.v.rst
-   CoqExt__PeanoNat_Ext.v.rst
-   CoqExt__Reflexive_Transitive_Closure_Ext.v.rst
-   CoqExt__strong_ind.v.rst
 |*)
+
+Class Setoid_SemiGroup (A : Type) (f : A -> A -> A) `{s: Setoid A} := {
+    assoc_f : forall a b c : A, f a (f b c) == f (f a b) c
+}.
+
+Class Setoid_Commutative (A : Type) (f : A -> A -> A) `{s: Setoid A} := {
+    commute_proof : forall a b : A, f a b == f b a
+}.
+
+Class Decision (P : Prop) := decide : {P} + {~P}. (* XXX use stdpp ? *)
+
+(*| .. coq:: none |*)
+End Classes.
+(*| .. coq:: |*)
