@@ -49,9 +49,9 @@ Require Import Lia.
 Require Import List.
 Import ListNotations. (* from List *)
 
-Require Import Oqarina.CoqExt.all.
 
 Require Import Oqarina.core.all.
+Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.formalisms.Expressions.all.
 Import NaturalTime.
@@ -819,7 +819,7 @@ Fixpoint Eval2 (fuel : nat) (st :thread_state) (s : statements)
   : thread_state * bool * nat
 :=
   match fuel with
-  | 0 => (st, false, 9)
+  | 0 => (st, false, 0)
   | S fuel' =>
 
   match s with
@@ -1012,8 +1012,6 @@ Proof.
     destruct cet1 ; lia.
 Qed.
 
-Require Import Oqarina.CoqExt.strong_ind.
-
 Lemma Eval2_end_fix: forall s fuel st st' cet,
   Eval2 fuel st s = (st', true, cet) -> Eval2 (S fuel) st s = (st', true, cet).
 Proof.
@@ -1158,6 +1156,27 @@ Proof.
     simpl in H. simpl. apply H.
 Qed.
 
+(* XXX Make this more generic *)
+Lemma Eval2_end_fix': forall fuel s st st' cet,
+Eval2 fuel st s = (st', true, cet) -> (forall n, Eval2 (fuel + n) st s = (st', true, cet)).
+Proof.
+intros.
+induction n.
+- assert (fuel + 0 = fuel). auto. rewrite H0. apply H.
+- assert (fuel + S n = S (fuel + n)). lia. rewrite H0.
+  apply Eval2_end_fix. apply IHn.
+Qed.
+
+Lemma Eval2_end_fix'': forall fuel s st st' cet,
+Eval2 fuel st s = (st', true, cet) -> (forall fuel', fuel' > fuel -> Eval2 fuel' st s = (st', true, cet)).
+Proof.
+intros.
+assert (exists n, fuel' = fuel + n).
+apply nat_split. apply H0.
+destruct H1 as (n, H1). rewrite H1. apply Eval2_end_fix'.
+apply H.
+Qed.
+
 Lemma Eval2_sound: forall c fuel s s' cet,
   Eval2 fuel s c = (s', true, cet) -> rexec s c s'.
 Proof.
@@ -1220,6 +1239,168 @@ Proof.
 
   - (* SKIP *)
   induction fuel. discriminate. intros. inversion H. apply rexec_skip.
+Qed.
+
+(*|
+These proofs are highly repetitive. We define a couple of handy tactices to expedite the process
+
+* :coq:`prove_fuel_positive_in_Eval2_Hyp` shows that if one hypothesis contains a valuation of Eval2 that returns true, then the fuel parameter is positive.
+
+|*)
+
+Ltac prove_fuel_positive_in_Eval2_Hyp x :=
+  match goal with
+    | [ H: Eval2 x _ _ = (_, true, _ ) |- _ ] =>
+      let H2 := fresh "H" in
+      assert (x > 0) as H2 by solve [
+        eapply Eval2_end ; apply H | idtac ]
+
+    | [ H: _ |- _ ]=> idtac
+  end.
+
+(*|
+
+* :coq:`destruct_positive` looks for a positive number and destruct it.
+
+|*)
+
+Ltac destruct_positive x :=
+  match goal with
+    | [ H: x > 0 |- _ ] =>
+      let H2 := fresh "H" in
+
+      assert (exists n, x = S n) as H2 by solve [
+      apply zero_or_succ_positive ; apply H ] ;
+      destruct H2 as (n, H2); subst
+
+    | [ H: _ |- _ ]=> idtac
+  end.
+
+Ltac Eval2_Eval_Equivalent_base_cases H :=
+  simpl in * ; inversion H ;reflexivity.
+
+Lemma Eval2_Eval_Equivalent: forall fuel c s s' cet,
+  Eval2 fuel s c = (s', true, cet) -> Eval fuel s c = (s', true).
+Proof.
+  strong induction fuel.
+
+  induction c.
+
+  + (* COMP *)
+    intros s s' cet H0.
+
+    prove_fuel_positive_in_Eval2_Hyp fuel.
+    destruct_positive fuel.
+    Eval2_Eval_Equivalent_base_cases H0.
+
+  + (* PO_FUNCTION *)
+    intros s s' cet H0.
+
+    prove_fuel_positive_in_Eval2_Hyp fuel.
+    destruct_positive fuel.
+    Eval2_Eval_Equivalent_base_cases H0.
+
+  + (* PO_ENTRY *)
+    intros s s' cet H0.
+
+    prove_fuel_positive_in_Eval2_Hyp fuel.
+    destruct_positive fuel.
+    Eval2_Eval_Equivalent_base_cases H0.
+
+  + (* DELAY_UNTIL_NEXT_PERIOD *)
+    intros s s' cet H0.
+
+    prove_fuel_positive_in_Eval2_Hyp fuel.
+    destruct_positive fuel.
+    Eval2_Eval_Equivalent_base_cases H0.
+
+  + (* c1 ;; c2 *)
+    intros.
+    assert (Hfuel: fuel > 0). apply Eval2_end in H0. apply H0.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn). subst.
+
+    assert (H2 : Eval2 (S n) s (c1;; c2) =
+                match Eval2 n s c1 with
+                | (st'', false, _) => (st'', false, 0)
+                | (st'', true, cet) => Eval2 (n - cet) st'' c2
+                end).
+    intuition.
+    destruct (Eval2 n s c1) eqn:HEval2.
+    destruct p.
+    pose proof H0.
+    rewrite H0 in H2.
+    assert (b = true). destruct b. reflexivity. inversion H2.
+    subst.
+
+    assert (H3 : Eval (S n) s (c1;; c2) =
+      match Eval n s c1 with
+      | (st'', false) => (st'', false)
+      | (st'', true) => Eval n st'' c2
+      end).
+    intuition.
+
+    assert (Eval n s c1 = (t, true)).
+    eapply H. lia. apply HEval2.
+    rewrite H4 in H3.
+
+    assert (Eval n t c2 = (s', true)).
+    eapply H. lia. apply eq_sym in H2.
+
+    destruct n0.
+    assert (n - 0 = n). lia. rewrite H5 in H2. apply H2.
+
+    eapply Eval2_end_fix''.
+    apply H2.
+
+    assert (n > 0). eapply Eval_end. apply H4.
+    lia.
+
+    rewrite H5 in H3. apply H3.
+
+  + (* WHILE b c *)
+    intros.
+    assert (Hfuel: fuel > 0). apply Eval2_end in H0. apply H0.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn). subst.
+
+    apply Eval2_split_while in H0.
+
+    destruct H0.
+    * destruct H0.
+      destruct H1 as (st'', H1).
+      destruct H1 as (cet', H1).
+      destruct H1.
+
+      simpl.
+      rewrite H0.
+
+      assert (Eval n s c = (st'', true)).
+      eapply H. lia. apply H1.
+      rewrite H3.
+
+      destruct cet'.
+      assert (n - 0 = n). lia. rewrite H4 in H2.
+      eapply H. lia. apply H2.
+
+      apply H with (cet := cet). lia.
+      eapply Eval2_end_fix'' with ( fuel:= n - S cet').
+      apply H2.
+      assert (n > 0). eapply Eval2_end. apply H1.
+
+      lia.
+
+    * simpl. destruct H0. rewrite H0. destruct H1. subst. reflexivity.
+
+  + (* SKIP *)
+    intros s s' cet H0.
+
+    prove_fuel_positive_in_Eval2_Hyp fuel.
+    destruct_positive fuel.
+    Eval2_Eval_Equivalent_base_cases H0.
+
 Qed.
 
 (*|
@@ -1355,7 +1536,7 @@ Lemma invert_red_cont_to_statement:
 Proof.
   induction k; simpl; intros.
   - (* Kstop *)
-    change c' with (cont_to_statement Kstop c'). apply racc_base; auto.
+    change c' with (cont_to_statement Kstop c'). apply racc_base ; auto.
   - (* Kseq *)
     specialize (IHk _ _ _ _ H). inversion IHk; subst.
     + (* base *)
