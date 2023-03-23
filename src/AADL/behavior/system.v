@@ -173,7 +173,6 @@ Definition system_DEVS_Simulator_Type : Type :=
 Definition System_Initial := Instantiate_DEVS_Simulator
     (Id "System") system_DEVS.
 
-
 (*| Map a complete system hierarchy to a DEVS |*)
 
 (*| Map a system component and system subcomponents into a list of DEVS system |*)
