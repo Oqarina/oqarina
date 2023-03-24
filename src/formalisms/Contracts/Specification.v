@@ -136,10 +136,9 @@ Module Models_Notations.
 Notation "s1 '×' s2" := (compose s1 s2)
     (at level 70, right associativity).
 
-    (*
 Notation "s3 |= s1 '×' s2" := (partial_compose [s1 ;s2 ] s3)
     (at level 70, right associativity).
-*)
+
 Notation "s1 ≼ s2" := (refinement s1 s2)
     (at level 70, no associativity).
 

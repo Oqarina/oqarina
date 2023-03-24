@@ -66,12 +66,16 @@ ALECTRYON_FILES= \
 	src/formalisms/DEVS/parallel/devs.v \
 	src/formalisms/DEVS/parallel/coupled.v \
 	src/formalisms/Expressions/BoolExpr.v \
+	src/formalisms/Expressions/Propositions.v \
 	src/formalisms/FaultTrees/all.v \
 	src/formalisms/FaultTrees/AbstractFaultTree.v \
 	src/formalisms/FaultTrees/StaticFaultTree.v \
 	src/formalisms/FaultTrees/DynamicFaultTree.v \
 	src/formalisms/FaultTrees/Merle_Algebra.v \
-	src/formalisms/Contracts/Contracts.v \
+	src/formalisms/Contracts/all.v \
+	src/formalisms/Contracts/AG_Contracts.v \
+	src/formalisms/Contracts/Specification.v \
+	src/formalisms/Contracts/MetaTheory.v \
 	src/MoC/ravenscar.v \
 	src/AADL/all.v \
 	src/AADL/Kernel/categories.v \

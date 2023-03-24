@@ -56,7 +56,7 @@ They rely on the following libraries for internal computations and manipulations
 
 * :doc:`formalisms__FaultTrees_Merle_Algebra.v` mechanizes Merle's algebra used in Dynamic Fault Trees manipulation.
 
-* :doc:`formalisms__Contracts_Contracts.v` formalizes contracts meta-theory and some of its instances.
+* :doc:`formalisms__Contracts_all.v` formalizes contracts meta-theory and some of its instances.
 
 * :doc:`formalisms__Expressions_BoolExpr.v` is a WiP for boolean expressions
 
@@ -72,6 +72,6 @@ Here is the detailed list of contents:
    formalisms__Expressions_BoolExpr.v.rst
    formalisms__lts.v.rst
    formalisms__FaultTrees_Merle_Algebra.v.rst
-   formalisms__Contracts_Contracts.v.rst
+   formalisms__Contracts_all.v.rst
 
 |*)

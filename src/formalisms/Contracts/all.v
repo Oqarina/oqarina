@@ -53,4 +53,12 @@ In the following, we introduce the following results:
 
 * :doc:`formalisms__Contracts_AG_Contracts.v` mechanizes Assume/Guarantee contracts.
 
+Here is the detailed list of contents:
+
+.. toctree::
+    :maxdepth: 2
+
+    formalisms__Contracts_Specification.v.rst
+    formalisms__Contracts_MetaTheory.v.rst
+    formalisms__Contracts_AG_Contracts.v.rst
 |*)
