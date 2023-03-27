@@ -29,11 +29,8 @@
  *
  * DM21-0762
 ***)
-(** %\chapter{Feature Helpers}% *)
 
-(** The following defines helper functions to manipulate feature of a component *)
-
-(* begin hide *)
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
@@ -43,7 +40,16 @@ Require Import Coq.Bool.Bool.
 Require Import Oqarina.AADL.Kernel.categories.
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.coq_utils.all.
-(* end hide *)
+(*| .. coq:: |*)
+
+(*|
+
+Features Helper Library
+========================
+
+The following defines helper functions to manipulate feature of a component
+
+|*)
 
 Definition Is_Input_Port (f : feature) :=
   (DirectionType_beq (projectionFeatureDirection f) inF) ||

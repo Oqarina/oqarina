@@ -29,14 +29,8 @@
  *
  * DM21-0762
 ***)
-(** %\chapter{AADL declarative model}\label{chap::aadl_decl}% *)
 
-(**
-In the previous chapter, we introduced a generic component model that matches the concepts of AADL component type, implementation and instances. In this chapter. we show how to specialize this model to support the AADL declarative model%\footnote{Note: the following concepts of AADL are excluded: arrays, modes, flows}%.
-
-*)
-
-(* begin hide *)
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import Coq.Logic.Decidable.
 Require Import List.
@@ -50,182 +44,200 @@ Require Import Oqarina.AADL.legality.all.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-(* end hide *)
+(*| .. coq::  |*)
 
-(**
+(*|
+
+Declarative model
+=================
+
+In the previous chapter, we introduced a generic component model that matches the concepts of AADL component type, implementation and instances. In this chapter. we show how to specialize this model to support the AADL declarative model
+
+Note: the following concepts of AADL are excluded: arrays, modes, flows.
 
 In this chapter, we refine an AADL generic component into either a component type or a component implementation. We then introduce the concept of AADL packages as a collection of components, and AADL model has a collection of packages.
 
-* AADL Component Type
+AADL Component Type
+-------------------
 
-%\begin{definition}[AADL component type] An AADL component type is a well-formed generic AADL component without subcomponents and connections.
-\end{definition}%
-*)
+* An AADL component type is a well-formed generic AADL component without subcomponents and connections.
+|*)
 
-(* begin hide *)
+(*| .. coq:: none |*)
 Section AADL_Component_Type.
-(* end hide *)
+(*| .. coq:: |*)
 
-    Definition Is_AADL_Component_Type (c : component) : Prop :=
-        Well_Formed_Component_Hierarchy c /\
-        c->subcomps = nil /\
-        c->connections = nil.
+Definition Is_AADL_Component_Type (c : component) : Prop :=
+    Well_Formed_Component_Hierarchy c /\
+    c->subcomps = nil /\
+    c->connections = nil.
 
-    Lemma Is_AADL_Component_Type_dec :
-        forall c : component, { Is_AADL_Component_Type c } +
-                              { ~Is_AADL_Component_Type c }.
-    Proof.
-        prove_dec.
-    Defined.
+Lemma Is_AADL_Component_Type_dec :
+    forall c : component, { Is_AADL_Component_Type c } +
+                            { ~Is_AADL_Component_Type c }.
+Proof.
+    prove_dec.
+Defined.
 
-(**
-%\wfrule{AADL component type well-formedness}{}{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.}%
-*)
+(*|
+{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.
+|*)
 
-    Hint Resolve Is_AADL_Component_Type_dec : well_know_wf_dec.
+Hint Resolve Is_AADL_Component_Type_dec : well_know_wf_dec.
 
-    Definition Well_Formed_Component_Type (c: component) :=
-            Is_AADL_Component_Type c /\
-            Well_Formed_Component_Type_Interface c /\
-            Well_Formed_Component c /\
-            Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
-
-    Lemma Well_Formed_Component_Type_dec :
-        forall (c:component),
-            {Well_Formed_Component_Type c} +
-            { ~Well_Formed_Component_Type c}.
-    Proof.
-        prove_dec.
-    Defined.
-
-(* begin hide *)
-End AADL_Component_Type.
-(* end hide *)
-
-(** * AADL Component Implementation
-
-%\begin{definition}[AADL component implementation] An AADL component implementation is a well-formed generic AADL component.
-\end{definition}% *)
-
-(* begin hide *)
-Section AADL_Component_Implementation.
-(* end hide *)
-
-    Definition Is_AADL_Component_Implementation (c : component) : Prop :=
-        Well_Formed_Component_Hierarchy c .
-
-    Lemma Is_AADL_Component_Implementation_dec :
-        forall c : component, { Is_AADL_Component_Implementation c } +
-                              { ~Is_AADL_Component_Implementation c}.
-    Proof.
-        prove_dec.
-    Defined.
-
-(**
-%\wfrule{AADL component implementation well-formedness}{}
-{An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.}%
-*)
-
-    Definition Well_Formed_Component_Implementation' (c: component) :=
-        Is_AADL_Component_Implementation c /\
-        Well_Formed_Component_Implementation_Subcomponents c /\
+Definition Well_Formed_Component_Type (c: component) :=
+        Is_AADL_Component_Type c /\
+        Well_Formed_Component_Type_Interface c /\
         Well_Formed_Component c /\
-        Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets /\
-        Well_Formed_Property_Values'' c.
+        Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets.
 
-    Lemma Well_Formed_Component_Implementation'_dec :
+Lemma Well_Formed_Component_Type_dec :
     forall (c:component),
-        {Well_Formed_Component_Implementation' c} +
-        { ~Well_Formed_Component_Implementation' c}.
-    Proof.
-        prove_dec.
-    Defined.
+        {Well_Formed_Component_Type c} +
+        { ~Well_Formed_Component_Type c}.
+Proof.
+    prove_dec.
+Defined.
 
-    Definition Well_Formed_Component_Implementation (c: component) :=
-        Unfold_Apply Well_Formed_Component_Implementation' c.
+(*| .. coq:: none |*)
+End AADL_Component_Type.
+(*| .. coq:: |*)
 
-    Lemma Well_Formed_Component_Implementation_dec :
-        forall (c:component),
-            {Well_Formed_Component_Implementation c} +
-            { ~Well_Formed_Component_Implementation c}.
-    Proof.
-        prove_dec.
-    Qed.
+(*|
 
-(* begin hide *)
+AADL Component Implementation
+-----------------------------
+
+An AADL component implementation is a well-formed generic AADL component.
+
+|*)
+
+
+(*| .. coq:: none |*)
+Section AADL_Component_Implementation.
+(*| .. coq:: |*)
+
+Definition Is_AADL_Component_Implementation (c : component) : Prop :=
+    Well_Formed_Component_Hierarchy c .
+
+Lemma Is_AADL_Component_Implementation_dec :
+    forall c : component, { Is_AADL_Component_Implementation c } +
+                            { ~Is_AADL_Component_Implementation c}.
+Proof.
+    prove_dec.
+Defined.
+
+(*|
+
+An AADL component implementation is well-formed iff. its subcomponents match some restrictions imposed by its category.
+
+|*)
+
+Definition Well_Formed_Component_Implementation' (c: component) :=
+    Is_AADL_Component_Implementation c /\
+    Well_Formed_Component_Implementation_Subcomponents c /\
+    Well_Formed_Component c /\
+    Well_Formed_Property_Associations c AADL_Predeclared_Property_Sets /\
+    Well_Formed_Property_Values'' c.
+
+Lemma Well_Formed_Component_Implementation'_dec :
+forall (c:component),
+    {Well_Formed_Component_Implementation' c} +
+    { ~Well_Formed_Component_Implementation' c}.
+Proof.
+    prove_dec.
+Defined.
+
+Definition Well_Formed_Component_Implementation (c: component) :=
+    Unfold_Apply Well_Formed_Component_Implementation' c.
+
+Lemma Well_Formed_Component_Implementation_dec :
+    forall (c:component),
+        {Well_Formed_Component_Implementation c} +
+        { ~Well_Formed_Component_Implementation c}.
+Proof.
+    prove_dec.
+Qed.
+
+(*| .. coq:: none |*)
 End AADL_Component_Implementation.
-(* end hide *)
+(*| .. coq::  |*)
 
-(** * AADL package
+(*|
 
-%\begin{definition}[AADL package] An AADL package is a named-list of AADL components.
-\end{definition}%
-*)
+AADL package
+------------
 
-(* begin hide *)
+An AADL package is a named-list of AADL components.
+|*)
+
+(*| .. coq:: none |*)
 Section AADL_Package.
-(* end hide *)
+(*| .. coq:: |*)
 
-    Inductive package :=
-        | Package : identifier -> list component -> package.
+Inductive package :=
+    | Package : identifier -> list component -> package.
 
-(** From this definition; we also define a decidable equality principle, projection functions, etc. *)
+(* From this definition; we also define a decidable equality principle, projection functions, etc. |*)
 
-    Lemma package_eq_dec : eq_dec package.
-    Proof.
-        unfold eq_dec.
-        repeat decide equality.
-    Qed.
+Lemma package_eq_dec : eq_dec package.
+Proof.
+    unfold eq_dec.
+    repeat decide equality.
+Qed.
 
-    Definition projectionPackageId (p : package) : identifier :=
-        match p with
-        | Package id _ => id
-        end.
+Definition projectionPackageId (p : package) : identifier :=
+    match p with
+    | Package id _ => id
+    end.
 
-    Definition projectionPackageComponents (p : package) : list component :=
-        match p with
-        | Package  _ lp => lp
-        end.
+Definition projectionPackageComponents (p : package) : list component :=
+    match p with
+    | Package  _ lp => lp
+    end.
 
-    Notation "p '->idp' " := (projectionPackageId p)
-        (at level 80, right associativity).
+Notation "p '->idp' " := (projectionPackageId p)
+    (at level 80, right associativity).
 
-    Notation "p '->components' " := (projectionPackageComponents p)
-        (at level 80, right associativity).
+Notation "p '->components' " := (projectionPackageComponents p)
+    (at level 80, right associativity).
 
-    (** %\wfrule{Well-formed AADL package}{}{An AADL package is well-formed iff its identifier is well-formed and its components are also well-formed.}%*)
+(*| An AADL package is well-formed iff its identifier is well-formed and its components are also well-formed.|*)
 
-    Definition Well_Formed_Package (p : package) :=
-        Well_Formed_Identifier_prop (p->idp) /\
-        All Well_Formed_Component (p->components).
+Definition Well_Formed_Package (p : package) :=
+    Well_Formed_Identifier_prop (p->idp) /\
+    All Well_Formed_Component (p->components).
 
-    Lemma Well_Formed_Package_dec :
-        forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
-    Proof.
-        prove_dec.
-    Qed.
+Lemma Well_Formed_Package_dec :
+    forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
+Proof.
+    prove_dec.
+Qed.
 
-(** At this stage, we simply have collection of well-formed packages. But this is not enough to guarantee the model is correct. We need to add some typing rules that assess all elements are properly resolved. This is addressed in the next sections. *)
+(*| At this stage, we simply have collection of well-formed packages. But this is not enough to guarantee the model is correct. We need to add some typing rules that assess all elements are properly resolved. This is addressed in the next sections. |*)
 
-(* begin hide *)
+(*| .. coq:: none |*)
 End AADL_Package.
-(* end hide *)
+(*| .. coq::  |*)
 
-(** * AADL model as transitive closure
+(*|
 
-%So far, we have defined fragments of AADL: component types, implementations and packages. We now define an AADL model as a collection of AADL packages.
+AADL model as transitive closure
+--------------------------------
 
-\begin{definition}[AADL model] An AADL model is a list of AADL packages.\end{definition}%
-*)
+So far, we have defined fragments of AADL: component types, implementations and packages. We now define an AADL model as a collection of AADL packages.
 
-(* begin hide *)
+* An AADL model is a list of AADL packages.
+|*)
+
+(*| .. coq:: none |*)
 Section AADL_Model.
-(* end hide *)
+(*| .. coq:: |*)
 
-    Definition AADL_Model := list package.
+Definition AADL_Model := list package.
 
 (** XXX from this definition, we can build all legality rules we want *)
 
-(* begin hide *)
+(*| .. coq:: none |*)
 End AADL_Model.
-(* end hide *)
+(*| .. coq:: |*)

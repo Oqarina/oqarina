@@ -29,7 +29,8 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
+
+(*| .. coq:: none |*)
 
 (** Coq Library *)
 Require Import Coq.Bool.Bool.
@@ -47,6 +48,14 @@ Require Import Oqarina.coq_utils.utils.
 
 #[local] Open Scope Z_scope.
 #[local] Open Scope string_scope.
+(*| .. coq:: |*)
+
+(*|
+
+Properties
+==========
+
+|*)
 
 Definition INT := Z.
 Definition REAL := Z.

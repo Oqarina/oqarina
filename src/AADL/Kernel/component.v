@@ -30,7 +30,6 @@
  * DM21-0762
 ***)
 (*| .. coq:: none |*)
-(* XXX abstract is recognized as a tactic keyword by coqdoc .. this does not fully address the issue *)
 
 (** Coq Library *)
 Require Import Bool.
@@ -43,8 +42,6 @@ Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Sumbool.
-
-(* Require Import Oqarina.BoolEqual. *)
 
 (** Oqarina library *)
 Require Import Oqarina.core.all.

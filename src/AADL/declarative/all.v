@@ -29,4 +29,21 @@
  *
  * DM21-0762
 ***)
+
+(*| .. coq:: none |*)
 Require Export Oqarina.AADL.declarative.declarative_model.
+(*| .. coq:: |*)
+
+(*|
+
+Declarative model
+=================
+
+In this chapter, we leverage the previous definitions of AADL concepts and provide a definition of an AADL declarative model along with legality and consistency rules.
+
+.. toctree::
+    :maxdepth: 2
+
+    AADL__declarative_declarative_model.v.rst
+
+|*)

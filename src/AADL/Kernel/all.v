@@ -30,6 +30,7 @@
  * DM21-0762
 ***)
 
+(*| .. coq:: none |*)
 Require Import Coq.Strings.String.
 Require Import Oqarina.core.all.
 
@@ -40,7 +41,47 @@ Require Export Oqarina.AADL.Kernel.properties.
 Require Export Oqarina.AADL.Kernel.typecheck.
 Require Export Oqarina.AADL.Kernel.properties_helper.
 Require Export Oqarina.AADL.Kernel.features_helper.
+(*| .. coq:: |*)
 
+(*|
+AADL Kernel
+===========
+
+In this section, we first introduce the kernel of AADL, capturing the static semantics of the AADL language.
+
+* In :doc:`AADL__Kernel_categories.v` we define the main component categories;
+
+* In :doc:`AADL__Kernel_component.v`
+
+* :doc:`AADL__Kernel_properties.v`
+
+* :doc:`AADL__Kernel_components_helper.v`
+
+* :doc:`AADL__Kernel_features_helper.v`
+
+* :doc:`AADL__Kernel_properties_helper.v`
+
+Here is the detailed list of contents:
+
+.. toctree::
+    :maxdepth: 2
+
+    AADL__Kernel_categories.v.rst
+    AADL__Kernel_component.v.rst
+    AADL__Kernel_properties.v.rst
+    AADL__Kernel_components_helper.v.rst
+    AADL__Kernel_features_helper.v.rst
+    AADL__Kernel_properties_helper.v.rst
+
+|*)
+
+(*|
+Notations to support AADL
+-------------------------
+
+The following notations provide handy shortcut to build AADL models directly in Coq.
+
+|*)
 Module AADL_Notations.
 
 Declare Scope aadl_scope.

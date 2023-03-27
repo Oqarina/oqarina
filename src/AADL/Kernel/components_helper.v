@@ -29,7 +29,8 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
+
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
@@ -46,7 +47,14 @@ Require Import Oqarina.AADL.Kernel.features_helper.
 
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-(* end hide *)
+
+(*| .. coq:: |*)
+
+(*|
+
+Components Helper Library
+==========================
+|*)
 
 Fixpoint Valid_Subcomponents_Category
     (l : list component) (lcat : list ComponentCategory) :=
