@@ -183,3 +183,12 @@ Qed.
 (*| .. coq:: none |*)
 End Assume_Guarantee_Contracts.
 (*| .. coq:: |*)
+
+Module AG_Contract_Notations.
+
+Export Contract_Notations.
+
+Notation "@ c" := (AG_Contract_to_Contract c)
+    (at level 70 , no associativity).
+
+End AG_Contract_Notations.

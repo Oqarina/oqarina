@@ -61,4 +61,6 @@ Here is the detailed list of contents:
     formalisms__Contracts_Specification.v.rst
     formalisms__Contracts_MetaTheory.v.rst
     formalisms__Contracts_AG_Contracts.v.rst
+    formalisms__Contracts_Extended_AG_Contracts.v.rst
+
 |*)

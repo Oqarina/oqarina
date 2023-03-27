@@ -50,7 +50,7 @@ Require Import Oqarina.formalisms.Contracts.Specification.
 
 Section Contracts_Meta_Theory.
 
-Import Models_Notations.
+Import Specifications_Notations.
 
 (*| .. coq:: |*)
 
@@ -64,7 +64,6 @@ Contract meta-theory
 
 Variable model : Type.
 Context `{spec : Specification model}.
-
 
 (*| We define a contract as a pair of two functions that computes, for a model, the sets of models that implement the contract (:coq:`Mc`) and the set of models that are compatible with the contract (:coq:`Ec`) as per :cite:`benvenisteContractsSystemsDesign`, section 3.2.
 
@@ -87,6 +86,7 @@ Hypothesis Decidable_Contract_e:
 
 (* A :coq:`Contract` is always valid, per construction of the Coq
 syntax. *)
+
 Definition Valid_Contract (P : Contract) := True.
 
 Lemma Valid_Contract_decidable: forall t : Contract,

@@ -74,6 +74,7 @@ ALECTRYON_FILES= \
 	src/formalisms/FaultTrees/Merle_Algebra.v \
 	src/formalisms/Contracts/all.v \
 	src/formalisms/Contracts/AG_Contracts.v \
+	src/formalisms/Contracts/Extended_AG_Contracts.v \
 	src/formalisms/Contracts/Specification.v \
 	src/formalisms/Contracts/MetaTheory.v \
 	src/MoC/ravenscar.v \

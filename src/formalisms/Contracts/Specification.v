@@ -50,9 +50,8 @@ Require Import Oqarina.formalisms.Expressions.Propositions.
 Require Import Oqarina.CoqExt.all.
 (*| .. coq:: |*)
 
-
 (*| .. coq:: none |*)
-Section Models.
+Section Specifications.
 (*| .. coq:: |*)
 
 (*|
@@ -99,7 +98,7 @@ Class Composition (T : Type) `{Refinement T} `{Setoid T} := {
         S1 ≼ S2 -> T1 ≼ T2 -> (compose S1 T1) ≼ (compose S2 T2);
 }.
 
-(*| From these considerations, we can now define the Specification
+(*| From these considerations, we can now define the :coq`Specification`
 typeclass, equipped with a refinement and a composition operation. |*)
 
 Class Specification (T : Type) `{s : Setoid T} := {
@@ -108,7 +107,7 @@ Class Specification (T : Type) `{s : Setoid T} := {
     compose_op :> Composition;
 }.
 
-(*| In :cite:`10.1007/978-3-642-28872-2_3`, the authors only consider total composition operator. We acknowledge that this is a strong hypothesis: semantic or syntactic rules may forbid some compositions to happem, or they might be incomplete. A typical example being two AADL components being composed: composition can be done in multiple ways, e.g. variations in connections, as subcomponents of different components, etc. Instead, we define a partial composition operation that is commutative. Partial composition is also compatible with the notion of refinement. |*)
+(*| In :cite:`10.1007/978-3-642-28872-2_3`, the authors only consider composition operator as total function. We acknowledge that this is a strong hypothesis: semantic or syntactic rules may forbid some compositions to happem, or they might be incomplete. A typical example being two AADL components being composed: composition can be done in multiple ways, e.g. variations in connections, as subcomponents of different components, etc. Instead, we define a composition operation as a partial function. Partial composition is commutative and compatible with the notion of refinement. |*)
 
 Class Partial_Composition (T : Type)  `{Refinement T} := {
     partial_compose: list T -> T -> Prop ;
@@ -124,31 +123,38 @@ Class Partial_Composition (T : Type)  `{Refinement T} := {
             -> partial_compose [S1 ;T1] R;
 }.
 
+(*| From these considerations, we can now define the :coq:`Rich_Specification` typeclass, equipped with a refinement and a partial composition operation. We call this "rich" as a partial composition is a natural consequence of rich modeling languages. |*)
+
+Class Rich_Specification (T : Type) `{s : Setoid T} := {
+    r :> Model T;
+    r_refinement_op :> Refinement T;
+    r_compose_op :> Partial_Composition;
+}.
+
 (*| .. coq:: none |*)
-End Models.
+End Specifications.
 (*| .. coq:: |*)
 
 (*| We encapsulate the following notations to ease model
 manipulation. |*)
 
-Module Models_Notations.
+Module Specifications_Notations.
 
 Notation "s1 '×' s2" := (compose s1 s2)
     (at level 70, right associativity).
 
-Notation "s3 |= s1 '×' s2" := (partial_compose [s1 ;s2 ] s3)
+Notation "s3 |=c s1 '×' s2" := (partial_compose [s1 ;s2 ] s3)
     (at level 70, right associativity).
 
 Notation "s1 ≼ s2" := (refinement s1 s2)
     (at level 70, no associativity).
 
-End Models_Notations.
-
+End Specifications_Notations.
 
 (*| .. coq:: none |*)
-Section Models_PropF.
+Section Specifications_PropF.
 
-Import Models_Notations.
+Import Specifications_Notations.
 (*| .. coq:: |*)
 
 (*|
@@ -295,4 +301,4 @@ Instance Specification_PropF : Specification := {
 }.
 
 (*| .. coq:: none |*)
-End Models_PropF.
+End Specifications_PropF.
