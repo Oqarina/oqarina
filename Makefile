@@ -78,11 +78,23 @@ ALECTRYON_FILES= \
 	src/formalisms/Contracts/MetaTheory.v \
 	src/MoC/ravenscar.v \
 	src/AADL/all.v \
+	src/AADL/Kernel/all.v \
 	src/AADL/Kernel/categories.v \
 	src/AADL/Kernel/component.v \
+	src/AADL/Kernel/components_helper.v \
+	src/AADL/Kernel/features_helper.v \
+	src/AADL/Kernel/properties.v \
+	src/AADL/Kernel/properties_helper.v \
+	src/AADL/Kernel/typecheck.v \
+	src/AADL/behavior/all.v \
 	src/AADL/behavior/thread.v \
 	src/AADL/behavior/port_variable.v \
 	src/AADL/behavior/system.v \
+	src/AADL/declarative/all.v \
+	src/AADL/declarative/declarative_model.v \
+	src/AADL/instance/all.v \
+	src/AADL/instance/instance_model.v \
+	src/AADL/resolute/all.v \
 	src/AADL/resolute/resolute.v \
 	src/CoqExt/Classes.v  \
 	src/CoqExt/PeanoNat_Ext.v  \
