@@ -29,9 +29,8 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
-(** Coq Library *)
 
+(*| .. coq:: none |*)
 Require Import List.
 Import ListNotations. (* from List *)
 
@@ -39,23 +38,19 @@ Import ListNotations. (* from List *)
 Require Import Oqarina.core.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.features_wf.
-(* end hide *)
+(*| .. coq:: |*)
 
-(**
-%
-\section{Software Categories}
+(*|
 
-\subsection{Threads}\label{sec::aadl_thread}
+Component categories
+--------------------
 
-\N An AADL thread models a flow of execution. A thread forms a schedulable unit that can execute concurrently with other threads. For a definition of threads, see \S 5.4 of \cite{as2-cArchitectureAnalysisDesign2017}.
+XXX add feature direction
 
-\N \wfrule{Thead component category well-formedness}{}
-        {An AADL thread respects the following constraints on its elements:}
 
-\threadconstraints
-
-From these rules, we deduce the two following lemmas and their decidability results\change{Actually wrong, we miss the direction of the feature !}:
-% *)
+Thread
+``````
+|*)
 
 Local Hint Resolve
   Well_Formed_Component_Subcomponents_dec
@@ -85,14 +80,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Data}\label{sec::aadl_data}
-
-\N \wfrule{Data component category well-formedness}{}
-        {An AADL data respects the following constraints on its elements:}
-
-\dataconstraints
-*)
+(*|
+Data
+````
+|*)
 
 Definition Well_Formed_Data_Component_Type (c: component) :=
   Well_Formed_Component_Interface c
@@ -120,14 +111,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Subprogram}\label{sec::aadl_subprogram}
-
-\N \wfrule{Subprogram component category well-formedness}{}
-        {An AADL subprogram respects the following constraints on its elements:}
-
-\subprogramconstraints
-*)
+(*|
+Subprogram
+``````````
+|*)
 
 Definition Well_Formed_Subprogram_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -155,14 +142,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Subprogram Group}\label{sec::aadl_subprogram_group}
-
-\N \wfrule{Subprogram Group component category well-formedness}{}
-        {An AADL subprogram group espects the following constraints on its elements:}
-
-\subprogramgroupconstraints
-*)
+(*|
+Subprogram Group
+````````````````
+|*)
 
 Definition Well_Formed_SubprogramGroup_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -189,14 +172,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Thread Group}\label{sec::aadl_thread_group}
-
-\N \wfrule{Thread Group component category well-formedness}{}
-        {An AADL thread group espects the following constraints on its elements:}
-
-\threadgroupconstraints
-*)
+(*|
+Thread Group
+````````````
+|*)
 
 Definition Well_Formed_ThreadGroup_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -223,14 +202,11 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Process}\label{sec::aadl_process}
+(*|
+Process
+```````
+|*)
 
-\N \wfrule{Process component category well-formedness}{}
-        {An AADL process espects the following constraints on its elements:}
-
-\processconstraints
-*)
 Definition Well_Formed_Process_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
     [ dataPort ; eventPort ; eventDataPort ; featureGroup ; dataAccess ;
@@ -256,17 +232,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%
-\section{Execution platform category}
-
-\subsection{Processor}\label{sec::aadl_processor}
-
-\N \wfrule{Processor component category well-formedness}{}
-        {An AADL processor espects the following constraints on its elements:}
-
-\processorconstraints
-*)
+(*|
+Processor
+`````````
+|*)
 
 Definition Well_Formed_Processor_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -295,14 +264,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Virtual Processor}\label{sec::aadl_virtualprocessor}
-
-\N \wfrule{Virtual Processor component category well-formedness}{}
-        {An AADL virtual processor espects the following constraints on its elements:}
-
-\virtualprocessorconstraints
-*)
+(*|
+Virtual Processor
+`````````````````
+|*)
 
 Definition Well_Formed_VirtualProcessor_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -331,14 +296,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Memory}\label{sec::aadl_memory}
-
-\N \wfrule{Memory component category well-formedness}{}
-        {An AADL memory espects the following constraints on its elements:}
-
-\memoryconstraints
-*)
+(*|
+Memory
+```````
+|*)
 
 Definition Well_Formed_Memory_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -366,14 +327,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Bus}\label{sec::aadl_bus}
-
-\N \wfrule{Bus component category well-formedness}{}
-        {An AADL bus espects the following constraints on its elements:}
-
-\busconstraints
-*)
+(*|
+Bus
+```
+|*)
 
 Definition Well_Formed_Bus_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -401,14 +358,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Virtual Bus}\label{sec::aadl_virtualbus}
-
-\N \wfrule{Virtual Bus component category well-formedness}{}
-        {An AADL virtual bus espects the following constraints on its elements:}
-
-\virtualbusconstraints
-*)
+(*|
+Virtual Bus
+```````````
+|*)
 
 Definition Well_Formed_VirtualBus_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -436,14 +389,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%\subsection{Device}\label{sec::aadl_device}
-
-\N \wfrule{Device component category well-formedness}{}
-        {An AADL device espects the following constraints on its elements:}
-
-\deviceconstraints
-*)
+(*|
+Device
+``````
+|*)
 
 Definition Well_Formed_Device_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -472,16 +421,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%
-\section{Generic category}
-\subsection{Abstract}\label{sec::aadl_abstract}
-
-\N \wfrule{Abstract component category well-formedness}{}
-        {An AADL abstract respects the following constraints on its elements:}
-
-\abstractconstraints
-*)
+(*|
+Abstract
+````````
+|*)
 
 Definition Well_Formed_Abstract_Component_Type (c: component) :=
   Well_Formed_Component_Interface c
@@ -513,16 +456,10 @@ Proof.
   prove_dec.
 Qed.
 
-(**
-%
-\section{Composite category}
-\subsection{System}\label{sec::aadl_system}
-
-\N \wfrule{System component category well-formedness}{}
-        {An AADL system espects the following constraints on its elements:}
-
-\systemconstraints
-*)
+(*|
+System
+```````
+|*)
 
 Definition Well_Formed_System_Component_Type (c: component) :=
     Well_Formed_Component_Interface c
@@ -553,7 +490,7 @@ Proof.
   prove_dec.
 Qed.
 
-(* begin hide *)
+(*| .. coq:: none |*)
 Local Hint Resolve
   Well_Formed_Thead_Component_Type_dec
   Well_Formed_Thead_Component_Implementation_dec    Well_Formed_Data_Component_Type_dec
@@ -582,16 +519,16 @@ Local Hint Resolve
   Well_Formed_Abstract_Component_Implementation_dec
   Well_Formed_System_Component_Type_dec
   Well_Formed_System_Component_Implementation_dec :core.
-(* end hide *)
+(*| .. coq:: |*)
 
-(**
-%
-\section{Master theorem}
+(*|
 
+General component category well-formedness
+``````````````````````````````````````````
 
 Here, we define two master theorems that assess wether a component type has a valid interface and a component implementation valid subcomponents.
 
-%*)
+|*)
 
 Definition Well_Formed_Component_Type_Interface (c : component) :=
   match (c->category) with

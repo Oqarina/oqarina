@@ -29,7 +29,8 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
+
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
@@ -40,9 +41,13 @@ Require Import Coq.Bool.Sumbool.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-(* end hide *)
+(*| .. coq:: |*)
 
-(** ** Properties type checking rules *)
+(*|
+Properties
+----------
+
+Properties type checking rules |*)
 
  Definition Property_Correctly_Applies_To (c : component) (ps : property_sets) (p : property_association) :=
      let p_decl := resolve_property_decl ps p.(P) in

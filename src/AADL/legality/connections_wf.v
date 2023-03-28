@@ -31,8 +31,7 @@
 ***)
 (** %\chapter{Well-formedness rules of an AADL model}\label{chap::aadl_wf}% *)
 
-(* begin hide *)
-
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import Coq.Logic.Decidable.
 Require Import List.
@@ -42,5 +41,11 @@ Import ListNotations. (* from List *)
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-(* end hide *)
+(*| .. coq:: |*)
 
+(*|
+
+Connections
+-----------
+
+|*)

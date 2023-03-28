@@ -29,7 +29,7 @@
  *
  * DM21-0762
 ***)
-(* begin hide *)
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import List.
 Import ListNotations. (* from List *)
@@ -42,8 +42,13 @@ Require Import Oqarina.coq_utils.all.
 
 Require Import Oqarina.AADL.Kernel.categories.
 Require Import Oqarina.AADL.Kernel.component.
+(*| .. coq:: |*)
 
-(* end hide *)
+(*|
+Features
+--------
+
+|*)
 
 (*| Valid_Features_Category |*)
 
