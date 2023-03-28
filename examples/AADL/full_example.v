@@ -74,7 +74,7 @@ Print component.
 (*| Using Coq notation mechanism, Oqarina provides a direct way to model model elements. In the following, we create a periodic thread. |*)
 
 Definition A_Periodic_Thread :=
-    thread: "a_periodic_thread" ->| "pack::a_thread_classifier"
+    thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
         features: nil
         subcomponents: nil
         connections: nil
@@ -94,7 +94,7 @@ Locate AADL_Predeclared_Property_Sets.
 (*| Using Coq variables, one can then combine model elements to build a full hierarchy. Here, we define a process whose subcomponent is :coq:`A_Periodic_Thread`. |*)
 
 Definition A_Process' :=
-    process: "a_process" ->| "pack::a_process_classifier"
+    process: "a_process" ->| "pack::a_process_classifier.impl"
     features: nil
     subcomponents: [ A_Periodic_Thread ]
     connections: nil
@@ -106,14 +106,14 @@ Definition A_Process' :=
 (*| We then complete the model with a processor and a system. As part of the system definition, we bind the process :coq:`A_Process'` to the processor :coq:`A_Processor`. |*)
 
 Definition A_Processor' :=
-    processor: "a_processor" ->| "pack::a_processor_classifier"
+    processor: "a_processor" ->| "pack::a_processor_classifier.impl"
     features: nil
     subcomponents: nil
     connections: nil
     properties: nil.
 
 Definition A_System' :=
-    system: "a_system" ->| "pack::a_system_classifier"
+    system: "a_system" ->| "pack::a_system_classifier.impl"
     features: nil
     subcomponents: [ A_Process' ; A_Processor' ]
     connections: nil

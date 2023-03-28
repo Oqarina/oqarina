@@ -63,7 +63,7 @@ Example A_Component_2 :=
         properties: nil.
 
 Definition A_Sporadic_Thread' :=
-    thread: "a_sporadic_thread" ->| "pack::a_sporadic_thread_classifier"
+    thread: "a_sporadic_thread" ->| "pack::a_sporadic_thread_classifier.impl"
         features: [
             feature: in_event "a_feature"
         ]

@@ -948,7 +948,7 @@ In this example, we first build a periodic AADL :coq:`Component`, we then map it
 |*)
 
 Example A_Periodic_Thread :=
-    thread: "a_periodic_thread" ->| "pack::a_thread_classifier"
+    thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
         features: nil
         subcomponents: nil
         connections: nil
@@ -1013,7 +1013,7 @@ In this example, we consider a sporadic thread with one input event port.
 |*)
 
 Example A_Sporadic_Thread :=
-thread: "a_periodic_thread" ->| "pack::a_thread_classifier"
+thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
     features: [
       feature: in_event "a_feature"
     ]

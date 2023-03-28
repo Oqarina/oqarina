@@ -100,6 +100,7 @@ ALECTRYON_FILES= \
 	src/AADL/behavior/system.v \
 	src/AADL/declarative/all.v \
 	src/AADL/declarative/declarative_model.v \
+	src/AADL/declarative/implementation.v \
 	src/AADL/instance/all.v \
 	src/AADL/instance/instance_model.v \
 	src/AADL/resolute/all.v \

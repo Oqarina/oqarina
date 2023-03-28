@@ -32,6 +32,8 @@
 
 (*| .. coq:: none |*)
 Require Export Oqarina.AADL.declarative.declarative_model.
+Require Export Oqarina.AADL.declarative.implementation.
+
 (*| .. coq:: |*)
 
 (*|
@@ -45,5 +47,6 @@ In this chapter, we leverage the previous definitions of AADL concepts and provi
     :maxdepth: 2
 
     AADL__declarative_declarative_model.v.rst
+    AADL__declarative_implementation.v.rst
 
 |*)

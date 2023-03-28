@@ -285,7 +285,7 @@ Open Scope aadl_scope.
 (*| .. coq:: |*)
 
 Example Task_1 :=
-    thread: "task_1" ->| "pack::a_thread_classifier"
+    thread: "task_1" ->| "pack::a_thread_classifier.impl"
         features: nil
         subcomponents: nil
         connections: nil
@@ -301,7 +301,7 @@ Example Task_1 :=
 (*| * :math:`\tau_2 = \{C = 100, T = 500, D = ., P = 2\}`. |*)
 
 Example Task_2 :=
-    thread: "task_2" ->| "pack::a_thread_classifier"
+    thread: "task_2" ->| "pack::a_thread_classifier.impl"
         features: nil
         subcomponents: nil
         connections: nil
@@ -317,7 +317,7 @@ Example Task_2 :=
 (*| * :math:`\tau_3 = \{C = 100, T = 500, D = ., P = 2\}`. |*)
 
 Example Task_3 :=
-    thread: "task_3" ->| "pack::a_thread_classifier"
+    thread: "task_3" ->| "pack::a_thread_classifier.impl"
         features: nil
         subcomponents: nil
         connections: nil
@@ -334,7 +334,7 @@ Example Task_3 :=
 processor.|*)
 
 Definition A_Process :=
-    process: "a_process" ->| "pack::a_process_classifier"
+    process: "a_process" ->| "pack::a_process_classifier.impl"
     features: nil
     subcomponents: [ Task_1 ; Task_2 ; Task_3 ]
     connections: nil
@@ -347,7 +347,7 @@ Definition A_Process :=
 executes. We indicate the scheduling discipline used at the processor level. |*)
 
 Definition A_Processor :=
-    processor: "a_processor" ->| "pack::a_processor_classifier"
+    processor: "a_processor" ->| "pack::a_processor_classifier.impl"
     features: nil
     subcomponents: nil
     connections: nil
@@ -359,7 +359,7 @@ Definition A_Processor :=
 (*| :coq:`A_System` is the root system that we will consider when performing scheduling analysis. |*)
 
 Definition A_System :=
-    system: "a_system" ->| "pack::a_system_classifier"
+    system: "a_system" ->| "pack::a_system_classifier.impl"
     features: nil
     subcomponents: [ A_Process ; A_Processor ]
     connections: nil

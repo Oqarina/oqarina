@@ -67,7 +67,16 @@ AADL Component Type
 Section AADL_Component_Type.
 (*| .. coq:: |*)
 
+Definition Is_AADL_Component_Type_classifier (c : component) : Prop :=
+    match c->classifier with
+        | FQN _  _ s => match s with
+                        | None => True
+                        | Some _ => False
+                        end
+    end.
+
 Definition Is_AADL_Component_Type (c : component) : Prop :=
+    Is_AADL_Component_Type_classifier c /\
     Well_Formed_Component_Hierarchy c /\
     c->subcomps = nil /\
     c->connections = nil.
@@ -117,8 +126,17 @@ An AADL component implementation is a well-formed generic AADL component.
 Section AADL_Component_Implementation.
 (*| .. coq:: |*)
 
+Definition Is_AADL_Component_Implementation_classifier (c : component) : Prop :=
+    match c->classifier with
+        | FQN _  _ s => match s with
+                        | None => False
+                        | Some _ => True
+                        end
+    end.
+
 Definition Is_AADL_Component_Implementation (c : component) : Prop :=
-    Well_Formed_Component_Hierarchy c .
+    Is_AADL_Component_Implementation_classifier c /\
+    Well_Formed_Component_Hierarchy c.
 
 Lemma Is_AADL_Component_Implementation_dec :
     forall c : component, { Is_AADL_Component_Implementation c } +
