@@ -84,9 +84,16 @@ ALECTRYON_FILES= \
 	src/AADL/Kernel/component.v \
 	src/AADL/Kernel/components_helper.v \
 	src/AADL/Kernel/features_helper.v \
+	src/AADL/Kernel/notations.v \
 	src/AADL/Kernel/properties.v \
 	src/AADL/Kernel/properties_helper.v \
 	src/AADL/Kernel/typecheck.v \
+	src/AADL/legality/all.v \
+	src/AADL/legality/categories_wf.v \
+	src/AADL/legality/component_wf.v \
+	src/AADL/legality/connections_wf.v \
+	src/AADL/legality/features_wf.v \
+	src/AADL/legality/properties_wf.v \
 	src/AADL/behavior/all.v \
 	src/AADL/behavior/thread.v \
 	src/AADL/behavior/port_variable.v \
