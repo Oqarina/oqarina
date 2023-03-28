@@ -39,10 +39,9 @@ Require Import Coq.Logic.Decidable.
 Require Import Coq.Lists.ListDec.
 
 (** Oqarina library *)
-Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
-Require Import Oqarina.AADL.Kernel.properties.
+Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.features_wf.
 Require Import Oqarina.AADL.legality.properties_wf.
 (*| .. coq:: |*)
@@ -91,7 +90,6 @@ Hint Resolve Well_Formed_Component_Id_dec : core.
 
 Definition Well_Formed_Component_Classifier (c : component) : Prop :=
   (Well_Formed_fq_name_prop (c->classifier)).
-
 
 Lemma Well_Formed_Component_Classifier_dec : forall c : component,
   { Well_Formed_Component_Classifier c } + {~ Well_Formed_Component_Classifier c }.
