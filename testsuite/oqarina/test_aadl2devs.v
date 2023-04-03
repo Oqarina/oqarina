@@ -31,14 +31,17 @@ Proof. trivial. Qed.
 
 Example An_AADL_System :=
     system: "a_system" ->| "pack::a_system_classifier"
+    extends: None
     features: nil
     subcomponents: [
         system: "a_subsystem" ->| "pack::a_system_classifier"
+            extends: None
             features: nil
             subcomponents: nil
             connections: nil
             properties: nil ;
         system: "a_subsystem2" ->| "pack::a_system_classifier"
+            extends: None
             features: nil
             subcomponents: nil
             connections: nil
@@ -130,12 +133,15 @@ Proof. trivial. Qed.
 
 Example An_AADL_System2 :=
     system: "a_system" ->| "pack::a_system_classifier"
+    extends: None
     features: nil
     subcomponents: [
         system: "a_subsystem" ->| "pack::a_system_classifier"
+            extends: None
             features: nil
             subcomponents: [
                 system: "a_subsubsystem" ->| "pack::a_system_classifier"
+                    extends: None
                     features: nil
                     subcomponents: nil
                     connections: nil
@@ -144,6 +150,7 @@ Example An_AADL_System2 :=
             connections: nil
             properties: nil ;
         system: "a_subsystem2" ->| "pack::a_system_classifier"
+            extends: None
             features: nil
             subcomponents: nil
             connections: nil

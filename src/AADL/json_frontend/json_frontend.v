@@ -231,6 +231,7 @@ Fixpoint Map_JSON_To_Component' (fuel : nat) (c : list json) : list component :=
        ( Component (get_identifier (JSON__Object f))
                    (Map_JSON_To_ComponentCategory (get_json "category" (JSON__Object f)))
                    (parse_fq_name (get_string_from_json "$t" (get_json "classifier" (JSON__Object f))))  (* classifier *)
+                   None (* extends *)
                    (Map_JSON_To_Feature' m (get_features (JSON__Object f))) (* features *)
                    (Map_JSON_To_Component' m (get_subcomponents (JSON__Object f))) (* subcomponents *)
                    (Map_JSON_To_Property_Association (get_properties (JSON__Object f)))(* properties *)

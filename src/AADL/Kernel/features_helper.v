@@ -40,6 +40,7 @@ Require Import Coq.Bool.Bool.
 Require Import Oqarina.AADL.Kernel.categories.
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.coq_utils.all.
+Require Import Oqarina.core.all.
 (*| .. coq:: |*)
 
 (*|
@@ -65,6 +66,17 @@ Definition Is_Triggering_Feature (f : feature) :=
   (FeatureCategory_beq (projectionFeatureCategory f) subprogramAccess) ||
   (FeatureCategory_beq (projectionFeatureCategory f) subprogramGroupAccess).
 
+Definition Is_Portb (f : feature) :=
+    (FeatureCategory_beq (projectionFeatureCategory f) eventPort) ||
+    (FeatureCategory_beq (projectionFeatureCategory f) eventDataPort) ||
+    (FeatureCategory_beq (projectionFeatureCategory f) dataPort).
+
+Definition Is_Port (f: feature) :=
+  match f->category with
+  | eventPort | eventDataPort | dataPort => True
+  | _ => False
+  end.
+
 Definition Is_Triggering_Feature_p (f : feature) :=
   In (projectionFeatureCategory f) [ eventPort ; eventDataPort ;
                                      subprogramAccess ; subprogramGroupAccess].
@@ -83,3 +95,6 @@ Definition Get_Output_Features (l : list feature) :=
 
 Definition Feature_Classifier (f : feature) :=
   projectionComponentClassifier (projectionFeatureComponent f).
+
+Definition Get_Feature_By_Name (l : list feature) (name : identifier) :=
+  find (fun x => identifier_beq (x->id) name) l.
