@@ -62,11 +62,16 @@ Ltac prove_dec :=
     | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] =>
         apply dec_sumbool_or
     | [ |- {True} + {~ True} ] => auto
+    | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
     | [ |- {?X _} + {~ ?X _} ] =>
         auto ; try auto with well_know_wf_dec ; unfold X
     | [ |- {?X _ _} + {~ ?X _ _} ] =>
         try auto with well_know_wf_dec ; unfold X
-    | [ |- {All _ _} + {~ All _ _} ] => apply sumbool_All_dec
+    | [ |- {?X _ _ _} + {~ ?X _ _ _} ] =>
+        try auto with well_know_wf_dec ; unfold X
+    | [ |- {?X _ _ _ _} + {~ ?X _ _ _ _} ] =>
+        try auto with well_know_wf_dec ; unfold X
+
     | [ |- {NoDup _} + {~ NoDup _} ] => apply NoDup_dec
     | H : context [ match ?x with _ => _ end ] |- _ =>
         destruct x eqn:? ; auto
