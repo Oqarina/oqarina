@@ -949,6 +949,7 @@ In this example, we first build a periodic AADL :coq:`Component`, we then map it
 
 Example A_Periodic_Thread :=
     thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
+        extends: None
         features: nil
         subcomponents: nil
         connections: nil
@@ -1014,10 +1015,10 @@ In this example, we consider a sporadic thread with one input event port.
 
 Example A_Sporadic_Thread :=
 thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
+    extends: None
     features: [
       feature: in_event "a_feature"
     ]
-
     subcomponents: nil
     connections: nil
     properties: [
@@ -1568,7 +1569,7 @@ Lemma S_thread_LTS_0_OK :
           [{|
              port :=
                Feature (Id "a_feature") inF eventPort
-                 (Component (Id "") null (FQN [] (Id "") None) [] []
+                 (Component (Id "") null (FQN [] (Id "") None) None [] []
                     [] []) [];
              is_data := false;
              inner_variable := [];
@@ -1583,7 +1584,7 @@ Lemma S_thread_LTS_0_OK :
           output_ports := [];
           dispatch_trigger :=
           [Feature (Id "a_feature") inF eventPort
-             (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+             (Component (Id "") null (FQN [] (Id "") None) None [] [] [] [])
              []]
         |};
         thread_ce := Periodic_Compute_Entry_Point;
@@ -1622,7 +1623,7 @@ Lemma S_thread_LTS_1_OK :
                  [{|
                     port :=
                       Feature (Id "a_feature") inF eventPort
-                        (Component (Id "") null (FQN [] (Id "") None) [] []
+                        (Component (Id "") null (FQN [] (Id "") None) None [] []
                            [] []) [];
                     is_data := false;
                     inner_variable := [];
@@ -1637,7 +1638,7 @@ Lemma S_thread_LTS_1_OK :
                output_ports := [];
                dispatch_trigger :=
                  [Feature (Id "a_feature") inF eventPort
-                    (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+                    (Component (Id "") null (FQN [] (Id "") None) None [] [] [] [])
                     []]
              |};
              thread_ce := Periodic_Compute_Entry_Point;
@@ -1676,7 +1677,7 @@ Lemma S_thread_LTS_2_OK :
             [{|
                port :=
                  Feature (Id "a_feature") inF eventPort
-                   (Component (Id "") null (FQN [] (Id "") None) [] []
+                   (Component (Id "") null (FQN [] (Id "") None) None [] []
                       [] []) [];
                is_data := false;
                inner_variable := [(0, false)];
@@ -1691,7 +1692,7 @@ Lemma S_thread_LTS_2_OK :
           output_ports := [];
           dispatch_trigger :=
             [Feature (Id "a_feature") inF eventPort
-               (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+               (Component (Id "") null (FQN [] (Id "") None) None [] [] [] [])
                []]
         |};
         thread_ce := Periodic_Compute_Entry_Point;
@@ -1730,7 +1731,7 @@ Lemma S_thread_LTS_3_OK :
             [{|
                port :=
                  Feature (Id "a_feature") inF eventPort
-                   (Component (Id "") null (FQN [] (Id "") None) [] []
+                   (Component (Id "") null (FQN [] (Id "") None) None [] []
                       [] []) [];
                is_data := false;
                inner_variable := [];
@@ -1745,7 +1746,7 @@ Lemma S_thread_LTS_3_OK :
           output_ports := [];
           dispatch_trigger :=
             [Feature (Id "a_feature") inF eventPort
-               (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+               (Component (Id "") null (FQN [] (Id "") None) None [] [] [] [])
                []]
         |};
         thread_ce := Periodic_Compute_Entry_Point;
@@ -1784,7 +1785,7 @@ Lemma S_thread_LTS_4_OK :
                  [{|
                     port :=
                       Feature (Id "a_feature") inF eventPort
-                        (Component (Id "") null (FQN [] (Id "") None) [] []
+                        (Component (Id "") null (FQN [] (Id "") None) None [] []
                            [] []) [];
                     is_data := false;
                     inner_variable := [];
@@ -1799,7 +1800,7 @@ Lemma S_thread_LTS_4_OK :
                output_ports := [];
                dispatch_trigger :=
                  [Feature (Id "a_feature") inF eventPort
-                    (Component (Id "") null (FQN [] (Id "") None) [] [] [] [])
+                    (Component (Id "") null (FQN [] (Id "") None) None [] [] [] [])
                     []]
              |};
              thread_ce := Periodic_Compute_Entry_Point;

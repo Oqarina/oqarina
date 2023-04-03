@@ -75,6 +75,7 @@ Print component.
 
 Definition A_Periodic_Thread :=
     thread: "a_periodic_thread" ->| "pack::a_thread_classifier.impl"
+        extends: None
         features: nil
         subcomponents: nil
         connections: nil
@@ -95,6 +96,7 @@ Locate AADL_Predeclared_Property_Sets.
 
 Definition A_Process' :=
     process: "a_process" ->| "pack::a_process_classifier.impl"
+    extends: None
     features: nil
     subcomponents: [ A_Periodic_Thread ]
     connections: nil
@@ -107,6 +109,7 @@ Definition A_Process' :=
 
 Definition A_Processor' :=
     processor: "a_processor" ->| "pack::a_processor_classifier.impl"
+    extends: None
     features: nil
     subcomponents: nil
     connections: nil
@@ -114,6 +117,7 @@ Definition A_Processor' :=
 
 Definition A_System' :=
     system: "a_system" ->| "pack::a_system_classifier.impl"
+    extends: None
     features: nil
     subcomponents: [ A_Process' ; A_Processor' ]
     connections: nil

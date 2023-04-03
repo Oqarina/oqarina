@@ -286,6 +286,7 @@ Open Scope aadl_scope.
 
 Example Task_1 :=
     thread: "task_1" ->| "pack::a_thread_classifier.impl"
+        extends: None
         features: nil
         subcomponents: nil
         connections: nil
@@ -302,6 +303,7 @@ Example Task_1 :=
 
 Example Task_2 :=
     thread: "task_2" ->| "pack::a_thread_classifier.impl"
+        extends: None
         features: nil
         subcomponents: nil
         connections: nil
@@ -318,6 +320,7 @@ Example Task_2 :=
 
 Example Task_3 :=
     thread: "task_3" ->| "pack::a_thread_classifier.impl"
+        extends: None
         features: nil
         subcomponents: nil
         connections: nil
@@ -335,6 +338,7 @@ processor.|*)
 
 Definition A_Process :=
     process: "a_process" ->| "pack::a_process_classifier.impl"
+    extends: None
     features: nil
     subcomponents: [ Task_1 ; Task_2 ; Task_3 ]
     connections: nil
@@ -348,6 +352,7 @@ executes. We indicate the scheduling discipline used at the processor level. |*)
 
 Definition A_Processor :=
     processor: "a_processor" ->| "pack::a_processor_classifier.impl"
+    extends: None
     features: nil
     subcomponents: nil
     connections: nil
@@ -360,6 +365,7 @@ Definition A_Processor :=
 
 Definition A_System :=
     system: "a_system" ->| "pack::a_system_classifier.impl"
+    extends: None
     features: nil
     subcomponents: [ A_Process ; A_Processor ]
     connections: nil

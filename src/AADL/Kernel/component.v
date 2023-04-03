@@ -80,6 +80,7 @@ _Note: actually, this definition allows also for the definition of component typ
     | Component : identifier ->          (* component identifier *)
                   ComponentCategory ->   (* category *)
                   fq_name ->             (* classifier, e.g. A::B::c.impl *)
+                  option fq_name ->      (* extends *)
                   list feature ->        (* features *)
                   list component ->      (* subcomponents *)
                   list property_association -> (* properties *)
@@ -101,7 +102,7 @@ _Note: actually, this definition allows also for the definition of component typ
 (*| * Definition of an empty component |*)
 
   Definition nil_component :=
-    Component empty_identifier (null) empty_fqname nil nil nil nil.
+    Component empty_identifier (null) empty_fqname None nil nil nil nil.
 
 (*| * Definition of an invalid feature |*)
 
@@ -124,12 +125,12 @@ From the previous definitions, one can build a couple of examples showing how to
 (*| * Definition of a component type and implementation |*)
 
 Example A_Component := Component (Id "a_component") (abstract)
-  (FQN [Id "pack1" ] (Id "foo_classifier") None) nil nil nil nil.
+  (FQN [Id "pack1" ] (Id "foo_classifier") None) None nil nil nil nil.
 
 Example A_Component_Impl :=
   Component (Id "a_component_impl")
   (abstract)
-  (FQN [Id "pack1" ] (Id "foo_classifier") (Some (Id "impl")))  nil
+  (FQN [Id "pack1" ] (Id "foo_classifier") (Some (Id "impl")))  None nil
   [ A_Component ] nil nil.
 
 (*| * Definition of a feature |*)
@@ -167,12 +168,12 @@ Section AADL_Component_Decidability.
   (* Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
 
   Fixpoint component_eq_dec' (a b : component) : {a=b}+{a<>b}
-  with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
+    with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
   Proof.
     generalize identifier_eq_dec ComponentCategory_eq_dec
                fq_name_eq_dec list_eq_dec
                connection_eq_dec property_association_eq_dec.
-    decide equality.
+    repeat decide equality.
 
     generalize identifier_eq_dec FeatureCategory_eq_dec
                DirectionType_eq_dec list_eq_dec
@@ -187,7 +188,7 @@ Section AADL_Component_Decidability.
                  fq_name_eq_dec component_eq_dec'
                  feature_eq_dec' connection_eq_dec
                  property_association_eq_dec list_eq_dec.
-      decide equality.
+      repeat decide equality.
   Defined.
 
   Lemma list_component_eq_dec (a b : list component) : {a=b}+{a<>b}.
@@ -268,37 +269,42 @@ Section AADL_Accessors.
 
   Definition projectionComponentId (c : component) : identifier :=
     match c with
-    | Component id _ _ _ _ _ _ => id
+    | Component id _ _ _ _ _ _ _ => id
   end.
 
   Definition projectionComponentCategory (c:component) : ComponentCategory :=
     match c with
-    | Component _ category _ _ _ _ _ => category
+    | Component _ category _ _ _ _ _ _ => category
   end.
 
   Definition projectionComponentClassifier (c:component) : fq_name :=
     match c with
-    | Component _ _ fq_name _ _ _ _ => fq_name
+    | Component _ _ fq_name _ _ _ _  _ => fq_name
+  end.
+
+  Definition projectionComponentExtends (c:component) : option fq_name :=
+    match c with
+    | Component _ _ _ extends _ _ _  _ => extends
   end.
 
   Definition projectionComponentFeatures (c:component) : list feature :=
     match c with
-    | Component _ _ _ features _ _ _ => features
+    | Component _ _ _ _ features _ _ _ => features
   end.
 
   Definition projectionComponentSubComponents (c:component) : list component :=
     match c with
-    | Component _ _ _ _ subComponents _ _ => subComponents
+    | Component _ _ _ _ _ subComponents _ _ => subComponents
   end.
 
   Definition projectionComponentProperties (c:component) : list property_association :=
     match c with
-    | Component _ _ _ _ _ properties _ => properties
+    | Component _ _ _ _ _ _ properties _ => properties
   end.
 
   Definition projectionComponentConnections (c:component) : list connection :=
     match c with
-    | Component _ _ _ _ _ _ connections => connections
+    | Component _ _ _ _ _ _ _ connections => connections
   end.
 
   (** - Feature *)
@@ -360,20 +366,66 @@ End AADL_Accessors.
 
 (*|
 
-These are helper notations to use the projections over AADL components: |*)
+These are helper notations to use the projections over AADL components:
 
-Notation "c '->id' " := (projectionComponentId c)
+We inherit the :coq:`->id` notation frmo the typeclass :coq:`Element_Id`.
+|*)
+
+#[global] Instance component_id : Element_id component := {|
+  get_id := projectionComponentId;
+|}.
+
+#[global] Instance feature_id : Element_id feature := {|
+  get_id := projectionFeatureIdentifier;
+|}.
+
+Class Get_Category (A B: Type) := {
+  get_category : A -> B ; }.
+
+Notation "c '->category' " := (get_category c)
   (at level 80, right associativity).
-Notation "c '->category' " := (projectionComponentCategory c)
-  (at level 80, right associativity).
+
+#[global] Instance Component_Category : Get_Category component _ := {|
+  get_category := projectionComponentCategory;
+|}.
+
+#[global] Instance Feature_Category : Get_Category feature _ := {|
+  get_category := projectionFeatureCategory;
+|}.
+
+Class Get_Classifier (A : Type) := {
+  get_classifier : A -> fq_name ; }.
+
 Notation "c '->classifier' " := (projectionComponentClassifier c)
   (at level 80, right associativity).
+
+#[global] Instance Component_Classifier : Get_Classifier component := {|
+  get_classifier := projectionComponentClassifier;
+|}.
+
+#[global] Instance Feature_Classifier : Get_Classifier feature := {|
+  get_classifier := (fun x => projectionComponentClassifier (projectionFeatureComponent x));
+|}.
+
 Notation "c '->subcomps' " := (projectionComponentSubComponents c)
   (at level 80, right associativity).
 Notation "c '->features' " := (projectionComponentFeatures c)
   (at level 80, right associativity).
-Notation "c '->properties' " := (projectionComponentProperties c)
-  (at level 80, right associativity).
+
+Class Get_Properties (A : Type) := {
+    get_properties : A -> list property_association ; }.
+
+Notation "c '->properties' " := (get_properties c)
+    (at level 80, right associativity).
+
+#[global] Instance Component_Properties : Get_Properties component := {|
+  get_properties := projectionComponentProperties;
+|}.
+
+#[global] Instance Feature_Properties : Get_Properties feature := {|
+  get_properties := projectionFeatureProperties
+|}.
+
 Notation "c '->connections' " := (projectionComponentConnections c)
   (at level 80, right associativity).
 
@@ -454,6 +506,7 @@ Definition Unfold_Apply (c : component) : Prop :=
   { Unfold_Apply c } + { ~ Unfold_Apply c }.
  Proof.
    prove_dec.
+
  Qed.
 
 (*| .. coq:: none |*)

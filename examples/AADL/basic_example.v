@@ -46,12 +46,14 @@ Open Scope aadl_scope.
 
 Example A_Component_2 :=
     abstract: "a_component" ->| "pack1::foo_classifier"
+        extends: None
         features: [
             feature: in_event "a_feature"   ;
             feature: out_event "a_feature2"
         ]
         subcomponents: [
             thread: "a_thread" ->| "pack2::thread_t"
+                extends: None
                 features: nil
                 subcomponents: nil
                 connections: nil
@@ -64,6 +66,7 @@ Example A_Component_2 :=
 
 Definition A_Sporadic_Thread' :=
     thread: "a_sporadic_thread" ->| "pack::a_sporadic_thread_classifier.impl"
+        extends: None
         features: [
             feature: in_event "a_feature"
         ]
