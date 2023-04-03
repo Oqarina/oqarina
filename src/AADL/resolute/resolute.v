@@ -359,5 +359,5 @@ Definition is_processor_bound (r : component) (c: component) : Prop :=
 Lemma is_processor_bound_dec: forall (r:component) (c: component),
     {is_processor_bound r c} + {~ is_processor_bound r c}.
 Proof.
-    prove_dec. apply is_processor_bound'_dec.
+    prove_dec. 
 Qed.
