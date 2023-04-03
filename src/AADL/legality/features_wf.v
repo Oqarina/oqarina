@@ -58,7 +58,7 @@ Fixpoint Valid_Features_Category
 :=
     match l with
         | nil => True
-        | h :: t => In (projectionFeatureCategory  h) lcat /\
+        | h :: t => In (projectionFeatureCategory h) lcat /\
                     Valid_Features_Category t lcat
     end.
 
