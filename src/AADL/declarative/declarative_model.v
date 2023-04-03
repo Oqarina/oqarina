@@ -193,38 +193,13 @@ An AADL package is a named-list of AADL components.
 Section AADL_Package.
 (*| .. coq:: |*)
 
-Inductive package :=
-    | Package : identifier -> list component -> package.
-
-(* From this definition; we also define a decidable equality principle, projection functions, etc. |*)
-
-Lemma package_eq_dec : eq_dec package.
-Proof.
-    unfold eq_dec.
-    repeat decide equality.
-Qed.
-
-Definition projectionPackageId (p : package) : identifier :=
-    match p with
-    | Package id _ => id
-    end.
-
-Definition projectionPackageComponents (p : package) : list component :=
-    match p with
-    | Package  _ lp => lp
-    end.
-
-Notation "p '->idp' " := (projectionPackageId p)
-    (at level 80, right associativity).
-
-Notation "p '->components' " := (projectionPackageComponents p)
-    (at level 80, right associativity).
-
 (*| An AADL package is well-formed iff its identifier is well-formed and its components are also well-formed.|*)
 
 Definition Well_Formed_Package (p : package) :=
-    Well_Formed_Identifier_prop (p->idp) /\
-    All Well_Formed_Component (p->components).
+    Well_Formed_Identifier_prop (p->id) /\
+    All (fun x => Well_Formed_Component_Type x \/
+                    Well_Formed_Component_Implementation x)
+        (p->components).
 
 Lemma Well_Formed_Package_dec :
     forall p : package, { Well_Formed_Package p } + { ~Well_Formed_Package p }.
@@ -232,11 +207,33 @@ Proof.
     prove_dec.
 Qed.
 
-(*| At this stage, we simply have collection of well-formed packages. But this is not enough to guarantee the model is correct. We need to add some typing rules that assess all elements are properly resolved. This is addressed in the next sections. |*)
-
 (*| .. coq:: none |*)
 End AADL_Package.
 (*| .. coq::  |*)
+
+Ltac prove_Well_Formed_Package_inner :=
+    repeat match goal with
+        | |- _ /\ _ => repeat split ; auto
+        | |- False => fail 2
+        | |- (_ =  EmptyString -> False) => intuition; inversion H
+        | |- NoDup nil => apply NoDup_nil
+        | |- NoDup  _  => apply NoDup_cons
+        | |- ~ In _ _ => apply not_in_car
+        | |- Id _ <> Id _ => apply identifier_string_neq; easy
+        | |- ~ In _ [] => apply in_nil
+        | |- _ \/ _ => left ; repeat split; auto
+        | |- _ \/ _ => right ; repeat split; auto
+    end.
+
+Ltac prove_Well_Formed_Package :=
+    repeat match goal with
+        | |- Well_Formed_Package _ => compute ; repeat split
+        | |- _ \/ _ => left ; prove_Well_Formed_Package_inner
+        | |- _ \/ _ => right ; prove_Well_Formed_Package_inner
+        | |- _ => prove_Well_Formed_Package_inner
+    end.
+
+(*| At this stage, we simply have collection of well-formed packages. But this is not enough to guarantee the model is correct. We need to add some typing rules that assess all elements are properly resolved. This is addressed in the next sections. |*)
 
 (*|
 
@@ -254,7 +251,14 @@ Section AADL_Model.
 
 Definition AADL_Model := list package.
 
-(** XXX from this definition, we can build all legality rules we want *)
+Definition Well_AADL_Model (m : AADL_Model) :=
+    All Well_Formed_Package m.
+
+Lemma Well_AADL_Model_dec : forall m : AADL_Model,
+    { Well_AADL_Model m } + { ~ Well_AADL_Model m }.
+Proof.
+    prove_dec.
+Qed.
 
 (*| .. coq:: none |*)
 End AADL_Model.

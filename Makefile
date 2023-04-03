@@ -85,6 +85,7 @@ ALECTRYON_FILES= \
 	src/AADL/Kernel/components_helper.v \
 	src/AADL/Kernel/features_helper.v \
 	src/AADL/Kernel/notations.v \
+	src/AADL/Kernel/package.v \
 	src/AADL/Kernel/properties.v \
 	src/AADL/Kernel/properties_helper.v \
 	src/AADL/Kernel/typecheck.v \

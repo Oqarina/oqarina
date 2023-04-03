@@ -41,6 +41,7 @@ Require Export Oqarina.AADL.Kernel.properties.
 Require Export Oqarina.AADL.Kernel.typecheck.
 Require Export Oqarina.AADL.Kernel.properties_helper.
 Require Export Oqarina.AADL.Kernel.features_helper.
+Require Export Oqarina.AADL.Kernel.package.
 Require Export Oqarina.AADL.Kernel.notations.
 
 (*| .. coq:: |*)
@@ -54,6 +55,8 @@ In this section, we first introduce the kernel of AADL, capturing the static sem
 * In :doc:`AADL__Kernel_categories.v` we define the main component categories;
 
 * In :doc:`AADL__Kernel_component.v`
+
+* In :doc:`AADL__Kernel_package.v`
 
 * :doc:`AADL__Kernel_properties.v`
 
@@ -72,6 +75,7 @@ Here is the detailed list of contents:
 
     AADL__Kernel_categories.v.rst
     AADL__Kernel_component.v.rst
+    AADL__Kernel_package.v.rst
     AADL__Kernel_properties.v.rst
     AADL__Kernel_components_helper.v.rst
     AADL__Kernel_features_helper.v.rst
