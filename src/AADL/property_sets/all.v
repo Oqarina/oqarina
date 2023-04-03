@@ -61,7 +61,7 @@ Fixpoint Get_AADL_Predeclared_Property_Set_Name' (ps : list property_set) (p : i
     match ps with
     | nil => empty_identifier
     | h :: t => match in_propertyset p h with
-                | Some _ =>  property_set_name  h
+                | Some _ => property_set_name  h
                 | None => Get_AADL_Predeclared_Property_Set_Name' t p
                 end
     end.
