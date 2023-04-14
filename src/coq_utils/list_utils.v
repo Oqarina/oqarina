@@ -58,6 +58,11 @@ Section All.
       | h :: t => P h /\ All t
     end.
 
+  Lemma All_nil : All [] = True.
+  Proof.
+    intuition.
+  Qed.
+
   Lemma All_Forall l :
     All l <-> Forall P l.
   Proof.
@@ -68,6 +73,13 @@ Section All.
       All (a :: lt) <-> P a /\ All lt.
   Proof.
     simpl. intuition.
+  Qed.
+
+  Lemma All_app : forall (l1 l2 : list T),
+      All (l1 ++ l2) <-> All l1 /\ All l2.
+  Proof.
+    intros.
+    split ; induction l1 ; simpl in * ; intuition.
   Qed.
 
   Fixpoint All_Or (ls : list T) : Prop :=
