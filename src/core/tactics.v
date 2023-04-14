@@ -59,6 +59,8 @@ Ltac prove_dec :=
         apply dec_sumbool_not
     | [ |- { _ _ /\ _ _ } + {~ (_ _ /\ _ _)} ] =>
         apply dec_sumbool_and
+    | [ |- { _ _ /\ _ } + {~ (_ _ /\ _ )} ] =>
+        apply dec_sumbool_and
     | [ |- { _ _ \/ _ _ } + {~ (_ _ \/ _ _)} ] =>
         apply dec_sumbool_or
     | [ |- {True} + {~ True} ] => auto
@@ -78,4 +80,11 @@ Ltac prove_dec :=
     | |- context [ match ?x with _ => _ end ] =>
         destruct x eqn:? ; auto
     | |- {_ = true} + {_  <> true} => apply bool_dec
+    end.
+
+Ltac prove_NoDup_singleton :=
+    repeat match goal with
+    | |- NoDup _  => apply NoDup_cons
+    | |- ~ In _ nil => intuition
+    | |- NoDup nil => apply NoDup_nil
     end.
