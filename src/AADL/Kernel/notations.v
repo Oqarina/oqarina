@@ -38,7 +38,6 @@ Require Import Oqarina.AADL.Kernel.package.
 Require Import Oqarina.AADL.Kernel.properties.
 (*| .. coq:: |*)
 
-
 (*|
 Notations to support AADL
 -------------------------
@@ -62,8 +61,15 @@ Notation "'property:' x ==>| y" := {| P := x ; PV := y|} (at level 200) : aadl_s
 
 (*| * Connections |*)
 
-Definition Build_Connection (id : string) (source : string) (destination : string) : connection :=
-    Connection (Id id) (parse_feature_ref_name source) (parse_feature_ref_name destination).
+Definition Build_Connection
+    (id : string)
+    (source : string)
+    (destination : string)
+    : connection
+:=
+    Connection (Id id)
+        (parse_feature_ref_name source)
+        (parse_feature_ref_name destination).
 
 Notation "'connection:' id '#' src --> dst" :=
     (Build_Connection id src dst) (at level 200).
@@ -71,10 +77,19 @@ Notation "'connection:' id '#' src --> dst" :=
 (*| * Notation for AADL component categories |*)
 
 Definition Build_Component
-    (id : string) (cat : ComponentCategory)
-    (classifier : string) (extends : option fq_name) (features : list feature) (subcomponents : list component) (connections : list connection) (properties : list property_association): component :=
+    (id : string)
+    (cat : ComponentCategory)
+    (classifier : string)
+    (extends : option fq_name)
+    (features : list feature)
+    (subcomponents : list component)
+    (connections : list connection)
+    (properties : list property_association)
+    : component
+:=
     Component (Id id) (cat)
-    (parse_fq_name classifier) extends features subcomponents properties connections.
+    (parse_fq_name classifier)
+    extends features subcomponents properties connections.
 
 Notation "'abstract:' id ->| classifier extends: e features: lf subcomponents: ls connections: lc properties: lp" :=
     (Build_Component id abstract classifier e lf ls lc lp) (at level 200).
