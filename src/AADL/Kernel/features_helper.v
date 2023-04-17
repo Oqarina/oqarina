@@ -95,6 +95,3 @@ Definition Get_Output_Features (l : list feature) :=
 
 Definition Feature_Classifier (f : feature) :=
   projectionComponentClassifier (projectionFeatureComponent f).
-
-Definition Get_Feature_By_Name (l : list feature) (name : identifier) :=
-  find (fun x => identifier_beq (x->id) name) l.

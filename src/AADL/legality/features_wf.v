@@ -40,8 +40,7 @@ Require Import Coq.Lists.ListDec.
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
 
-Require Import Oqarina.AADL.Kernel.categories.
-Require Import Oqarina.AADL.Kernel.component.
+Require Import Oqarina.AADL.Kernel.all.
 (*| .. coq:: |*)
 
 (*|
@@ -118,6 +117,8 @@ Proof.
     prove_dec.
 Qed.
 
+(*| We combine the previous results to build the :coq:`Well_Formed_Features` predicate. |*)
+
 Definition Well_Formed_Features (l : list feature) :=
     Features_Identifiers_Are_Unique (l) /\
     Well_Formed_Feature_Ids l.
@@ -126,4 +127,57 @@ Lemma Well_Formed_Features_dec : forall l : list feature,
     { Well_Formed_Features l } + { ~ Well_Formed_Features l }.
 Proof.
     prove_dec.
+Qed.
+
+(*| The following are technical lemmas.|*)
+
+Lemma Well_Formed_Features_cons: forall a l,
+    Well_Formed_Features (a::l)
+    -> Well_Formed_Features [a] /\ Well_Formed_Features l.
+Proof.
+    unfold Well_Formed_Features.
+    unfold Features_Identifiers_Are_Unique.
+    simpl.
+    intros.
+    destruct H.
+    apply NoDup_cons_iff in H.
+    intuition.
+    prove_NoDup_singleton.
+Qed.
+
+Lemma Well_Formed_Features_in_resolve: forall l x,
+    Well_Formed_Features l
+        -> In x l
+        -> Get_Element_By_Name _ l (x->id) = Some x.
+Proof.
+    intros l.
+    induction l.
+    - intros. inversion H0.
+    - intros. destruct H0.
+      + simpl. rewrite H0. rewrite identifier_eqb_refl. reflexivity.
+      +
+        (* This part of the proof has some technicalities.
+        Get_Feature_By_Name compare id. We first show that a and x have different id, then conclude. *)
+        assert (a->id <> (x->id)).
+        unfold Well_Formed_Features in H. destruct H.
+        unfold Features_Identifiers_Are_Unique in H.
+        unfold Features_Identifiers in H.
+        simpl in H.
+        apply NoDup_cons_iff in H.
+        destruct H.
+        assert (In (x->id)
+                    (map (fun y => projectionFeatureIdentifier y) l)).
+        apply in_map. apply H0.
+        eapply not_in_in.
+        apply H.
+        apply H3.
+
+        (* We use the previous assertions to conclude. *)
+        simpl.
+        apply identifier_beq_neq in H1.
+        simpl in H1.
+        rewrite H1.
+
+        apply Well_Formed_Features_cons in H.
+        apply IHl ; intuition.
 Qed.

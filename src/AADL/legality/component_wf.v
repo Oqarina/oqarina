@@ -140,17 +140,74 @@ Qed.
 
 (*| We can now "implement" the predicate for rule 4.5 (N1) |*)
 
-Definition Rule_4_5_N1 (c : component) : Prop :=
-  Subcomponents_Identifiers_Are_Unique (c->subcomps).
+Definition Rule_4_5_N1 (l : list component) : Prop :=
+  Subcomponents_Identifiers_Are_Unique (l).
 
 Lemma Rule_4_5_N1_dec :
-  forall c : component, { Rule_4_5_N1 c } + { ~ Rule_4_5_N1 c } .
+  forall l : list component, { Rule_4_5_N1 l } + { ~ Rule_4_5_N1 l } .
 Proof.
   generalize Subcomponents_Identifiers_Are_Unique_dec.
   prove_dec.
 Qed.
-
 Hint Resolve Rule_4_5_N1_dec : core.
+
+Definition Well_Formed_Subcomponents (l : list component) :=
+  Rule_4_5_N1 l.
+
+Lemma Well_Formed_Subcomponents_cons: forall a l,
+  Well_Formed_Subcomponents (a::l)
+  -> Well_Formed_Subcomponents [a] /\ Well_Formed_Subcomponents l.
+Proof.
+  unfold Well_Formed_Subcomponents.
+  unfold Rule_4_5_N1.
+  unfold Subcomponents_Identifiers_Are_Unique.
+  unfold Components_Identifiers.
+
+  intros.
+  simpl in H.
+  apply NoDup_cons_iff in H.
+  destruct H.
+  intuition.
+  prove_NoDup_singleton.
+Qed.
+
+Lemma Well_Formed_Subcomponents_in_resolve: forall l x,
+  Well_Formed_Subcomponents l
+      -> In x l
+      -> Get_Element_By_Name _ l (x->id) = Some x.
+Proof.
+  intros l.
+  induction l.
+  - intros. inversion H0.
+  - intros. destruct H0.
+    + simpl. rewrite H0. rewrite identifier_eqb_refl. reflexivity.
+    +
+      (* This part of the proof has some technicalities.
+      Get_Element_By_Name compare id. We first show that a and x have different id, then conclude. *)
+      assert (a->id <> (x->id)).
+      unfold Well_Formed_Subcomponents in H.
+      unfold Rule_4_5_N1 in H.
+      unfold Subcomponents_Identifiers_Are_Unique in H.
+      unfold Components_Identifiers in H.
+      simpl in H.
+      apply NoDup_cons_iff in H.
+      destruct H.
+      assert (In (x->id)
+                  (map (fun y => projectionComponentId y) l)).
+      apply in_map. apply H0.
+      eapply not_in_in.
+      apply H.
+      apply H2.
+
+      (* We use the previous assertions to conclude. *)
+      simpl.
+      apply identifier_beq_neq in H1.
+      simpl in H1.
+      rewrite H1.
+
+      apply Well_Formed_Subcomponents_cons in H.
+      apply IHl ; intuition.
+Qed.
 
 (*| * Consistency rule 4.5 (C1)
 
@@ -175,7 +232,7 @@ Definition Well_Formed_Component (c : component) : Prop :=
   Well_Formed_Component_Id (c) /\
   Well_Formed_Component_Classifier (c) /\
   Well_Formed_Component_Features (c) /\
-  Rule_4_5_N1 (c).
+  Well_Formed_Subcomponents (c->subcomps).
 
 Lemma Well_Formed_Component_dec :
   forall c : component, dec_sumbool (Well_Formed_Component c).
@@ -187,7 +244,7 @@ Defined.
 
 A component hierarchy is well-formed iff a component and its subcomponent are well-formed. |*)
 
-Definition Well_Formed_Component_Hierarchy (c : component ) : Prop :=
+Definition Well_Formed_Component_Hierarchy (c : component) : Prop :=
   Unfold_Apply Well_Formed_Component c.
 
 Lemma Well_Formed_Component_Hierarchy_dec:

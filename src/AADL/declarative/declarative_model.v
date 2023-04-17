@@ -89,7 +89,7 @@ Proof.
 Defined.
 
 (*|
-{An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.
+An AADL component type is well-formed iff. its features match some restrictions imposed by its category, and it is itself a well-formed component.
 |*)
 
 Hint Resolve Is_AADL_Component_Type_dec : well_know_wf_dec.
@@ -180,6 +180,45 @@ Qed.
 (*| .. coq:: none |*)
 End AADL_Component_Implementation.
 (*| .. coq::  |*)
+
+Lemma AADL_Component_Has_Well_Formed_Features:
+    forall c, Is_AADL_Component_Type c \/
+        Is_AADL_Component_Implementation c
+        -> Well_Formed_Features (c ->features).
+Proof.
+    intros.
+    unfold Is_AADL_Component_Type in H.
+    unfold Is_AADL_Component_Implementation in H.
+    unfold Well_Formed_Component_Hierarchy in H.
+    unfold Unfold_Apply in H.
+    simpl in H.
+    intuition.
+
+    - assert (Unfold c = [c]).
+      unfold Unfold.
+      destruct c.
+      rewrite H1. reflexivity.
+
+      rewrite H2 in H0. simpl in H0. destruct H0.
+      unfold Well_Formed_Component in H0.
+      intuition.
+
+    - destruct c.
+      induction l0.
+      + simpl in H1.
+        unfold Well_Formed_Component in H1. intuition.
+      + simpl. apply IHl0.
+        * unfold Is_AADL_Component_Implementation_classifier in *.
+          simpl in H. simpl. intuition.
+        * simpl. simpl in *. intuition.
+          -- unfold Well_Formed_Component in *. intuition.
+             simpl in *.
+             unfold Well_Formed_Subcomponents in *.
+             unfold Rule_4_5_N1 in *.
+             unfold Subcomponents_Identifiers_Are_Unique in *.
+             apply NoDup_cons_iff in H6. intuition.
+         -- apply All_app in H2. intuition.
+Qed.
 
 (*|
 

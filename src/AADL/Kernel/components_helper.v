@@ -36,18 +36,21 @@ Require Import List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListDec.
 Require Import Coq.Bool.Sumbool.
+Require Import Coq.Relations.Relation_Definitions.
 
 (** Oqarina library *)
 Require Import Oqarina.AADL.Kernel.categories.
 Require Import Oqarina.AADL.Kernel.component.
 Require Import Oqarina.AADL.Kernel.properties.
 Require Import Oqarina.AADL.Kernel.typecheck.
-
 Require Import Oqarina.AADL.Kernel.features_helper.
 
 Require Import Oqarina.core.all.
 Require Import Oqarina.coq_utils.all.
+(*| .. coq:: |*)
 
+(*| .. coq:: none |*)
+Section Helper_Functions.
 (*| .. coq:: |*)
 
 (*|
@@ -129,3 +132,29 @@ Definition Resolve_Subcomponent
     match fqn with
     | FQN path name impl => Resolve_Subcomponent' root path name impl
     end.
+
+(*| * :coq:`Is_Same_Component_Type_classifier` returns True iff. :coq:`c1` and :coq:`c2` have the same component type classifier. |*)
+
+Definition Is_Same_Component_Type_classifier (c1 c2: component) : Prop :=
+    let (l1, i1, _) := c1->classifier in
+    let (l2, i2, _) := c2->classifier in
+        l1 = l2 /\ i1 = i2.
+
+Lemma Is_Same_Component_Type_classifier_transitive: transitive _ Is_Same_Component_Type_classifier.
+Proof.
+    unfold transitive.
+    intros c1 c2 c3.
+    unfold Is_Same_Component_Type_classifier.
+
+    intros.
+    destruct (c1->classifier).
+    destruct (c2->classifier).
+    destruct (c3->classifier).
+    intuition.
+    rewrite H1 in * ; intuition.
+    rewrite H2 in * ; intuition.
+Qed.
+
+(*| .. coq:: none |*)
+End Helper_Functions.
+(*| .. coq:: |*)

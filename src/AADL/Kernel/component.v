@@ -512,3 +512,29 @@ Definition Unfold_Apply (c : component) : Prop :=
 (*| .. coq:: none |*)
 End AADL_Iterators.
 (*| .. coq::  |*)
+
+Section AADL_Name_Resolution.
+
+(*|
+* Resolution of element by name:
+
+|*)
+
+Variable A : Type.
+Context `{Element_id A}.
+
+Definition Get_Element_By_Name (l : list A) (name : identifier) :=
+  find (fun x => identifier_beq (x->id) name) l.
+
+Lemma Get_Element_By_Name_destruct:
+  forall (a x: A) (l: list A),
+      Get_Element_By_Name l (a ->id) = Some x
+          -> In x l /\ (identifier_beq (x->id) (a->id) = true).
+Proof.
+  unfold Get_Element_By_Name.
+  intros.
+  eapply find_some in H0.
+  trivial.
+Qed.
+
+End AADL_Name_Resolution.
