@@ -266,7 +266,7 @@ Definition parse_psq_name (s: string) : ps_qname :=
   | _ => empty_ps_qname
   end.
 
-(** [parse_feature_ref_name] parses the input string and returns a feautre reference name *)
+(** [parse_feature_ref_name] parses the input string and returns a feature reference name *)
 Definition parse_feature_ref_name (s : string) : feature_ref :=
   let (path, name, f) := parse_fq_name (s) in
   match path with
