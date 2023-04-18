@@ -95,11 +95,6 @@ Variable Y : Type.                  (* Output Set (Y) *)
 Inductive Y_output := | y : Y -> Y_output | no_output.
 Record Q := { st : S ; e : Time }.   (* Total state of the system *)
 
-(* XXX move *)
-
-Class Generic_Model A : Type := {
-    get_id : A -> identifier ;   (* Id *) }.
-
 Record DEVS_Atomic_Model : Type := {
     devs_atomic_id : identifier ;
     Q_init : Q ;        (* Initial state *)
@@ -108,7 +103,7 @@ Record DEVS_Atomic_Model : Type := {
     λ : S -> Y_output;  (* Output Function *)
     δext : Q -> X -> S; (* External Transition *) }.
 
-Instance DEVS_Atomic_Model' : Generic_Model DEVS_Atomic_Model := {
+Instance DEVS_Atomic_Model_id : Element_id DEVS_Atomic_Model := {
     get_id := devs_atomic_id
 }.
 
@@ -201,7 +196,7 @@ Record DEVS_Simulator : Type := {
     d : DEVS_Atomic_Model;
 }.
 
-Instance DEVS_Simulator' : Generic_Model DEVS_Simulator := {
+Instance DEVS_Simulator_id : Element_id DEVS_Simulator := {
     get_id := devs_simulator_id
 }.
 

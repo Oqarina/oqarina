@@ -381,7 +381,7 @@ End AADL_Accessors.
 
 These are helper notations to use the projections over AADL components:
 
-We inherit the :coq:`->id` notation frmo the typeclass :coq:`Element_Id`.
+We inherit the :coq:`->id` notation frmo the typeclass :coq:`Element_id`.
 |*)
 
 #[global] Instance component_id : Element_id component := {|

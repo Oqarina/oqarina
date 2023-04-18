@@ -89,11 +89,6 @@ Variable Y : Type.                  (* Output Set (Y) *)
 Inductive Y_output := | y : Y -> Y_output | no_output.
 Record Q := { st : S ; e : Time }.   (* Total state of the system *)
 
-(* XXX move *)
-
-Class Generic_Model A : Type := {
-    get_id : A -> identifier ;   (* Id *) }.
-
 (* Note: the original definition relies on a bag of X. We opted for a simple list for the moment, it is unclear whether we are interested by the multiplicity of items (that we can rebuild in any case) or even we need a bad here *)
 
 Record DEVS_Atomic_Model : Type := {
@@ -116,7 +111,7 @@ Definition Build_Default_δcon
     (fun (s : S) (x : list X)  =>
         δint (δext (Build_Q s 0) x)).
 
-Instance DEVS_Atomic_Model' : Generic_Model DEVS_Atomic_Model := {
+Instance DEVS_Atomic_Model' : Element_id DEVS_Atomic_Model := {
     get_id := devs_atomic_id
 }.
 
@@ -224,7 +219,7 @@ Record DEVS_Simulator : Type := {
     d : DEVS_Atomic_Model;
 }.
 
-Instance DEVS_Simulator' : Generic_Model DEVS_Simulator := {
+Instance DEVS_Simulator_Id : Element_id DEVS_Simulator := {
     get_id := devs_simulator_id
 }.
 
