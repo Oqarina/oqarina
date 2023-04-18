@@ -260,12 +260,9 @@ Accessor functions
 
   .. coq:: none |*)
 Section AADL_Accessors.
+(*| .. coq::  |*)
 
-  (** ** Projections *)
-
-  (** Projections are function returning parts of an inductive type. *)
-
-  (** - Component *)
+  (*| * Component |*)
 
   Definition projectionComponentId (c : component) : identifier :=
     match c with
@@ -307,7 +304,7 @@ Section AADL_Accessors.
     | Component _ _ _ _ _ _ _ connections => connections
   end.
 
-  (** - Feature *)
+  (*| * Feature |*)
 
   Definition projectionFeatureIdentifier (f : feature) : identifier :=
   match f with
@@ -333,7 +330,23 @@ Section AADL_Accessors.
     match f with
     | Feature _ _ _ _ lp => lp
     end.
-(*| .. coq::  |*)
+
+  (*| * Connections |*)
+
+Definition projectionConnectionIdentifier (c : connection) :=
+  match c with
+  | Connection id _ _ => id
+  end.
+
+Definition projectionConnectionSource (c : connection) :=
+  match c with
+  | Connection _ src _ => src
+  end.
+
+Definition projectionConnectionDestination (c : connection) :=
+  match c with
+  | Connection _ _ dst => dst
+  end.
 
   (*| These helper functions extract informations from component subclauses. |*)
 
@@ -377,6 +390,10 @@ We inherit the :coq:`->id` notation frmo the typeclass :coq:`Element_Id`.
 
 #[global] Instance feature_id : Element_id feature := {|
   get_id := projectionFeatureIdentifier;
+|}.
+
+#[global] Instance connection_id : Element_id connection := {|
+  get_id := projectionConnectionIdentifier;
 |}.
 
 Class Get_Category (A B: Type) := {
@@ -427,6 +444,12 @@ Notation "c '->properties' " := (get_properties c)
 |}.
 
 Notation "c '->connections' " := (projectionComponentConnections c)
+  (at level 80, right associativity).
+
+Notation "c '->src' " := (projectionConnectionSource c)
+  (at level 80, right associativity).
+
+Notation "c '->dest' " := (projectionConnectionDestination c)
   (at level 80, right associativity).
 
 (*|
@@ -506,19 +529,17 @@ Definition Unfold_Apply (c : component) : Prop :=
   { Unfold_Apply c } + { ~ Unfold_Apply c }.
  Proof.
    prove_dec.
-
  Qed.
 
 (*| .. coq:: none |*)
 End AADL_Iterators.
 (*| .. coq::  |*)
 
+(*| .. coq:: none |*)
 Section AADL_Name_Resolution.
+(*| .. coq:: |*)
 
-(*|
-* Resolution of element by name:
-
-|*)
+(*| * Resolution of element by name: |*)
 
 Variable A : Type.
 Context `{Element_id A}.
@@ -536,5 +557,8 @@ Proof.
   eapply find_some in H0.
   trivial.
 Qed.
+
+Definition Elements_Identifiers (l : list A) : list identifier :=
+  map (fun x => x->id) l.
 
 End AADL_Name_Resolution.

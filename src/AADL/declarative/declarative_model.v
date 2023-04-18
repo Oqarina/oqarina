@@ -204,20 +204,16 @@ Proof.
       intuition.
 
     - destruct c.
-      induction l0.
-      + simpl in H1.
-        unfold Well_Formed_Component in H1. intuition.
-      + simpl. apply IHl0.
-        * unfold Is_AADL_Component_Implementation_classifier in *.
-          simpl in H. simpl. intuition.
-        * simpl. simpl in *. intuition.
-          -- unfold Well_Formed_Component in *. intuition.
-             simpl in *.
-             unfold Well_Formed_Subcomponents in *.
-             unfold Rule_4_5_N1 in *.
-             unfold Subcomponents_Identifiers_Are_Unique in *.
-             apply NoDup_cons_iff in H6. intuition.
-         -- apply All_app in H2. intuition.
+      induction l0, l2.
+      + simpl in *. unfold Well_Formed_Component in H1. intuition.
+      + simpl in *. unfold Well_Formed_Component in H1. intuition.
+      + simpl in *. intuition. apply H3.
+        * unfold Well_Formed_Component in *. intuition.
+          apply Well_Formed_Subcomponents_cons in H7.
+          simpl. intuition.
+        * apply All_app in H2. intuition.
+      + simpl in *.
+        unfold Well_Formed_Component in *. intuition.
 Qed.
 
 (*|

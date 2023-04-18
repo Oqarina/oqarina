@@ -44,6 +44,7 @@ Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.legality.features_wf.
 Require Import Oqarina.AADL.legality.properties_wf.
+Require Import Oqarina.AADL.legality.connections_wf.
 (*| .. coq:: |*)
 
 (*|
@@ -129,7 +130,7 @@ _In other words, the list of identifiers built from the list of subcomponents ha
 First, we define a predicate on list of subcomponents, and demonstrate it is decidable. |*)
 
 Definition Subcomponents_Identifiers_Are_Unique (l : list component) : Prop :=
-  (NoDup (Components_Identifiers l)).
+  NoDup (Components_Identifiers l).
 
 Lemma Subcomponents_Identifiers_Are_Unique_dec :
   forall l : list component,
@@ -229,9 +230,10 @@ A component is well-formed iff. all the previous rules are validated:
 |*)
 
 Definition Well_Formed_Component (c : component) : Prop :=
-  Well_Formed_Component_Id (c) /\
-  Well_Formed_Component_Classifier (c) /\
-  Well_Formed_Component_Features (c) /\
+  Well_Formed_Component_Id c /\
+  Well_Formed_Component_Classifier c /\
+  Well_Formed_Component_Features c /\
+  Well_Formed_Connections c /\
   Well_Formed_Subcomponents (c->subcomps).
 
 Lemma Well_Formed_Component_dec :
