@@ -49,7 +49,6 @@ Require Import Lia.
 Require Import List.
 Import ListNotations. (* from List *)
 
-
 Require Import Oqarina.core.all.
 Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.coq_utils.all.

@@ -1,6 +1,38 @@
+(***
+ * Oqarina
+ * Copyright 2021 Carnegie Mellon University.
+ *
+ * NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING
+ * INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON
+ * UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR
+ * IMPLIED, AS TO ANY MATTER INCLUDING, BUT NOT LIMITED TO, WARRANTY OF
+ * FITNESS FOR PURPOSE OR MERCHANTABILITY, EXCLUSIVITY, OR RESULTS
+ * OBTAINED FROM USE OF THE MATERIAL. CARNEGIE MELLON UNIVERSITY DOES NOT
+ * MAKE ANY WARRANTY OF ANY KIND WITH RESPECT TO FREEDOM FROM PATENT,
+ * TRADEMARK, OR COPYRIGHT INFRINGEMENT.
+ *
+ * Released under a BSD (SEI)-style license, please see license.txt or
+ * contact permission@sei.cmu.edu for full terms.
+ *
+ * [DISTRIBUTION STATEMENT A] This material has been approved for public
+ * release and unlimited distribution.  Please see Copyright notice for
+ * non-US Government use and distribution.
+ *
+ * This Software includes and/or makes use of the following Third-Party
+ * Software subject to its own license:
+ *
+ * 1. Coq theorem prover (https://github.com/coq/coq/blob/master/LICENSE)
+ * Copyright 2021 INRIA.
+ *
+ * 2. Coq JSON (https://github.com/liyishuai/coq-json/blob/comrade/LICENSE)
+ * Copyright 2021 Yishuai Li.
+ *
+ * DM21-0762
+***)
+
 Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
-
+Require Import Lia.
 Require Import Oqarina.core.all.
 Import NaturalTime.
 Require Import Oqarina.AADL.Kernel.all.
@@ -8,23 +40,23 @@ Require Import Oqarina.AADL.behavior.all.
 Import AADL_Notations.
 Require Import Oqarina.formalisms.DEVS.parallel.all.
 Require Import Oqarina.formalisms.all.
-
+Open Scope bool_scope.
 (* Test #1: Translate DEVS to a LTS *)
 
-Definition System_LTS := LTS_Of_DEVS (System_Initial).
+Definition System_LTS := system_DEVS_LTS.
 
 Example System_LTS_1 :=
     step_lts (Init System_LTS) (i X_system Y_system 0).
 
 Lemma System_LTS_1_OK :
-    Print_DEVS_Simulator System_LTS_1 =  dbg 0 1 system_offline [].
+    Print_DEVS_Simulator System_LTS_1 = dbg 0 1 system_offline [].
 Proof. trivial. Qed.
 
 Example System_LTS_2 :=
     step_lts System_LTS_1 (xs Y_system Parent Parent 1 [ start_system ]).
 
 Lemma System_LTS_2_OK :
-    Print_DEVS_Simulator System_LTS_2 =  dbg 1 2 system_starting [].
+    Print_DEVS_Simulator System_LTS_2 = dbg 1 2 system_starting [].
 Proof. trivial. Qed.
 
 (* Test#2: Map An_AADL_System to an LTS *)

@@ -39,6 +39,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListSet.
+Open Scope bool_scope.
 
 Require Import Oqarina.core.all.
 Import NaturalTime.
@@ -59,29 +60,11 @@ The system component category denotes an assembly of interacting application sof
 System behavioral semantics
 ---------------------------
 
-In the following, we start by presenting the expected behavior of any system component catefory (figure%~\ref{fig:aadl_system_beh}.
+In the following, we start by presenting the behavior of any instance of a system component.
 
-%
-\tikzset{elliptic state/.style={draw,ellipse}, -Triangle, node distance=2cm}
-
-\begin{figure}[!h]
-\centering
-\begin{tikzpicture}
-\node[elliptic state, very thick] (s0) {system offline};
-\node[elliptic state, below=1cm of s0] (s1) {system starting};
-\node[elliptic state, right=1cm of s1] (s2) {system stoping};
-\node[elliptic state, below of=s1] (s3) {system operational};
-\draw (s0) edge[bend left, right] node{\textbf{start(system)}} (s1);
-\draw (s1) edge[bend left, left] node{\textbf{abort(system)}} (s0);
-\draw (s1) edge[, right] node{\textbf{started(system)}} (s3);
-\draw (s3) -| node[below]{\textbf{stop(system)}} (s2);
-\draw (s2) |- node[above]{\textbf{stopped(system)}} (s0);
-\draw (s3) -| ++(-4,2) node[left]{\textbf{abort(system)}} |- (s0);
-
-\end{tikzpicture}
-\caption{AADL \texttt{system} automata behavior} \label{fig:aadl_system_beh}
-\end{figure}
-%
+.. figure:: /../_static/aadl_system.png
+    :width: 600px
+    :align: center
 
 This automata semantics can also be described as follows:
 
@@ -95,25 +78,29 @@ This automata semantics can also be described as follows:
 
 - Upon completion of its execution, a system may perform a graceful shutdowm (:code:`stop(system)` action) and moves to the state :code:`system stoping`. When all subsystems are successfully stoped, the system moves to the state :code:`system offline` through the :code:`stopped(system)` action.
 
+We propose two semantics:
+
+* a reduction semantics, that defines relations between pairs of state and events
+
+* a semantics based on the DEVS formalism.
+
+We show that they are equivalent.
+
 |*)
 
 (*|
-Coq mechanization
-------------------
+States and events
+-----------------
 
-The following provides a Coq mechanization of the previous automata using the DEVS formalism.
+We first define the states and events of the system component category.
 
-:coq:`X_system` represents the set of actions that a system may perform, as per the hybrid automata defined in AADLv2.2 \S 13.3. |*)
+* :coq:`X_system` represents the set of incoming events that a system may rect to, as per the hybrid automata defined in AADLv2.2 \S 13.3. |*)
 
 Inductive X_system : Set :=
-    start_system | abort_system | started_system | stop_system | stopped_system.
-
-(** [Y_system] XXX *)
+    start_system | abort_system | started_system
+    | stop_system | stopped_system.
 
 Definition Y_system : Type := X_system.
-
-Definition Synchronization_Message_Type_system :=
-    Synchronization_Message_Type X_system Y_system.
 
 (*| :coq:`system_S` represents the labels of the state of the system DEVS. |*)
 
@@ -121,9 +108,64 @@ Inductive S_system : Set :=
     system_offline | system_starting |
     system_operational | system_stoping.
 
+(*|
+Reduction semantics
+-------------------
+
+In this section, we provide the set of rules that define the semantics of the previous automata. The state machine is define as a relation that maps a pair :coq:`S_system * X_system` to :coq:`S_system`. |*)
+
+
+Inductive system_red : S_system * X_system -> S_system -> Prop :=
+    | red_system_offline:
+        system_red (system_offline, start_system) system_starting
+
+    | red_system_starting:
+        system_red (system_starting, started_system) system_operational
+
+    | red_system_operational:
+        system_red (system_operational, stop_system) system_stoping
+
+    | red_system_stoping:
+        system_red (system_stoping, stopped_system)  system_offline
+
+    | red_system_abort_1:
+        system_red (system_starting, abort_system) system_offline
+
+    | red_system_abort_2:
+        system_red (system_operational, abort_system) system_offline
+    .
+
+(*| This set of rules is deterministic. |*)
+
+Lemma red_determ:
+    forall sx s', system_red sx s' ->
+        forall s'', system_red sx s'' ->
+        s' = s''.
+Proof.
+    induction 1 ; intros; inversion H ; reflexivity.
+Qed.
+
+
+(*|
+DEVS models for the system category
+-----------------------------------
+
+The definition of the DEVS component follows the same logic. We build from the previous definitions
+
+* :coq:`Synchronization_Message_Type_system` that synchronizes DEVS components,
+
+|*)
+
+Definition Synchronization_Message_Type_system :=
+    Synchronization_Message_Type X_system Y_system.
+
+(*| * :coq:`Q_system` which is the total state of the component |*)
+
 Definition Q_system : Type := Q S_system.
 
 Definition Q_init_system := {| st := system_offline ; e := 0 |}.
+
+(*| * The transition functions |*)
 
 Definition δint_system (s : S_system) : S_system := s.
 
@@ -151,7 +193,10 @@ Definition λ_system (s : S_system) : list Y_output_system :=
     | _ => [ y abort_system ] (*[ no_output Y_system ]*)
     end.
 
-Definition ta_system (s : S_system) : Time := 1.
+Definition ta_system (s : S_system) : Time := 1. (* replace with infinity *)
+
+(*| * :coq:`system_DEVS` is the consolidated data type that aggregates all
+definitions. |*)
 
 Definition system_DEVS_type : Type :=
     DEVS_Atomic_Model S_system X_system Y_system.
@@ -167,15 +212,129 @@ Definition system_DEVS : system_DEVS_type := {|
     δcon := δcon_system;
 |}.
 
+(*| * and :coq:`system_DEVS_Simulator` the associated DEVS simulator. |*)
+
 Definition system_DEVS_Simulator_Type : Type :=
     DEVS_Simulator S_system X_system Y_system.
 
-Definition System_Initial := Instantiate_DEVS_Simulator
+Definition system_DEVS_Simulator := Instantiate_DEVS_Simulator
     (Id "System") system_DEVS.
 
-(*| Map a complete system hierarchy to a DEVS |*)
+(*| * :coq:`system_DEVS_LTS` is the canonical LTS built from a DEVS simulator.|*)
 
-(*| Map a system component and system subcomponents into a list of DEVS system |*)
+Definition system_DEVS_LTS := LTS_Of_DEVS (system_DEVS_Simulator).
+
+(*|
+Correctness of the DEVS semantics
+---------------------------------
+
+|*)
+
+(*|
+In the following, we show that the LTS derived from a DEVS is both sound and complete with respect to the reduction semantics we have defined.
+
+* Soundness:
+
+Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS timing semantics. Then either the next state computed by :coq:`step_lts` matches the reduction semantics (case of a valid message) or the next state is the same (case of an out of band message).
+
+|*)
+
+Lemma LTS_DEVS_sound:
+    forall (s s': States system_DEVS_LTS) (x : X_system) st n,
+    DEVS_Simulator_model s = system_DEVS -> (* 1 *)
+    DEVS_Simulator_state s = st -> (* 3 *)
+    DEVS_Simulator_outputs s = [] -> (* 2 *)
+    (DEVS_Simulator_tla s) <=? (DEVS_Simulator_tn s) = true -> (* 4 *)
+    (DEVS_Simulator_tla s) <=? n = true ->
+    n <=? (DEVS_Simulator_tn s) = true ->
+
+    (step_lts s (xs Y_system Parent Parent (n) [ x ])) = s' ->
+        system_red (DEVS_Simulator_state s, x) (DEVS_Simulator_state s')
+        \/ (DEVS_Simulator_state s) = (DEVS_Simulator_state s').
+Proof.
+    intros s s' x st n H_d H_st H_outputs H_tla H_tla_n H_n_tn.
+
+    destruct s, cs.
+
+    (* We first simplify all hypotheses. *)
+    simpl in *. compute in H_st.
+
+    (* A consequence of the hypotheses is that there is no synchronization
+    error. This allows us to prune the tests. *)
+    assert (H_if: ((tla <=? n) && (n <=? tn)) = true).
+    rewrite H_tla_n. rewrite H_n_tn. intuition.
+
+    (* From there, we can simplify the proof term. *)
+    rewrite H_st, H_d, H_if. simpl.
+
+    (* We perform an induction on all states and message types.
+       We discriminate on the value of n to simplify all expressions,
+       and conclude. *)
+    induction st, x ; destruct (n =? tn) ; compute ;
+    intros H_s' ; rewrite <- H_s'.
+
+    all: try (left; apply red_system_offline) ;
+         try (left; apply red_system_starting) ;
+         try (left; apply red_system_operational) ;
+         try (left; apply red_system_stoping) ;
+         try (left; apply red_system_abort_1) ;
+         try (left; apply red_system_abort_2);
+         try (right ; trivial).
+Qed.
+
+(*|
+* Completeness:
+
+Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS timing semantics. Then if state :coq:`st` reduces to state :coq:`st2` then the corresponding LTS state also reduces to a LTS state whose state is :coq:`st2`.
+
+|*)
+
+Lemma LTS_DEVS_complete:
+    forall (s s': States system_DEVS_LTS) (x : X_system) st st2 n,
+    DEVS_Simulator_model s = system_DEVS -> (* 1 *)
+    DEVS_Simulator_state s = st -> (* 3 *)
+    DEVS_Simulator_outputs s = [] -> (* 2 *)
+    (DEVS_Simulator_tla s) <=? (DEVS_Simulator_tn s) = true -> (* 4 *)
+    (DEVS_Simulator_tla s) <=? n = true ->
+    n <=? (DEVS_Simulator_tn s) = true ->
+
+    system_red (st, x) (st2) ->
+        step_lts s (xs Y_system Parent Parent (n) [ x ]) = s' ->
+        DEVS_Simulator_state s' = st2.
+
+Proof.
+    (* This proof follows the same pattern as the previous one *)
+    intros.
+    destruct s, cs.
+
+    (* First, we simplify all hypotheses, *)
+    simpl in H, H1, H2, H3, H4.
+    compute in H0. rewrite H0 in *.
+
+    (* A consequence of the hypotheses is that there is no synchronization
+    error. This allows us to prune the tests. *)
+    assert (H_if: ((tla <=? n) && (n <=? tn)) = true).
+    rewrite H3. rewrite H4. intuition.
+
+    (* From there, we can perform an induction over st and compute all
+      solutions directly. *)
+    generalize H6.
+    induction st ;
+
+      inversion H5 ;
+      simpl ; rewrite H_if ;
+      rewrite H, H1 ; simpl ;
+      destruct (n =? tn) ; compute ;
+      intros H_s' ; rewrite <- H_s'; trivial.
+Qed.
+
+(*|
+Mapping a system hierarchy to a DEVS
+-------------------------------------
+|*)
+
+(*|
+* Map a system component and system subcomponents into a list of DEVS system |*)
 
 Definition Map_AADL_System_DEVS_System (c : component) :=
     map (fun s => Instantiate_DEVS_Simulator (s->id) system_DEVS)

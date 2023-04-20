@@ -111,7 +111,7 @@ Definition Build_Default_δcon
     (fun (s : S) (x : list X)  =>
         δint (δext (Build_Q s 0) x)).
 
-Instance DEVS_Atomic_Model' : Element_id DEVS_Atomic_Model := {
+Instance DEVS_Atomic_Model_id : Element_id DEVS_Atomic_Model := {
     get_id := devs_atomic_id
 }.
 
@@ -278,7 +278,7 @@ Definition DEVS_Simulation_microStep
 
       else s
 
-    | xs _ _ t x' =>
+    | xs _ _ t x' => (* XXX check semantics, should we check tat t >= tla *)
         let tla' := t in (* tl ← t *)
 
         let cs' : S :=
@@ -336,6 +336,21 @@ Definition Get_S (db : DEVS_Simulator_Debug) :=
 
 Definition Print_DEVS_Simulator (s : DEVS_Simulator) :=
     dbg s.(tla) s.(tn) s.(cs).(st) s.(outputs).
+
+Definition DEVS_Simulator_state (s : DEVS_Simulator) :=
+    s.(cs).(st).
+
+Definition DEVS_Simulator_outputs (s : DEVS_Simulator) :=
+    s.(outputs).
+
+Definition DEVS_Simulator_tla (s : DEVS_Simulator) :=
+    s.(tla).
+
+Definition DEVS_Simulator_tn (s : DEVS_Simulator) :=
+    s.(tn).
+
+Definition DEVS_Simulator_model (s : DEVS_Simulator) :=
+    s.(d).
 
 (*| .. coq:: none |*)
 End DEVS.
