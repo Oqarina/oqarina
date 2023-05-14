@@ -39,7 +39,6 @@ Require Import Coq.Logic.FunctionalExtensionality.
 Require Import Coq.Sorting.Permutation.
 
 Require Import Oqarina.core.all.
-Import NaturalInfTime.
 Require Import Oqarina.formalisms.FaultTrees.NatInfMinMax.
 (*| .. coq:: |*)
 
@@ -49,13 +48,15 @@ Require Import Oqarina.formalisms.FaultTrees.NatInfMinMax.
 Merle Algebra
 #############
 
-In this section, we define the temporal model of Boolean operators as presented in Merle's PhD thesis :cite:t:`merle:tel-00502012`.
+In this section, we define the temporal model of Boolean operators as presented in Merle's PhD thesis :cite:t:`merle:tel-00502012`. This model assume basic events to be a general type, and time to be based on natural numbers, extended with the infinity value.
 
 |*)
 
 Section Merle_Algebra.
 
 Variable basic_event : Set.
+
+Definition Time := natinf.
 
 Definition d := basic_event -> Time.
 

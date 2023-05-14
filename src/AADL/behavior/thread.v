@@ -50,7 +50,6 @@ Import IfNotations.
 Require Import Oqarina.coq_utils.all.
 
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 
@@ -1128,7 +1127,7 @@ Definition Synchronization_Message_Type_thread :=
     Synchronization_Message_Type X_thread Y_thread.
 
 (*|
-* :coq:`S_thread` is the state variable of the P-DEVS. It is the cross-product of a label denoting the state and the actual state varoable. XXX thread_state_variable also has the Ready/Idle/Run state, is this redundant ?
+* :coq:`S_thread` is the state variable of the P-DEVS. It is the cross-product of a label denoting the state and the actual state variable. XXX thread_state_variable also has the Ready/Idle/Run state, is this redundant ?
 |*)
 
 Inductive S_thread_labels : Set :=
@@ -1149,7 +1148,7 @@ Definition Update_S_thread
 :=
  {| thread_l := label ; thread_st := tsv; thread_ce := s.(thread_ce) |} .
 
-Definition Q_thread : Type := Q S_thread.
+Definition Q_thread : Type := Q Time S_thread.
 
 Definition Q_init_thread
   (tsv : thread_state_variable)
@@ -1291,10 +1290,10 @@ Definition ta_thread (s : S_thread) : Time :=
   end.
 
 Definition thread_DEVS_type : Type :=
-    DEVS_Atomic_Model S_thread X_thread Y_thread.
+    DEVS_Atomic_Model Time S_thread X_thread Y_thread.
 
 Definition thread_DEVS_Simulator_Type : Type :=
-    DEVS_Simulator S_thread X_thread Y_thread.
+    DEVS_Simulator Time S_thread X_thread Y_thread.
 
 Definition thread_DEVS
   (t : component)

@@ -44,13 +44,14 @@ Require Import Coq.ZArith.BinInt.
 
 (** Oqarina library *)
 Require Import Oqarina.coq_utils.all.
+Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.property_sets.all.
 
 Local Open Scope Z_scope.
 (*| .. coq:: |*)
+
 
 (*|
 Port Variable
@@ -64,6 +65,8 @@ Port variable maps AADL features to runtime level entities. We define the concep
 |*)
 
 (*| The root of a port variable is a port queue, with typical FIFO semantics. This is captured in an external formalization in :coq:`ListQueue`. |*)
+
+Definition Time := nat. (* XXX for the moment, we use nat time *)
 
 Module PortVal.
   Definition V := prod Time bool.

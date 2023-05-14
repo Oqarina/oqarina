@@ -33,6 +33,7 @@
 (*| .. coq:: none |*)
 Require Import Coq.Strings.String.
 Require Import Oqarina.core.all.
+Require Import Oqarina.CoqExt.all.
 
 Require Export Oqarina.AADL.Kernel.categories.
 Require Export Oqarina.AADL.Kernel.component.
@@ -43,6 +44,8 @@ Require Export Oqarina.AADL.Kernel.properties_helper.
 Require Export Oqarina.AADL.Kernel.features_helper.
 Require Export Oqarina.AADL.Kernel.package.
 Require Export Oqarina.AADL.Kernel.notations.
+
+Definition Time := nat.
 
 (*| .. coq:: |*)
 

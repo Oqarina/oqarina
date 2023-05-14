@@ -39,8 +39,8 @@ Import IfNotations.
 Require Import Coq.Lists.ListSet.
 
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.coq_utils.all.
+Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.formalisms.lts.
 
 #[local] Open Scope bool_scope.
@@ -88,6 +88,11 @@ Note, to ease model manipulation, each DEVS atomic model is given an identifier 
 
 |*)
 
+Variable Time : Type.
+Context `{Time_i : TimeClass Time }.
+Context `{Time_ops : TimeOperations Time }.
+Import Time_Notations.
+
 Variable S : Type.                  (* State Set (S) *)
 Variable X : Type.                  (* Input Set (X) *)
 Variable Y : Type.                  (* Output Set (Y) *)
@@ -108,7 +113,7 @@ Instance DEVS_Atomic_Model_id : Element_id DEVS_Atomic_Model := {
 }.
 
 Definition sigma (d : DEVS_Atomic_Model) (q : Q): Time :=
-    (d.(ta) q.(st)) - q.(e).
+    ((d.(ta) q.(st)) - q.(e))%time.
 
 Definition Set_Q_Init (d : DEVS_Atomic_Model) (q : Q) := {|
     devs_atomic_id := d.(devs_atomic_id);
@@ -202,7 +207,7 @@ Instance DEVS_Simulator_id : Element_id DEVS_Simulator := {
 
 Definition Instantiate_DEVS_Simulator
     (i : identifier) (d : DEVS_Atomic_Model) :=
-    Build_DEVS_Simulator i 0 0 (Build_Q d.(Q_init).(st) 0) [] d.
+    Build_DEVS_Simulator i Zero Zero (Build_Q d.(Q_init).(st) Zero) [] d.
 
 Definition DEVS_Reset_Outputs (s : DEVS_Simulator) :=
     Build_DEVS_Simulator (get_id s) s.(tla) s.(tn) s.(cs) nil s.(d).
@@ -228,19 +233,19 @@ Definition DEVS_Simulation_microStep
     match m with
     | i t => (* if receive (i, from,t) message then *)
         let tla' := t in (* tl ← t - e *)
-        let tn' := tla' + s.(d).(ta) (st s.(cs)) in (* tn ← tl + ta(s)*)
+        let tn' := (tla' + s.(d).(ta) (st s.(cs)))%time in (* tn ← tl + ta(s)*)
         let outputs' :=
             DEVS_Add_Output [done (From s.(devs_simulator_id)) Parent tn']
             s.(outputs) in (* send (done, self, tn) to parent *)
         Build_DEVS_Simulator (get_id s) tla' tn' s.(cs) outputs' s.(d)
 
     | step t =>
-        if t =? s.(tn) then (* if t = tn then *)
+        if t ==b s.(tn) then (* if t = tn then *)
             let tla' := t in (* tl ← t *)
-            let te' := t - tla' in (* e ← t - tl *)
+            let te' := (t - tla')%time in (* e ← t - tl *)
             let y := s.(d).(λ) s.(cs).(st) in (* y ← λ(s) *)
             let cs' := s.(d).(δint) s.(cs).(st) in (* s ← δint(s) *)
-            let tn' := tla' + s.(d).(ta) cs' in (* tn ← tl + ta(s)*)
+            let tn' := (tla' + s.(d).(ta) cs')%time in (* tn ← tl + ta(s)*)
             let outputs' := DEVS_Add_Output
             (* send(y, self, t) to parent *)
             (* send(done, self, tn) to parent *) (* correct from *)
@@ -252,13 +257,13 @@ Definition DEVS_Simulation_microStep
         else s
 
     | xs _ _ t x' =>
-        if (s.(tla) <=? t) && (t <=? s.(tn)) (* if tl ≤ t ≤ tn *)
+        if (s.(tla) b<= t) && (t b<= s.(tn)) (* if tl ≤ t ≤ tn *)
         then
             let tla' := t in (* tl ← t *)
-            let te' := t - s.(tla) in (* e ← t - tl *)
+            let te' := (t - s.(tla))%time in (* e ← t - tl *)
             let cs' := (* s ← δext((s,e),x) *)
                 s.(d).(δext) s.(cs) x' in
-            let tn' := tla' + s.(d).(ta) cs'  in (* tn ← tl + ta(s)*)
+            let tn' := (tla' + s.(d).(ta) cs')%time  in (* tn ← tl + ta(s)*)
             let outputs' := DEVS_Add_Output
             (* send(done, self, tn) to parent *)
                 [done (From s.(devs_simulator_id)) Parent tn']
@@ -307,7 +312,7 @@ Record DEVS_Root_Coordinator_a (state_t : Type) :=
 }.
 
 Definition Iniitialize_DEVS_Root_Coordinator (s : DEVS_Simulator) :=
-    Build_DEVS_Root_Coordinator true 0 Init_Coordinator s [].
+    Build_DEVS_Root_Coordinator true Zero Init_Coordinator s [].
 
 (*| :coq:`DEVS_Fetch_Input` returns a pair with the first dequeued message and an updated :coq:`DEVS_Root_Coordinator_a` |*)
 
@@ -341,7 +346,7 @@ Fixpoint DEVS_Wait_For_Done
     (fuel : nat)
 :=
     match fuel with
-    | 0 => (false, 0, r)
+    | 0 => (false, Zero, r)
     | Datatypes.S n =>
         (* Run microstep *)
         let astate' := DEVS_Simulation_microStep r.(astate) m in
@@ -369,7 +374,7 @@ Definition DEVS_Simulation_Step
     let '(status', cstime', r') :=
         match r.(cstate) with
             | Init_Coordinator =>
-                DEVS_Wait_For_Done r (i 0) 10
+                DEVS_Wait_For_Done r (i Zero) 10
             | Step_Coordinator =>
                 match m with
                 | None => DEVS_Wait_For_Done r (step r.(cstime)) 10
@@ -395,6 +400,3 @@ Definition Print_DEVS_State (r : DEVS_Root_Coordinator) :=
 
 (*| .. coq:: none |*)
 End DEVS.
-
-
-

@@ -78,6 +78,18 @@ Proof.
     exists (n - m) ; lia.
 Qed.
 
+Lemma nat_split2: forall n m:nat,
+    exists p, n = m + p \/ m = n + p.
+Proof.
+    generalize Compare_dec.dec_le.
+
+    intros.
+    specialize (H n m).
+    destruct H.
+    - exists (m - n). lia.
+    - exists (n - m). lia.
+Qed.
+
 (*| .. coq:: none |*)
 End PeanoNat_Nat_Ext.
 (*| .. coq::  |*)

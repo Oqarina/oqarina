@@ -149,12 +149,13 @@ Section AADL_Component_Decidability.
 
 (** For other types, we manually define and prove decidability for equality *)
 
-  Lemma connection_eq_dec (a b : connection) : {a=b}+{a<>b}.
+  Lemma connection_eq_dec (a b : connection) : {a = b}+{a <> b}.
   Proof.
       repeat decide equality.
   Qed.
 
-  Lemma list_connection_eq_dec (a b : list connection) : {a=b}+{a<>b}.
+  Lemma list_connection_eq_dec (a b : list connection) :
+    {a = b}+{a <> b}.
   Proof.
       generalize list_eq_dec connection_eq_dec.
       decide equality.
@@ -167,8 +168,8 @@ Section AADL_Component_Decidability.
 
   (* Since component and features are mutually dependent, we first define a function that returns wether two components (resp. features) are equal. Then, we demonstrate the lemma for component.*)
 
-  Fixpoint component_eq_dec' (a b : component) : {a=b}+{a<>b}
-    with feature_eq_dec' (a b : feature) : {a=b}+{a<>b}.
+  Fixpoint component_eq_dec' (a b : component) : {a = b}+{a <> b}
+    with feature_eq_dec' (a b : feature) : {a=b}+{a <> b}.
   Proof.
     generalize identifier_eq_dec ComponentCategory_eq_dec
                fq_name_eq_dec list_eq_dec
@@ -182,7 +183,7 @@ Section AADL_Component_Decidability.
   Defined.
 
   Lemma component_eq_dec:
-      forall (a :component) (b : component) , {a=b}+{a<>b}.
+      forall (a :component) (b : component) , {a = b}+{a <> b}.
   Proof.
       generalize identifier_eq_dec ComponentCategory_eq_dec
                  fq_name_eq_dec component_eq_dec'
@@ -191,14 +192,14 @@ Section AADL_Component_Decidability.
       repeat decide equality.
   Defined.
 
-  Lemma list_component_eq_dec (a b : list component) : {a=b}+{a<>b}.
+  Lemma list_component_eq_dec (a b : list component) : {a = b}+{a <> b}.
   Proof.
       generalize list_eq_dec component_eq_dec.
       decide equality.
   Defined.
 
   Lemma feature_eq_dec:
-      forall (a : feature) (b : feature) , {a=b}+{a<>b}.
+      forall (a : feature) (b : feature) , {a = b}+{a <> b}.
   Proof.
       generalize identifier_eq_dec FeatureCategory_eq_dec
                  DirectionType_eq_dec component_eq_dec'
@@ -206,7 +207,7 @@ Section AADL_Component_Decidability.
       decide equality.
   Defined.
 
-  Lemma list_feature_eq_dec (a b : list feature) : {a=b}+{a<>b}.
+  Lemma list_feature_eq_dec (a b : list feature) : {a = b}+{a <> b}.
   Proof.
       generalize list_eq_dec feature_eq_dec.
       decide equality.

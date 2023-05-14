@@ -39,7 +39,6 @@ Import IfNotations.
 Require Import Coq.Lists.ListSet.
 
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.AADL.property_sets.all.
 Require Import Oqarina.core.all.
 
@@ -71,6 +70,12 @@ A coupled DEVS model is an 8-tuple :math:`M=<X,Y,D,\{M_{i}\},Z_{{i, self}},Selec
 |*)
 
 (*| .. coq:: none |*)
+
+Variable Time : Type.
+Context `{Time_i : TimeClass Time }.
+Context `{Time_ops : TimeOperations Time }.
+Import Time_Notations.
+
 Variable S : Type.                  (* State Set (S) *)
 Variable X : Type.                  (* Input Set (X) *)
 Variable Y : Type.                  (* Output Set (Y) *)
@@ -79,9 +84,11 @@ Variable Y : Type.                  (* Output Set (Y) *)
 
 (*| The state of the resulting DEVS is the combination of the states of all DEVS. From these considerations, one could derive the various functions of the DEVS.|*)
 
-Definition S_Combined : Type := list (Q S).
+Definition Q_S : Type := Q Time S.
 
-Definition Q_Combined : Type := Q S_Combined.
+Definition S_Combined : Type := list (Q_S).
+
+Definition Q_Combined : Type := Q Time S_Combined.
 
 Definition Z_Function_internal := identifier -> identifier -> Y_output Y -> list X.
 
@@ -93,11 +100,11 @@ Definition Z_Function_out := identifier -> Y_output Y -> Y_output Y.
 Definition I_Function := identifier -> list identifier.
 
 Definition Default_I_Function : I_Function :=
-    fun x => [ (*empty_identifier*) ].
+    fun x => [ ].
 
 Record DEVS_Coupled_Model := {
     devs_coupled_model_id : identifier ;
-    D : list (DEVS_Simulator S X Y);
+    D : list (DEVS_Simulator Time S X Y);
     Z_f : Z_Function_internal ;
     Z_in : Z_Function_in;
     Z_out : Z_Function_out ;
@@ -113,34 +120,33 @@ From a coupled model, one can build the corresponding atomic model using the
 
 |*)
 
-Definition e_init (l : list (DEVS_Simulator S X Y)) :=
+Definition e_init (l : list (DEVS_Simulator Time S X Y)) :=
     let e_init_l := map (fun x =>  x.(d).(Q_init).(e)) l in
-        list_min e_init_l.
+        time_list_min _ e_init_l.
 
 Definition Build_Q_init_Combined
-    (l : list (DEVS_Simulator S X Y)) : Q_Combined :=
+    (l : list (DEVS_Simulator Time S X Y)) : Q_Combined :=
     let e_init_v := e_init l in
     let sc := map (fun x =>
-            Build_Q x.(d).(Q_init).(st) (x.(d).(Q_init).(e) - e_init_v)) l in
+            Build_Q x.(d).(Q_init).(st) (x.(d).(Q_init).(e) - e_init_v)%time) l in
             Build_Q sc e_init_v.
 
 Definition ta_combined
-(l : list (DEVS_Simulator S X Y)) (sc : S_Combined) : Time :=
+(l : list (DEVS_Simulator Time S X Y)) (sc : S_Combined) : Time :=
 let ta_combined_v :=
-    map2 (fun a b => (a.(d).(ta) b.(st) - b.(e))) l sc in
-    list_min ta_combined_v.
+    map2 (fun a b => (a.(d).(ta) b.(st) - b.(e))%time) l sc in
+    time_list_min _ ta_combined_v.
 
-
-(*||
+(*|
    Imminent models :math:`\displaystyle IMM(s)`
 
    :math:`IMM(s)=\{d|\sigma _{d}=ta(s)\}}`
 
-*)
+|*)
 
-Definition IMM (l : list (DEVS_Simulator S X Y)) (sc : S_Combined) :=
+Definition IMM (l : list (DEVS_Simulator Time S X Y)) (sc : S_Combined) :=
     let ta_v := ta_combined l sc in
-        filter2 (fun a b => (sigma a.(d) b) =? ta_v) l sc.
+        filter2 (fun a b => (sigma a.(d) b) ==b ta_v) l sc.
 
 (*|
 
@@ -153,7 +159,7 @@ let :math:`INF_m (s)` the set of DEVS components that may be influenced while at
 |*)
 
 Definition INF_m
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (sc : S_Combined)
     (I : I_Function)
 :=
@@ -167,7 +173,7 @@ Definition INF_m
     nodup identifier_eq_dec INF_m1.
 
 Definition x_d
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (sc : S_Combined)
     (I : I_Function)
     : list (Y_output Y)
@@ -175,7 +181,7 @@ Definition x_d
     (*    let INF_m' := INF_m l sc I in *)
     let INF_m' := get_devs_simulator_ids (map (fun x => fst x) (IMM l sc)) in
     let dispatch :=
-        (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+        (fun (s : Q_S) (ds : DEVS_Simulator Time S X Y)  =>
             if id_in ds.(devs_simulator_id) INF_m' then
                 ds.(d).(λ) s.(st)
             else
@@ -184,7 +190,7 @@ Definition x_d
     flat_map id (map2 dispatch sc l).
 
 Definition x_d_i
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (sc : S_Combined)
     (I : I_Function)
     (Z_internal : Z_Function_internal)
@@ -195,7 +201,7 @@ Definition x_d_i
    let INF_m' := get_devs_simulator_ids (map (fun x => fst x) (IMM l sc)) in
 
     let dispatch :=
-        (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+        (fun (s : Q_S) (ds : DEVS_Simulator Time S X Y)  =>
             if ((id_in ds.(devs_simulator_id) INF_m') &&
                 id_in i (I ds.(devs_simulator_id))
             ) then
@@ -206,7 +212,7 @@ Definition x_d_i
     flat_map id (flat_map id (map2 dispatch sc l)).
 
 Definition INF_id
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (sc : S_Combined)
     (I : I_Function)
 :=
@@ -214,7 +220,7 @@ Definition INF_id
     filter (fun x => negb (is_nil (x_d l sc I))) INF_m'.
 
 Definition λ_combined
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (I : I_Function)
     (Z_out : Z_Function_out)
     (sc : S_Combined)
@@ -228,7 +234,7 @@ Definition λ_combined
 
     (* Compute the messages for elements in IMM*)
     let messages := map
-        (fun x : DEVS_Simulator S X Y * Q S =>
+        (fun x : DEVS_Simulator Time S X Y * Q_S =>
             map (fun x' => Z_out (fst x).(devs_simulator_id) x')
                     ((fst x).(d).(λ) (snd x).(st))) imm' in
 
@@ -242,7 +248,7 @@ Definition λ_combined
                                     | _ => true end) messages'.
 
 Definition δint_combined
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (I : I_Function)
     (Z_internal : Z_Function_internal)
     (Z_out : Z_Function_out)
@@ -257,37 +263,37 @@ Definition δint_combined
     let conf_ids := set_inter identifier_eq_dec IMM_ids INF_ids' in
 
     let x_i_b :=
-        (fun (ds : DEVS_Simulator S X Y) =>
+        (fun (ds : DEVS_Simulator Time S X Y) =>
             x_d_i l sc I Z_internal ds.(devs_simulator_id)
         ) in
 
     let dispatch :=
-        (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+        (fun (s : Q_S) (ds : DEVS_Simulator Time S X Y)  =>
 
             (* INT case *)
             if (id_in ds.(devs_simulator_id) int_ids) then
-                Build_Q (ds.(d).(δint) s.(st)) 0
+                Build_Q (ds.(d).(δint) s.(st)) Zero
 
             (* EXT case *)
             else if (id_in ds.(devs_simulator_id) ext_ids) then
                 Build_Q
                     (ds.(d).(δext)
-                        (Build_Q s.(st) (s.(e) + ta_combined l sc))
+                        (Build_Q s.(st) (s.(e) + ta_combined l sc)%time)
                         (x_i_b ds))
-                    0
+                    Zero
 
             (* CONF case *)
             else if (id_in ds.(devs_simulator_id) conf_ids) then
-                Build_Q (ds.(d).(δcon) s.(st) (x_i_b ds)) 0
+                Build_Q (ds.(d).(δcon) s.(st) (x_i_b ds)) Zero
 
             (* Default *)
-            else Build_Q s.(st) (s.(e) + ta_combined l sc))
+            else Build_Q s.(st) (s.(e) + ta_combined l sc)%time)
     in
         (* Main processing of δint_combined *)
         map2 dispatch sc l.
 
 Definition δext_combined
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (I : I_Function)
     (Z_in : Z_Function_in)
     (qc : Q_Combined)
@@ -297,21 +303,21 @@ Definition δext_combined
     let imm := IMM l qc.(st) in
 
     let dispatch :=
-        (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+        (fun (s : Q_S) (ds : DEVS_Simulator Time S X Y)  =>
             if id_in ds.(devs_simulator_id) (I (Id "_self"))
                 then Build_Q (
                     ds.(d).(δext)
-                        (Build_Q s.(st) (s.(e) + qc.(e)))
+                        (Build_Q s.(st) (s.(e) + qc.(e))%time)
                         (Z_in ds.(devs_simulator_id) x))
-                0
+                Zero
 
-            else Build_Q s.(st) (s.(e) + qc.(e)))
+            else Build_Q s.(st) (s.(e) + qc.(e))%time)
     in
         (* Main processing of δext_combined *)
         map2 dispatch qc.(st) l.
 
 Definition δcon_combined
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (I : I_Function)
     (Z_in : Z_Function_in)
     (Z_internal : Z_Function_internal)
@@ -327,33 +333,33 @@ Definition δcon_combined
     let int_ids := set_diff identifier_eq_dec IMM_ids INF_ids' in
     let conf_ids := set_inter identifier_eq_dec IMM_ids INF_ids' in
     let x_i_b :=
-        (fun (ds : DEVS_Simulator S X Y) =>
+        (fun (ds : DEVS_Simulator Time S X Y) =>
             (x_d_i l sc I Z_internal ds.(devs_simulator_id)) ++
             if id_in ds.(devs_simulator_id) (I (Id "_self")) then x else []
             ) in
 
     let dispatch :=
-        (fun (s : Q S) (ds : DEVS_Simulator S X Y)  =>
+        (fun (s : Q_S) (ds : DEVS_Simulator Time S X Y)  =>
 
             (* INT case *)
             if (id_in ds.(devs_simulator_id) int_ids) then
-                Build_Q (ds.(d).(δint) s.(st)) 0
+                Build_Q (ds.(d).(δint) s.(st)) Zero
 
             (* EXT case *)
             else if (id_in ds.(devs_simulator_id) ext_ids) then
                 Build_Q
                     (ds.(d).(δext)
-                        (Build_Q s.(st) (s.(e) + ta_combined l sc))
+                        (Build_Q s.(st) (s.(e) + ta_combined l sc)%time)
                          (x_i_b ds))
-                    0
+                    Zero
 
             (* CONF case *)
             else if (id_in ds.(devs_simulator_id) conf_ids) then
                 Build_Q
-                    (ds.(d).(δcon) s.(st) (x_i_b ds)) 0
+                    (ds.(d).(δcon) s.(st) (x_i_b ds)) Zero
 
             (* Default *)
-            else Build_Q s.(st) (s.(e) + ta_combined l sc))
+            else Build_Q s.(st) (s.(e) + ta_combined l sc)%time)
     in
         (* Main processing of δint_combined *)
         map2 dispatch sc l.
@@ -362,7 +368,7 @@ Definition δcon_combined
 :coq:`Maps_DEVS_Coupled_Model`. |*)
 
 Definition Map_DEVS_Coupled_Model
-    (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model S_Combined X Y :=
+    (dc : DEVS_Coupled_Model) : DEVS_Atomic_Model Time S_Combined X Y :=
     {|
         devs_atomic_id := dc.(devs_coupled_model_id);
         Q_init := Build_Q_init_Combined dc.(D);
@@ -374,18 +380,18 @@ Definition Map_DEVS_Coupled_Model
     |}.
 
 Inductive DEVS_Coupled_Debug : Type :=
-    dbg_coupled  : identifier ->  Q S -> DEVS_Coupled_Debug.
+    dbg_coupled  : identifier ->  Q_S -> DEVS_Coupled_Debug.
 
 Definition Print_DEVS_Coupled_Debug
     (dc : DEVS_Coupled_Model )
-    (dc_sim : DEVS_Simulator S_Combined X Y )
+    (dc_sim : DEVS_Simulator Time S_Combined X Y )
 :=
     let devs_names := map (fun x => x.(devs_simulator_id)) dc.(D) in
-    let devs_dbg : list (Q S) := dc_sim.(cs).(st) in
+    let devs_dbg : list (Q_S) := dc_sim.(cs).(st) in
     map2 (fun x y =>  dbg_coupled x y) devs_names devs_dbg.
 
 Definition sigma_combined (* debugging *)
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (sc : S_Combined)
 :=
     map2 (fun a b => (sigma a.(d) b)) l sc.
@@ -399,7 +405,7 @@ Record DEVS_Decision_Sets := {
 }.
 
 Definition Compute_DEVS_Decision_Sets
-    (l : list (DEVS_Simulator S X Y))
+    (l : list (DEVS_Simulator Time S X Y))
     (I : I_Function)
     (sc : S_Combined)
 :=

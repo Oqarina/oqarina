@@ -34,7 +34,6 @@ Require Import Coq.Lists.List.
 Import ListNotations. (* from List *)
 Require Import Lia.
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.AADL.Kernel.all.
 Require Import Oqarina.AADL.behavior.all.
 Import AADL_Notations.

@@ -666,9 +666,7 @@ Proof.
   induction c.
   - trivial.
   - simpl. rewrite IHc.
-  simpl.
-  rewrite Literal_eq_idem.
-  intuition.
+    rewrite Literal_eq_idem. intuition.
 Qed.
 
 Lemma Clause_eq_reflect: forall t1 t2,
@@ -1312,11 +1310,11 @@ Proof.
     eapply (elimT (incl_reflect _ Literal_eq_reflect c1 c2)) in Lbeq.
     intuition.
   - eapply (elimT (Clause_eq_reflect c1 c2)) in Cbeq.
-  eapply (elimF (incl_reflect _ Literal_eq_reflect c1 c2)) in Lbeq.
-  intuition.
-  -eapply (elimF (Clause_eq_reflect c1 c2)) in Cbeq.
-  eapply (elimF (incl_reflect _ Literal_eq_reflect c1 c2)) in Lbeq.
-  intuition.
+    eapply (elimF (incl_reflect _ Literal_eq_reflect c1 c2)) in Lbeq.
+    intuition.
+  - eapply (elimF (Clause_eq_reflect c1 c2)) in Cbeq.
+    eapply (elimF (incl_reflect _ Literal_eq_reflect c1 c2)) in Lbeq.
+    intuition.
   - intuition.
 
   - contradiction H. eapply (elimF (Clause_eq_reflect c1 c2)) in Cbeq.
@@ -1722,4 +1720,3 @@ Module PropF_Notations.
   Notation "⊤" := (¬ ⊥) (at level 0) : PropF_scope.
 
 End PropF_Notations.
-

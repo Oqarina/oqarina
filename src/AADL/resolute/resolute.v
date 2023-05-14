@@ -80,7 +80,7 @@ We use a Coq typeclass to define a common interface for accessing :coq`named_ele
 
 Class named_element_interface A : Type := {
     name : A -> identifier ;
-    type : A -> fq_name ;
+    type_of : A -> fq_name ;
     has_property : A -> ps_qname -> Prop ;
     has_property_dec : forall (a: A) (name : ps_qname),
         { has_property a name } + {~ has_property a name } ;
@@ -132,7 +132,7 @@ Definition parent_c (r : component) (c : component) :=
 #[global]
 Instance component' : named_element_interface component := {
     name := projectionComponentId ;
-    type := projectionComponentClassifier ;
+    type_of := projectionComponentClassifier ;
     has_property := has_property_c ;
     has_property_dec := has_property_c_dec ;
     property := property_c ;
@@ -188,7 +188,7 @@ Definition parent_f (r : component) (f : feature) :=
 #[global]
 Instance feature' : named_element_interface feature := {
     name :=  projectionFeatureIdentifier ;
-    type :=  Feature_Classifier ;
+    type_of :=  Feature_Classifier ;
     has_property := has_property_f ;
     has_property_dec := has_property_f_dec ;
     property := property_f ;
@@ -204,21 +204,22 @@ General accessor functions
 (*| * :coq:`has_type (named_element): Boolean` - returns true if the named element has a classifier. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. *)
 
 Definition has_type
-    (A : Type) {H : named_element_interface A} (e : A) :=
-    type e <> empty_fqname.
+    (A : Type) {H : named_element_interface A} (e : A) : Prop :=
+    type_of e <> empty_fqname.
 
 (*| * :coq:`is_of_type(<named_element>, <classifier>): Boolean` - true if the named element has the classifier or one of its type extensions. The named element must have a type. The named element can be a component, feature, or connection instance. In the case of a connection, the type of the feature is the connection end. |*)
 
 Definition is_of_type
     (A : Type) {H : named_element_interface A}
     (e : A) (t : fq_name) :=
-    type e = t.
+    type_of e = t.
 
 (*| * :coq:`has_parent(<named_element>): Boolean` - returns true if the component has an enclosing model element |*)
 
 Definition has_parent
     (A : Type) {H : named_element_interface A}
     (r : component) (a : A)
+    : Prop
 :=
     (parent r a) <> nil_component.
 
@@ -359,5 +360,5 @@ Definition is_processor_bound (r : component) (c: component) : Prop :=
 Lemma is_processor_bound_dec: forall (r:component) (c: component),
     {is_processor_bound r c} + {~ is_processor_bound r c}.
 Proof.
-    prove_dec. 
+    prove_dec.
 Qed.

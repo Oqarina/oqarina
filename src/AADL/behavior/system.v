@@ -42,7 +42,7 @@ Require Import Coq.Lists.ListSet.
 Open Scope bool_scope.
 
 Require Import Oqarina.core.all.
-Import NaturalTime.
+Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.formalisms.DEVS.parallel.all.
 Require Import Oqarina.formalisms.all.
@@ -161,7 +161,7 @@ Definition Synchronization_Message_Type_system :=
 
 (*| * :coq:`Q_system` which is the total state of the component |*)
 
-Definition Q_system : Type := Q S_system.
+Definition Q_system : Type := Q Time S_system.
 
 Definition Q_init_system := {| st := system_offline ; e := 0 |}.
 
@@ -199,7 +199,7 @@ Definition ta_system (s : S_system) : Time := 1. (* replace with infinity *)
 definitions. |*)
 
 Definition system_DEVS_type : Type :=
-    DEVS_Atomic_Model S_system X_system Y_system.
+    DEVS_Atomic_Model Time S_system X_system Y_system.
 
 Definition system_DEVS : system_DEVS_type := {|
     devs_atomic_id := Id "AADL_system" ;
@@ -215,7 +215,7 @@ Definition system_DEVS : system_DEVS_type := {|
 (*| * and :coq:`system_DEVS_Simulator` the associated DEVS simulator. |*)
 
 Definition system_DEVS_Simulator_Type : Type :=
-    DEVS_Simulator S_system X_system Y_system.
+    DEVS_Simulator Time S_system X_system Y_system.
 
 Definition system_DEVS_Simulator := Instantiate_DEVS_Simulator
     (Id "System") system_DEVS.
@@ -244,9 +244,9 @@ Lemma LTS_DEVS_sound:
     DEVS_Simulator_model s = system_DEVS -> (* 1 *)
     DEVS_Simulator_state s = st -> (* 3 *)
     DEVS_Simulator_outputs s = [] -> (* 2 *)
-    (DEVS_Simulator_tla s) <=? (DEVS_Simulator_tn s) = true -> (* 4 *)
-    (DEVS_Simulator_tla s) <=? n = true ->
-    n <=? (DEVS_Simulator_tn s) = true ->
+    (DEVS_Simulator_tla s) b<= (DEVS_Simulator_tn s) = true -> (* 4 *)
+    (DEVS_Simulator_tla s) b<= n = true ->
+    n b<= (DEVS_Simulator_tn s) = true ->
 
     (step_lts s (xs Y_system Parent Parent (n) [ x ])) = s' ->
         system_red (DEVS_Simulator_state s, x) (DEVS_Simulator_state s')
@@ -261,7 +261,7 @@ Proof.
 
     (* A consequence of the hypotheses is that there is no synchronization
     error. This allows us to prune the tests. *)
-    assert (H_if: ((tla <=? n) && (n <=? tn)) = true).
+    assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
     rewrite H_tla_n. rewrite H_n_tn. intuition.
 
     (* From there, we can simplify the proof term. *)
@@ -270,7 +270,7 @@ Proof.
     (* We perform an induction on all states and message types.
        We discriminate on the value of n to simplify all expressions,
        and conclude. *)
-    induction st, x ; destruct (n =? tn) ; compute ;
+    induction st, x ; destruct (n ==b tn) ; compute ;
     intros H_s' ; rewrite <- H_s'.
 
     all: try (left; apply red_system_offline) ;
@@ -294,9 +294,9 @@ Lemma LTS_DEVS_complete:
     DEVS_Simulator_model s = system_DEVS -> (* 1 *)
     DEVS_Simulator_state s = st -> (* 3 *)
     DEVS_Simulator_outputs s = [] -> (* 2 *)
-    (DEVS_Simulator_tla s) <=? (DEVS_Simulator_tn s) = true -> (* 4 *)
-    (DEVS_Simulator_tla s) <=? n = true ->
-    n <=? (DEVS_Simulator_tn s) = true ->
+    (DEVS_Simulator_tla s) b<= (DEVS_Simulator_tn s) = true -> (* 4 *)
+    (DEVS_Simulator_tla s) b<= n = true ->
+    n b<= (DEVS_Simulator_tn s) = true ->
 
     system_red (st, x) (st2) ->
         step_lts s (xs Y_system Parent Parent (n) [ x ]) = s' ->
@@ -313,7 +313,7 @@ Proof.
 
     (* A consequence of the hypotheses is that there is no synchronization
     error. This allows us to prune the tests. *)
-    assert (H_if: ((tla <=? n) && (n <=? tn)) = true).
+    assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
     rewrite H3. rewrite H4. intuition.
 
     (* From there, we can perform an induction over st and compute all
@@ -324,7 +324,7 @@ Proof.
       inversion H5 ;
       simpl ; rewrite H_if ;
       rewrite H, H1 ; simpl ;
-      destruct (n =? tn) ; compute ;
+      destruct (n ==b tn) ; compute ;
       intros H_s' ; rewrite <- H_s'; trivial.
 Qed.
 

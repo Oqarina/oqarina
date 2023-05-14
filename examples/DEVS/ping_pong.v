@@ -35,7 +35,6 @@ Import ListNotations. (* from List *)
 
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.formalisms.DEVS.classic.all.
 Require Import Oqarina.formalisms.lts.
 
@@ -51,6 +50,8 @@ DEVS for a player, then a coupled model made of two players.
 
 *)
 
+Definition Time := nat.
+
 Inductive X_pp := receive.
 Inductive Y_pp := send.
 Inductive S_pp' := Wait | Send.
@@ -59,7 +60,7 @@ Scheme Equality for S_pp'.
 
 Record S_pp := { s_pp : S_pp'; sigma : Time }.
 
-Definition Q_pp : Type := Q S_pp.
+Definition Q_pp : Type := Q Time S_pp.
 
 Definition Q_init_pp : Q_pp :=
      {| st:= {| s_pp := Wait ; sigma := 1 |} ;
@@ -88,7 +89,7 @@ Definition λ_pp (s : S_pp) : Y_output_pp :=
 
 Definition ta_pp (s : S_pp) : Time := 1.
 
-Definition PingPoing_DEVS_type : Type := DEVS_Atomic_Model S_pp X_pp Y_pp.
+Definition PingPoing_DEVS_type : Type := DEVS_Atomic_Model Time S_pp X_pp Y_pp.
 
 Definition PingPong_DEVS : PingPoing_DEVS_type := {|
     devs_atomic_id := Id "ping_pong_player" ;
@@ -101,7 +102,7 @@ Definition PingPong_DEVS : PingPoing_DEVS_type := {|
 |}.
 
 Definition PingPong_DEVS_Simulator_type : Type :=
-    DEVS_Simulator S_pp X_pp Y_pp.
+    DEVS_Simulator Time S_pp X_pp Y_pp.
 
 (* Player A is serving, it stars in the Send state. Player B is receiving, and starts int he default Wait state. *)
 
@@ -118,10 +119,10 @@ Definition Player_B := Instantiate_DEVS_Simulator
 Definition Ready_To_Send (p : S_pp) :=
     S_pp'_beq p.(s_pp) Send.
 
-Definition Select_Function_pp : Select_Function S_pp X_pp Y_pp :=
-    fun (l : list (PingPong_DEVS_Simulator_type * (Q S_pp))) =>
+Definition Select_Function_pp : Select_Function Time S_pp X_pp Y_pp :=
+    fun (l : list (PingPong_DEVS_Simulator_type * (Q Time S_pp))) =>
     let l' := filter
-            (fun (x : (PingPong_DEVS_Simulator_type * (Q S_pp))) =>
+            (fun (x : (PingPong_DEVS_Simulator_type * (Q Time S_pp))) =>
                 Ready_To_Send (snd x).(st)) l in
         hd_error l'.
 

@@ -450,6 +450,10 @@ Definition R := 100%N. (* upper bound of the reponse time *)
 Section Certificate.
 (*| .. coq:: |*)
 
+(* Becauae the notation "==" is defined in multiple contexts, we force a specific scope so that the next proofs can typecheck correctly. *)
+
+Open Scope bool_scope.
+
 (*| Proving the schedulability of the task set builds on the following intermediate results, see :cite:`DBLP:conf/ecrts/BozhkoB20` for more details. |*)
 
 (*| 1. the arrival curve presented in the task set is valid, i.e. the arrival curve is a monotonic function. See the following definitions: |*)

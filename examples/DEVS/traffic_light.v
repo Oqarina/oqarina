@@ -35,11 +35,13 @@ Import ListNotations. (* from List *)
 
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.core.all.
-Import NaturalTime.
+
 Require Import Oqarina.formalisms.DEVS.classic.all.
 Require Import Oqarina.formalisms.lts.
 
 Section Traffic_Light.
+
+Definition Time := nat.
 
 (*
 
@@ -60,7 +62,7 @@ Inductive Y_tl :=
 Inductive S_tl :=
     | GREEN | YELLOW | RED | GOING_MANUAL | GOING_AUTO | MANUAL.
 
-Definition Q_tl : Type := Q S_tl.
+Definition Q_tl : Type := Q Time S_tl.
 
 Definition Q_init_tl : Q_tl := {| st := GREEN ; e := 0 |}.
 
@@ -110,7 +112,7 @@ First, a type representing the interface of a TrafficLight_Devs
 (:coq:`TrafficLight_DEVS_Type`), then the DEVS atomic model itself.
 *)
 
-Definition TrafficLight_DEVS_type : Type := DEVS_Atomic_Model S_tl X_tl Y_tl.
+Definition TrafficLight_DEVS_type : Type := DEVS_Atomic_Model Time S_tl X_tl Y_tl.
 
 Definition TrafficLight_DEVS : TrafficLight_DEVS_type := {|
     devs_atomic_id := (Id "TrafficLight");
@@ -126,7 +128,7 @@ Definition TrafficLight_DEVS : TrafficLight_DEVS_type := {|
 (* Then, we instantiate the DEVS model to build on instance, or simulator. *)
 
 Definition TrafficLight_DEVS_Simulator_type : Type :=
-    DEVS_Simulator S_tl X_tl Y_tl.
+    DEVS_Simulator Time S_tl X_tl Y_tl.
 
 Definition TL_Initial := Instantiate_DEVS_Simulator
     (Id "TrafficLighti") TrafficLight_DEVS.
@@ -194,7 +196,7 @@ In this section, we build a naive coupled DEVS model out of the Traffic Light ex
 Definition Traffic_Light_Coupled := {|
     devs_coupled_model_id := Id "traffic_light_coupled" ;
     D := [ TL_Initial ] ;
-    Select := @Default_Select_Function S_tl X_tl Y_tl ;
+    Select := @Default_Select_Function Time S_tl X_tl Y_tl ;
     Z_f :=  (fun (i : identifier) (y : Y_output_tl) => toManual) ;
     I := Default_I_Function;
 |}.

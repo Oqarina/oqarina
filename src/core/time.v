@@ -29,188 +29,587 @@
  *
  * DM21-0762
 ***)
-(** %\chapter{time.v -- Time type} %*)
 
-(* begin hide *)
+(*| .. coq:: none |*)
 (** Coq Library *)
 Require Import Coq.Logic.Eqdep_dec.
 Require Import Coq.Init.Peano.
 Require Import Coq.Arith.Compare_dec.
 Require Import Coq.Arith.PeanoNat.
 Require Import Lia.
+Require Import Coq.Lists.List.
+Import ListNotations. (* from List *)
 Require Import Coq.NArith.Ndist.
-(* end hide *)
+Require Import Coq.Relations.Relation_Definitions.
+Require Export Coq.Classes.EquivDec. (* To export some notations defined there *)
+Require Import Coq.ZArith.ZArith.
 
-(** * AbstractTime
+Require Import Oqarina.core.tactics.
+Require Import Coq.ZArith.ZArith_dec.
+Require Import Oqarina.CoqExt.all.
 
-    [AbstractTime] is an axiomatization of the notion of time, with elements [0] and [1], the plusition operation and the relations %$<$% (less than or lt) %$\le$% (less or equal than, or le) and equality. We assume %$\le$% is a total order relation. In plusition, we assume only positive values for time.
+(*| .. coq:: |*)
 
-*)
+(*|
 
-Module Type AbstractTime.
+****
+Time
+****
 
-    Parameter Time : Set.
-    Parameter Zero: Time.
-    Parameter One: Time.
-    Parameter tle: Time -> Time -> Prop.
-    Parameter tlt: Time -> Time -> Prop.
-    Parameter tplus: Time -> Time -> Time.
+In this section, we propose an axiomatisation of the notion of time. It follows definition from :cite:`nutaroTheorySuperdenseTime2020`.
 
-    Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
-    Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
-    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
+|*)
 
-    Axiom tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
-    Axiom Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
 
-    (** Axioms for total order:
+(*| .. coq:: none |*)
+Section TimeClass.
+(*| .. coq:: |*)
 
-        - Antisymmetry: If %$a\leq b$% and %$b\leq a$% then %$a=b$%;
-        - Transitivity: If %$a\leq b$% and %$b\leq c$% then %$a\leq c$%;
-        - Connexity: %$a\leq b$% or %$b\leq a$%
+(*|
 
-    *)
+TimeClass
+=========
 
-    Axiom tle_anti: forall a b, a @<= b -> b @<= a -> a = b.
-    Axiom tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
-    Axiom tle_connexity: forall a b, { a @<= b } + { b @<= a }.
+:coq:`TimeClass` is an axiomatization of the notion of time, with elements
+$0$ and $1$, the plus operation and preoder and strict order relations.
+We ask for the order relations to be compatible (see lemma
+:coq:`time_lt_not_le_iff`).
 
-End AbstractTime.
+|*)
 
-(** * NaturalTime
+Class TimeClass (T : Type) := {
+    Zero : T;
+    One : T;
 
-    [NaturalTime] is an implementation of the [AbstractTime] module. The proofs of all axioms is a consequence of the Peano'a axiomatization of natural numbers provided by Coq.
+    time_eq : relation T;
+    time_equiv :> Equivalence time_eq ;
+    time_eq_dec :> EqDec T time_eq ;
 
-*)
+    time_le : relation T ;
+    time_le_preorder :> PreOrder time_le ;
+    time_le_preorderdec :> PreOrderDec ;
 
-Module NaturalTime <: AbstractTime.
+    time_lt : relation T;
+    time_lt_strictorder :> StrictOrder time_lt;
 
-    Definition Time := nat.
-    Definition Zero := 0.
-    Definition One  := 1.
-    Definition tle := le.
-    Definition tlt := lt.
-    Definition tplus:= plus.
-    Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
-    Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
-    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
+    time_lt_not_le_iff:
+      forall (t1 t2: T), time_le t1 t2 <-> ~ time_lt t2 t1;
+}.
 
-    Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
-    Proof.
-        unfold Zero. unfold "@<".
-        apply zerop.
-    Qed.
+Definition time_min (Time : Type) {ti : TimeClass Time} (t1 t2 : Time) :=
+    if preorder_decb t1 t2 then t1 else t2.
 
-    Lemma Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
-    Proof.
-        unfold Time. apply Nat.eq_dec.
-    Qed.
+Definition time_list_min (Time : Type) {ti : TimeClass Time} (l : list Time) :=
+    match l with
+    | [] => Zero
+    | h :: t => fold_left (fun acc x: Time => time_min _ acc x) l h
+    end.
 
-    Lemma tle_anti: forall a b, a @<= b -> b @<= a -> a = b.
-    Proof.
-        unfold "@<=". intros. intuition.
-    Qed.
+(*| .. coq:: none |*)
+End TimeClass.
 
-    Lemma tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
-    Proof.
-        unfold "@<=". apply Nat.le_trans.
-   Qed.
+Section TimeOperations.
 
-    Lemma tle_connexity: forall a b, { a @<= b } + { b @<= a }.
-    Proof.
-        unfold "@<=". apply le_ge_dec.
-    Qed.
+Context { T: Type }
+        { Time_t : TimeClass T }.
 
+Class TimeOperations := {
+    time_plus : T -> T -> T ;
+    time_minus : T -> T -> T ;
+}.
+
+End TimeOperations.
+
+Section TimeInf.
+(*| .. coq::  |*)
+
+
+(*|
+
+TimeInf
+=======
+
+:coq:`TimeInf` extends a :coq:`TimeClass` instance and add the time infinity
+value. :coq:`TimeInf` is a valid instance of :coq:`TimeClass`/
+
+|*)
+
+Context { T: Type }
+        `( eq_t : EqDec _ (@eq T) )
+        { Time_t : TimeClass T }.
+
+Inductive TimeInf :=
+    | t_infinity | ti : T -> TimeInf.
+
+Definition TimeInf_eq : relation TimeInf :=
+    fun (t1 t2: TimeInf) =>
+    match t1 with
+    | t_infinity => match t2 with
+                    | t_infinity => True
+                    | ti _ => False
+                    end
+    | ti n1 => match t2 with
+                | t_infinity => False
+                | ti n2 => n1 === n2
+                end
+end.
+
+Lemma TimeInf_eq_reflexive : reflexive TimeInf TimeInf_eq.
+Proof.
+    unfold reflexive, TimeInf_eq.
+    induction x ; intuition.
+Qed.
+
+Lemma TimeInf_eq_symmetric : symmetric TimeInf TimeInf_eq.
+Proof.
+    unfold symmetric, TimeInf_eq.
+    induction x ; induction y ; intuition.
+Qed.
+
+Lemma TimeInf_eq_transitive : transitive TimeInf TimeInf_eq.
+Proof.
+    unfold transitive, TimeInf_eq.
+    induction x ; induction y ; induction z ; intuition.
+    eapply Equivalence_Transitive. apply H. apply H0.
+Qed.
+
+#[global] Instance TimeInf_eq_equivalence : Equivalence TimeInf_eq := {|
+    Equivalence_Reflexive := TimeInf_eq_reflexive ;
+    Equivalence_Symmetric := TimeInf_eq_symmetric ;
+    Equivalence_Transitive := TimeInf_eq_transitive ;
+|}.
+
+Lemma TimeInf_eq_dec : forall x y : TimeInf, { x === y } + { x =/= y }.
+Proof.
+    intros.
+    destruct x, y.
+    - intuition.
+    - right. unfold "=/=". intuition.
+    - right. unfold "=/=". intuition.
+    - unfold "=/=". unfold "===". simpl.
+        eapply equiv_dec.
+Qed.
+
+#[global] Instance TimeInf_eq_eqdec : EqDec _ TimeInf_eq := {
+    equiv_dec := TimeInf_eq_dec ;
+}.
+
+Definition iZero := ti Zero.
+Definition iOne  := ti One.
+
+Definition ile :=
+    fun (t1 t2: TimeInf) =>
+        match t1 with
+        | t_infinity => match t2 with
+                        | t_infinity => True
+                        | ti _ => False
+                        end
+        | ti n1 => match t2 with
+                    | t_infinity => True
+                    | ti n2 => time_le n1 n2
+                    end
+    end.
+
+Lemma ile_reflexive : reflexive TimeInf ile.
+Proof.
+    unfold reflexive, ile.
+    induction x.
+    - intuition.
+    - eapply PreOrder_Reflexive.
+Qed.
+
+Lemma ile_trans : transitive TimeInf ile.
+Proof.
+    unfold transitive. intros.
+    destruct x eqn:Hx ;
+    destruct y eqn:Hy ;
+    destruct z eqn:Hz ; trivial.
+    - inversion H0.
+    - unfold ile in *.
+      eapply PreOrder_Transitive. apply H. apply H0.
+Qed.
+
+#[global] Instance ile_PreOrder : PreOrder (ile) := {|
+    PreOrder_Reflexive := ile_reflexive ;
+    PreOrder_Transitive := ile_trans;
+|}.
+
+Lemma ile_dec : forall t1 t2,
+    { ile t1 t2 } + { ~ ile t1 t2 }.
+Proof.
+    prove_dec.
+    apply preorder_dec.
+Qed.
+
+#[global] Instance ile_PreOrderDec : PreOrderDec := {|
+    preorder_dec := ile_dec ;
+|}.
+
+Definition ilt :=
+    fun (t1 t2: TimeInf) =>
+        match t1 with
+        | t_infinity => match t2 with
+                        | t_infinity => False
+                        | ti _ => False
+                        end
+        | ti n1 => match t2 with
+                    | t_infinity => True
+                    | ti n2 => time_lt n1 n2
+                    end
+    end.
+
+Lemma ilt_irreflexive : reflexive TimeInf (complement ilt).
+Proof.
+    unfold reflexive, complement, ilt.
+    induction x.
+    - intuition.
+    - eapply StrictOrder_Irreflexive.
+Qed.
+
+Lemma ilt_trans : transitive TimeInf ilt.
+Proof.
+    unfold transitive. intros.
+    destruct x eqn:Hx ;
+    destruct y eqn:Hy ;
+    destruct z eqn:Hz ; trivial.
+    - inversion H0.
+    - unfold ilt in *.
+      eapply StrictOrder_Transitive. apply H. apply H0.
+Qed.
+
+#[global] Instance ilt_StrictOrder : StrictOrder (ilt) := {|
+    StrictOrder_Irreflexive := ilt_irreflexive ;
+    StrictOrder_Transitive := ilt_trans ;
+|}.
+
+Lemma ile_not_ilt_iff: forall t1 t2, ile t1 t2  <-> ~ ilt t2 t1.
+Proof.
+    intros. unfold ile, ilt.
+    destruct t1 eqn:Ht1 ;
+    destruct t2 eqn:Ht2 ; intuition.
+    eapply time_lt_not_le_iff. apply H. apply H0.
+    eapply time_lt_not_le_iff. intuition.
+Qed.
+
+#[global] Instance TimeInf_i : TimeClass TimeInf := {|
+    Zero := iZero;
+    One := iOne;
+    time_lt_not_le_iff := ile_not_ilt_iff;
+|}.
+
+(*| .. coq:: none |*)
+End TimeInf.
+
+(*| .. coq:: |*)
+
+(*| .. coq:: none |*)
+Section NaturalTime.
+(*| .. coq:: |*)
+
+(*|
+
+Integer-based Time
+==================
+
+|*)
+
+Lemma nat_lt_not_le_iff: forall (n m:nat), n <= m <-> ~ m < n.
+Proof. lia. Qed.
+
+#[global] Instance nat_Preorder : PreOrder Nat.le := _.
+
+#[global] Instance nat_PreorderDEc : PreOrderDec := {|
+    preorder_dec := le_dec ;
+|}.
+
+#[global] Instance NaturalTime_i : TimeClass nat := {|
+    Zero := 0;
+    One := 1;
+    time_le_preorder := nat_Preorder ;
+    time_lt_not_le_iff := nat_lt_not_le_iff ;
+|}.
+
+#[global] Instance NaturalTime_ops : TimeOperations := {|
+    time_plus := Nat.add ;
+    time_minus := Nat.sub ;
+|}.
+
+(*| .. coq:: none |*)
 End NaturalTime.
+(*| .. coq:: |*)
 
-Module NaturalInfTime <: AbstractTime.
+(*| .. coq:: none |*)
+Section SuperDenseTime.
+(*| .. coq:: |*)
 
-    Definition Time := natinf.
-    Scheme Equality for natinf.
+(*|
 
-    Definition Zero := ni 0.
-    Definition One  := ni 1.
-    Definition tle := ni_le.
-    Definition tlt :=
-        fun t1 t2 => match t1 with
-                    | infty => match t2 with
-                                | infty => True
-                                | ni _ => False
-                                end
-                    | ni n1 => match t2 with
-                                | infty => True
-                                | ni n2 => lt n1 n2
-                                end
-        end.
+SuperDense Time
+===============
 
-        Definition tlt_b :=
-            fun t1 t2 => match t1 with
-                        | infty => match t2 with
-                                    | infty => true
-                                    | ni _ => false
-                                    end
-                        | ni n1 => match t2 with
-                                    | infty => true
-                                    | ni n2 => Nat.ltb n1 n2
-                                    end
-            end.
+|*)
 
-    Definition tplus :=
-        fun t1 t2 => match t1 with
-                    | infty => infty
-                    | ni n1 => match t2 with
-                                | infty => infty
-                                | ni n2 => ni (n1 + n2)
-                                end
-        end.
+Open Scope Z_scope.
 
-    Notation "t1 @<= t2" := (tle t1 t2) (at level 70, no associativity).
-    Notation "t1 @< t2" := (tlt t1 t2) (at level 70, no associativity).
-    Notation "t1 @+ t2" := (tplus t1 t2) (at level 50, left associativity).
+Record sdTime := {
+    c : Z;
+    t : Z;
+}.
 
-    Lemma tzerop: forall t : Time, {t = Zero} + {Zero @< t}.
-    Proof.
-        unfold Zero. unfold "@<".
-        destruct t.
-        - right. auto.
-        - destruct n.
-            * left. auto.
-            * right. intuition.
-    Qed.
+Scheme Equality for sdTime.
 
-    Lemma Time_eq_dec: forall x y : Time, {x=y}+{x<>y}.
-    Proof.
-        repeat decide equality.
-    Qed.
+Definition sdZero := {| c := 0 ; t := 0 |}.
+Definition sdOne  := {| c := 0 ; t := 1 |}.
 
-    Lemma tle_anti: forall a b, a @<= b -> b @<= a -> a = b.
-    Proof.
-        unfold "@<=". apply ni_le_antisym.
-    Qed.
+Definition sd_le (t1 t2: sdTime) :=
+    (t1.(c)) < t2.(c) \/
+    (t1.(c) = t2.(c) /\ t1.(t) <= t2.(t)).
 
-    Lemma tle_trans: forall n m p, n @<= m -> m @<= p -> n @<= p.
-    Proof.
-        unfold "@<=". apply ni_le_trans.
-   Qed.
 
-   Lemma ni_min_case_sumbool : forall d d':natinf,
-        {ni_min d d' = d} + {ni_min d d' = d'}.
-   Proof.
-     destruct d. right. exact (ni_min_inf_l d').
-     destruct d'. left. exact (ni_min_inf_r (ni n)).
-     unfold ni_min.
-     enough ({min n n0 = n} + {min n n0 = n0}) as [-> | ->].
-     left. reflexivity.
-     right. reflexivity.
-     destruct (Nat.min_dec n n0); [left|right]; assumption.
-   Qed.
+Definition sd_le_dec: forall (t1 t2: sdTime),
+    { sd_le t1 t2 } + { ~ sd_le t1 t2 }.
+Proof.
+    intros. unfold sd_le. destruct t1, t2. simpl.
+    apply dec_sumbool_or.
+    - apply Z_lt_dec.
+    - apply dec_sumbool_and. apply Z.eq_dec. apply Z_le_dec.
+Qed.
 
-    Lemma tle_connexity: forall a b, { a @<= b } + { b @<= a }.
-    Proof.
-        unfold "@<=". unfold ni_le.
-        intros.
-        rewrite (ni_min_comm b a).
-        apply ni_min_case_sumbool.
-    Qed.
+Open Scope bool_scope.
+Definition sd_leb (t1 t2: sdTime) :=
+    (t1.(c) <? t2.(c)) ||
+    ((t1.(c) =? t2.(c)) && (t1.(t) <=? t2.(t))).
 
-End NaturalInfTime.
+Lemma sd_le_leb: forall t1 t2,
+    sd_le t1 t2 <-> sd_leb t1 t2 = true.
+Proof.
+    unfold sd_le, sd_leb ; lia.
+Qed.
+
+Lemma sd_le_refl : reflexive sdTime sd_le.
+Proof. unfold reflexive, sd_le. intuition. Qed.
+
+Lemma sd_le_trans : transitive sdTime sd_le.
+Proof. unfold transitive, sd_le. intuition. Qed.
+
+#[global] Instance sd_le_PreOrder : PreOrder sd_le := {|
+    PreOrder_Reflexive := sd_le_refl ;
+    PreOrder_Transitive := sd_le_trans ;
+|}.
+
+#[global] Instance sd_le_decidable : PreOrderDec := {|
+    preorder_dec := sd_le_dec ;
+|}.
+
+Definition sd_lt (t1 t2: sdTime) :=
+    (t1.(c)) < t2.(c) \/
+    (t1.(c) = t2.(c) /\ t1.(t) < t2.(t)).
+
+Lemma sd_lt_irreflexive : reflexive sdTime (complement sd_lt).
+Proof.
+    unfold reflexive, sd_lt, complement. intuition.
+Qed.
+
+Lemma sd_lt_trans : transitive sdTime sd_lt.
+Proof.
+    unfold transitive, sd_lt. intuition. Qed.
+
+#[global] Instance sd_lt_StrictOrder : StrictOrder (sd_lt) := {|
+    StrictOrder_Irreflexive := sd_lt_irreflexive ;
+    StrictOrder_Transitive := sd_lt_trans ;
+|}.
+
+Lemma sd_le_not_lt: forall t1 t2,
+    sd_le t1 t2 <-> ~ sd_lt t2 t1.
+Proof.
+    unfold sd_le, sd_lt.
+    intros.
+    split.
+    - intuition.
+    - firstorder.
+      assert (H1: c t1 <= c t2). lia.
+      assert (H2: c t1 < c t2 \/ c t1 = c t2). lia.
+      destruct H2.
+      + left. trivial.
+      + right. intuition.
+Qed.
+
+#[global] Instance SuperDenseTime_equiv : Equivalence (@eq sdTime) := _.
+
+Lemma sdTime_equiv_dec : forall x y: sdTime, {x === y} + { x =/= y}.
+Proof.
+    unfold "===", "=/=".  apply sdTime_eq_dec.
+Qed.
+
+#[global] Instance SuperDenseTime_eq : EqDec _ (@eq sdTime) := {
+    equiv_dec := sdTime_eq_dec ;
+}.
+
+#[global] Instance SuperDenseTime_i : TimeClass sdTime := {|
+    Zero := sdZero;
+    One := sdOne;
+    time_lt_strictorder := sd_lt_StrictOrder;
+    time_lt_not_le_iff := sd_le_not_lt;
+|}.
+
+Definition tplus (t1 t2: sdTime) :=
+    if (t2.(c) =? 0) then
+        {| c := t1.(c) ;
+           t := t1.(t) + t2.(t) |}
+    else
+        {| c := t1.(c) + t2.(c) ;
+           t := t2.(t) |}.
+
+Definition tminus (t1 t2: sdTime) :=
+    if (t1.(c) =? t2.(c)) then
+        {| c := 0 ;
+           t := t1.(t) - t2.(t) |}
+    else
+        {| c := t1.(c) - t2.(c) ;
+           t := t1.(t)  |}.
+
+#[global] Instance SuperDenseTime_ops : TimeOperations := {|
+    time_plus := tplus ;
+    time_minus := tminus ;
+|}.
+
+Lemma P1: forall t: sdTime, tplus t sdZero = t.
+Proof.
+    intros. unfold tplus, Zero. simpl.
+    destruct t0. simpl.
+
+    assert (t0 + 0 = t0). lia. rewrite H.
+
+    reflexivity.
+Qed.
+
+Lemma P2: forall (t h1 h2: sdTime),
+    sd_le h1 h2 (*-> sd_le Zero h1 *) -> sd_le (tplus h1 t) (tplus h2 t).
+Proof.
+    unfold sd_le, tplus.
+    intros.
+    destruct h1, h2, t0. simpl in *.
+    destruct (c2 =? 0) ; simpl.
+    - destruct H. left. intuition. right. lia.
+    - destruct H. left. lia. right. lia.
+Qed.
+
+Lemma P3: forall (t h1 h2: sdTime),
+    sd_le sdZero h1 -> sd_le sdZero h2 -> (* positivity primoridal in this proof *)
+        tplus (tplus t h1) h2 = tplus t (tplus h1 h2).
+Proof.
+    intros.
+    unfold tplus.
+    destruct (c h1 =? 0) eqn:H1 ; simpl.
+    - destruct (c h2 =? 0) eqn:H2 ; simpl.
+      + rewrite H1.
+        assert (Ht: t t0 + t h1 + t h2  = t t0 + (t h1 + t h2)). lia.
+        rewrite Ht. reflexivity.
+      + assert (Hc: c h1 + c h2 =? 0 = false). lia.
+        rewrite Hc.
+
+        assert (Hc2: c t0 + (c h1 + c h2) = c t0 + c h2). lia.
+        rewrite Hc2. reflexivity.
+
+    - destruct (c h2 =? 0) eqn:H2 ; simpl.
+      + rewrite H1. reflexivity.
+      + unfold sd_le, Zero in *. simpl in *.
+        assert (0 < c h1). lia.
+        assert (0 < c h2). lia.
+        assert (c h1 + c h2 =? 0 = false). lia.
+        rewrite H5.
+        assert (c t0 + c h1 + c h2 = c t0 + (c h1 + c h2)). lia.
+        rewrite H6. reflexivity.
+Qed.
+
+Lemma P4: forall (t1 t2 : sdTime),
+    sd_le sdZero t1 ->
+        sd_le t1 t2 -> exists h, t2 = tplus t1 h.
+Proof.
+    unfold sd_le, tplus, sdZero.
+    intros.
+    destruct t1, t2.
+    simpl in *.
+    destruct H0.
+    - exists ({| c := c1 - c0 ; t := t1 |}).
+
+     assert (c1 - c0 =? 0 = false). lia.
+     simpl. rewrite H1.
+     assert (c0 + (c1 -c0) = c1). lia.
+     rewrite H2. trivial.
+
+    - destruct H0. rewrite H0.
+
+      exists ({| c := 0 ;  t := t1 - t0|}).
+      simpl.
+      assert (t0 + (t1 - t0) = t1). lia.
+      rewrite H2. trivial.
+Qed.
+
+Definition S_time (t0 : sdTime) :=
+    tplus t0 sdOne.
+
+Lemma P5 : forall t0 t1,
+    sd_le t0 t1 /\ sd_lt t1 (S_time t0) -> t0 = t1.
+Proof.
+    unfold sd_le, sd_lt, S_time, tplus, One.
+    intros.
+    destruct t0, t1.
+    simpl in *.
+    intuition.
+
+    assert (t0 = t1). lia.
+    rewrite H0, H. reflexivity.
+Qed.
+
+(*| .. coq:: none |*)
+End SuperDenseTime.
+(*| .. coq::|*)
+
+(*|
+
+Time Notations
+==============
+
+|*)
+
+
+Module Time_Notations.
+
+Declare Scope time_scope.
+Delimit Scope time_scope with time.
+
+Notation "t1 <= t2" := (time_le t1 t2) (at level 70, no associativity) : time_scope.
+
+Notation "t1 < t2" := (time_lt t1 t2) (at level 70, no associativity) : time_scope.
+
+Infix "+" := (time_plus) : time_scope.
+Infix "-" := (time_minus) : time_scope.
+
+End Time_Notations.
+
+(*| .. coq:: none |*)
+Section Examples.
+
+Import Time_Notations.
+
+Example nat_time_1 := 3.
+Example nat_time_2 := 4.
+
+Fact nat_time_test_1: (nat_time_1 <= nat_time_2)%time.
+Proof. compute. lia. Qed.
+
+Fact nat_time_test_2: ((ti nat_time_1) < t_infinity)%time.
+Proof. compute. trivial. Qed.
+
+Fact sd_time_test_1: ((ti {| c := 32; t := 4|}) < (t_infinity))%time.
+Proof. compute. lia. Qed.
+
+Fact sd_time_test_2: ((ti {| c := 32; t := 4|}) <= (t_infinity))%time.
+Proof. compute. lia. Qed.
+
+Fact sd_time_test_3: ((ti {| c := 32; t := 4|}) === (ti {| c := 32; t := 4|}))%time.
+Proof. compute. auto. Qed.
+
+End Examples.
+(*| .. coq::|*)

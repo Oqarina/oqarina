@@ -38,8 +38,9 @@ Import ListNotations. (* from List *)
 Require Import Coq.Lists.ListSet.
 
 Require Import Oqarina.core.all.
-Import NaturalTime.
 Require Import Oqarina.coq_utils.all.
+Require Import Oqarina.CoqExt.all.
+
 Require Import Oqarina.formalisms.lts.
 
 #[local] Open Scope bool_scope.
@@ -82,6 +83,11 @@ Note, to ease model manipulation, each DEVS atomic model is given an identifier 
 
 |*)
 
+Variable Time : Type.
+Context `{Time_i : TimeClass Time }.
+Context `{Time_ops : TimeOperations Time }.
+Import Time_Notations.
+
 Variable S : Type.                  (* State Set (S) *)
 Variable X : Type.                  (* Input Set (X) *)
 Variable Y : Type.                  (* Output Set (Y) *)
@@ -89,7 +95,7 @@ Variable Y : Type.                  (* Output Set (Y) *)
 Inductive Y_output := | y : Y -> Y_output | no_output.
 Record Q := { st : S ; e : Time }.   (* Total state of the system *)
 
-(* Note: the original definition relies on a bag of X. We opted for a simple list for the moment, it is unclear whether we are interested by the multiplicity of items (that we can rebuild in any case) or even we need a bad here *)
+(* Note: the original definition relies on a bag of X. We opted for a simple list for the moment, it is unclear whether we are interested by the multiplicity of items (that we can rebuild in any case) or even we need a bag here. *)
 
 Record DEVS_Atomic_Model : Type := {
     devs_atomic_id : identifier ;
@@ -104,19 +110,19 @@ Record DEVS_Atomic_Model : Type := {
 Definition Build_Default_δcon'
     (δint : S -> S) (δext : Q -> list X -> S) :=
     (fun (s : S) (x : list X)  =>
-        δext (Build_Q (δint s) 0) x).
+        δext (Build_Q (δint s) Zero) x).
 
 Definition Build_Default_δcon
     (δint : S -> S) (δext : Q -> list X -> S) :=
     (fun (s : S) (x : list X)  =>
-        δint (δext (Build_Q s 0) x)).
+        δint (δext (Build_Q s Zero) x)).
 
 Instance DEVS_Atomic_Model_id : Element_id DEVS_Atomic_Model := {
     get_id := devs_atomic_id
 }.
 
 Definition sigma (d : DEVS_Atomic_Model) (q : Q): Time :=
-    (d.(ta) q.(st)) - q.(e).
+    ((d.(ta) q.(st)) - q.(e))%time.
 
 Definition Set_Q_Init (d : DEVS_Atomic_Model) (q : Q) := {|
     devs_atomic_id := d.(devs_atomic_id);
@@ -228,7 +234,7 @@ Definition get_devs_simulator_ids (l : list DEVS_Simulator) :=
 
 Definition Instantiate_DEVS_Simulator
     (i : identifier) (d : DEVS_Atomic_Model) :=
-    Build_DEVS_Simulator i 0 0 (Build_Q d.(Q_init).(st) 0) [] d.
+    Build_DEVS_Simulator i Zero Zero (Build_Q d.(Q_init).(st) Zero) [] d.
 
 Definition DEVS_Reset_Outputs (s : DEVS_Simulator) :=
     Build_DEVS_Simulator (get_id s) s.(tla) s.(tn) s.(cs) nil s.(d).
@@ -251,18 +257,20 @@ First, we define :coq:`DEVS_Simulation_Microstep` that represents one computatio
 
 Definition DEVS_Simulation_microStep
     (s : DEVS_Simulator)
-    (m : Synchronization_Message_Type) : DEVS_Simulator :=
+    (m : Synchronization_Message_Type)
+    : DEVS_Simulator
+:=
     match m with
     | i t => (* if receive (i, from,t) message then *)
         let tla' := t in (* tl ← t - e *)
-        let tn' := tla' + s.(d).(ta) (st s.(cs)) in (* tn ← tl + ta(s)*)
+        let tn' := (tla' + s.(d).(ta) (st s.(cs)))%time in (* tn ← tl + ta(s)*)
         let outputs' :=
             DEVS_Add_Output [done (From s.(devs_simulator_id)) Parent tn']
             s.(outputs) in (* send (done, self, tn) to parent *)
         Build_DEVS_Simulator (get_id s) tla' tn' s.(cs) outputs' s.(d)
 
     | step t =>
-        if t =? s.(tn) then (* if t = tn then *)
+        if (t ==b s.(tn))%time then (* if t = tn then *)
             let y := s.(d).(λ) s.(cs).(st) in (* y ← λ(s) *)
             let outputs' := DEVS_Add_Output
             (* send(y, self, t) to parent *)
@@ -278,30 +286,30 @@ Definition DEVS_Simulation_microStep
 
       else s
 
-    | xs _ _ t x' => (* XXX check semantics, should we check tat t >= tla *)
+    | xs _ _ t x' => (* XXX check semantics, should we check that t >= tla *)
         let tla' := t in (* tl ← t *)
 
         let cs' : S :=
-            if ((is_nil x') && (t =? s.(tn))) then
+            if ((is_nil x') && (t ==b s.(tn))) then
                 s.(d).(δint) s.(cs).(st)
 
-            else if (t =? s.(tn)) then
+            else if (t ==b s.(tn)) then
                 s.(d).(δcon) s.(cs).(st) x'
 
-            else if ( (s.(tla) <=? t) && (t <=? s.(tn)) ) then
+            else if ( (preorder_decb s.(tla) t) && (preorder_decb t s.(tn)) ) then
                 s.(d).(δext) s.(cs) x'
 
             else  (* XXX must address synchronization errors *)
                 s.(cs).(st) in
 
-        let tn' := tla' + s.(d).(ta) cs' in (* tn ← tl + ta(s) *)
+        let tn' := (tla' + s.(d).(ta) cs')%time in (* tn ← tl + ta(s) *)
 
         let te' :=
             if ( (negb (is_nil x')) &&
-                 (s.(tla) <=? t) &&
-                 (t <=? s.(tn)) ) then
-                t - s.(tla)  (* e ← t - tl *)
-            else 0 in
+                (preorder_decb s.(tla) t) &&
+                (preorder_decb t s.(tn))  ) then
+                (t - s.(tla))%time  (* e ← t - tl *)
+            else Zero in
 
         let outputs' := DEVS_Add_Output
             (* send(done, self, tn) to parent *)
@@ -314,7 +322,9 @@ Definition DEVS_Simulation_microStep
 
 end.
 
-(*| From this definition, one can derive a LTS structure. |*)
+(*| From this definition, one can derive a LTS structure from a DEVS instance, i.e. a :coq:`DEVS_Simulator`. A DEVS is a LTS whose states are the states of the the DEVS simulator, actions are defined by :coq:`Synchronization_Message_Type` and the step function is one step of the DEVS simulation algorithm.
+
+|*)
 
 Definition LTS_Of_DEVS (ds : DEVS_Simulator) : LTS_struct := {|
     States := DEVS_Simulator;

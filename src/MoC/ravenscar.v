@@ -53,9 +53,10 @@ Require Import Oqarina.core.all.
 Require Import Oqarina.CoqExt.all.
 Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.formalisms.Expressions.all.
-Import NaturalTime.
 
 Set Implicit Arguments.
+
+Section Ravenscar.
 (*| .. coq:: |*)
 
 (*|
@@ -63,6 +64,11 @@ Definitions
 ===========
 
 |*)
+
+(*| Notion of time: we consider time based on natural values. This is consistent with the idea of using time tickets to measure instruction CET. *)
+
+Definition Time : Type := nat.
+Import Time_Notations.
 
 (** priority concept. *)
 
@@ -79,7 +85,7 @@ A Ravenscar sequential program is reduced to a set of basic statements mimicking
 
 Inductive statements : Type :=
   (* A sequential execution step *)
-  | COMP  (WCET : Time)
+  | COMP (WCET : Time)
 
   (* Operations on protected objects *)
   | PO_FUNCTION (po : identifier) (op : identifier)
@@ -99,10 +105,10 @@ Inductive statements : Type :=
 Infix ";;" := SEQ (at level 80, right associativity).
 
 (*| * Example of Ravenscar programs |*)
+Print One.
+Example A_Program := COMP One ;; SKIP.
 
-Example A_Program := COMP 1 ;; SKIP.
-
-Example Ravenscar_Cyclic_Program := WHILE TRUE (COMP 2 ;;
+Example Ravenscar_Cyclic_Program := WHILE TRUE (COMP One ;;
                                                 DELAY_UNTIL_NEXT_PERIOD).
 
 (*|
@@ -2279,3 +2285,5 @@ Compute system_1_30.
 
 Example system_1_40 := Simulate_Ravenscar_Monocore system_1_30 30.
 Compute system_1_40.
+
+End Ravenscar.
