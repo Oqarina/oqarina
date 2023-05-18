@@ -20,21 +20,7 @@ install_deps:       ## Install dependencies
 	opam install --deps-only .
 
 # -----------------------------------------------------------------------------
-# * Build system: we support two approaches
-#   - using _CoqProject, for inclusion with Coq IDE
-#   - using Dune, for packaging
-#
-# _CoqProject build is no longer supported. To resurrect it, copy _CoqProject.
-# legacy to _CoqProject, and eventually manually update any missing elements.
-
-build_makefile:
-	coq_makefile -f _CoqProject -o coq_makefile
-
-install:            ## Install Oqarina as a stand alone Coq library
-	dune install
-
-compile:
-	make -f coq_makefile
+# * Build system using Dune
 
 build:              ## Build
 	dune build
@@ -44,6 +30,9 @@ build_bin:          ## Build Oqarina binary
 
 test:               ## Run testsuite
 	make -C testsuite test
+
+install:            ## Install Oqarina as a stand alone Coq library
+	dune install
 
 # -----------------------------------------------------------------------------
 # Documentation generation
@@ -137,13 +126,6 @@ sloc:               ## Get SLOCs
 
 world:              ## All of the above
 	$(MAKE) clean distclean build alectryon html pdf
-
-build_docker:	    ## Build docker image for testing
-	docker build -t safir/coq .
-
-test_build_docker:  ## Test build using docker
-	$(MAKE) clean distclean
-	docker run -ti  -v `pwd`:/work oqarina/oqarina make dune_build
 
 # -----------------------------------------------------------------------------
 # Cleaning rules

@@ -22,4 +22,3 @@
   (coq-kruskal-trees :dev)   ;; CeCILL-B, https://github.com/DmxLarchey/Kruskal-Trees
   (coq-prosa :dev)           ;; BSD 2-Clause, https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs/-/blob/master/LICENSE
 ))
-
