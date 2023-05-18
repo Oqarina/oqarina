@@ -164,7 +164,18 @@
 							},
 							"features": {},
 							"subcomponents": {},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Scheduling_Protocol",
+									"property_value": {
+										"list": {
+											"enumeration": {
+												"value": "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
+											}
+										}
+									}
+								}
+							}
 						}
 					]
 				},

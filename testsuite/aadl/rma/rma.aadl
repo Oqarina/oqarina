@@ -1,6 +1,3 @@
---  This AADL model illustrates how to conduct schedulability analysis
---  using Cheddar, and then code generation of periodic tasks.
---
 --  Two periodic tasks run in parallel, without interaction. Tasks
 --  parameters allows RMA analysis
 
@@ -62,12 +59,12 @@ public
   -- Processor --
   ---------------
 
-  processor cpu --extends processors::cpu_rma
+  processor cpu
   end cpu;
 
-  processor implementation cpu.impl-- extends processors::cpu_rma.impl
---  properties
---    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
+  processor implementation cpu.impl
+  properties
+    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
   end cpu.impl;
 
   ---------------
