@@ -1,25 +1,34 @@
 {
 	"aadl_xml": {
-		"root_system": "rma.impl",
+		"root_system": "rma_impl",
 		"components": {
 			"component": {
 				"category": "system",
-				"identifier": "rma.impl",
-				"classifier": "rma.impl",
+				"identifier": "rma_impl",
+				"classifier": {
+					"namespace": "RMAAadl",
+					"$t": "rma.impl"
+				},
 				"features": {},
 				"subcomponents": {
 					"component": [
 						{
 							"category": "process",
 							"identifier": "node_a",
-							"classifier": "node_a.impl",
+							"classifier": {
+								"namespace": "RMAAadl",
+								"$t": "node_a.impl"
+							},
 							"features": {},
 							"subcomponents": {
 								"component": [
 									{
 										"category": "thread",
 										"identifier": "Task1",
-										"classifier": "Task.impl_1",
+										"classifier": {
+											"namespace": "RMAAadl",
+											"$t": "Task.impl_1"
+										},
 										"features": {},
 										"subcomponents": {},
 										"properties": {
@@ -27,26 +36,27 @@
 												{
 													"name": "Deadline",
 													"property_value": {
-														"number": {
+														"integer_unit": {
 															"value": "1000",
 															"unit": "ms"
 														}
 													}
 												},
 												{
-													"name": "Compute_Execution_time",
+													"name": "Compute_Execution_Time",
 													"property_value": {
-														"range": {
+														"integer_range_unit": {
 															"value_low": "0",
 															"value_high": "3",
-															"unit": "ms"
+															"unit_low": "ms",
+															"unit_high": "ms"
 														}
 													}
 												},
 												{
 													"name": "Period",
 													"property_value": {
-														"number": {
+														"integer_unit": {
 															"value": "1000",
 															"unit": "ms"
 														}
@@ -55,7 +65,7 @@
 												{
 													"name": "Priority",
 													"property_value": {
-														"number": {
+														"integer": {
 															"value": "1"
 														}
 													}
@@ -74,7 +84,10 @@
 									{
 										"category": "thread",
 										"identifier": "Task2",
-										"classifier": "Task.impl_2",
+										"classifier": {
+											"namespace": "RMAAadl",
+											"$t": "Task.impl_2"
+										},
 										"features": {},
 										"subcomponents": {},
 										"properties": {
@@ -82,26 +95,27 @@
 												{
 													"name": "Deadline",
 													"property_value": {
-														"number": {
+														"integer_unit": {
 															"value": "500",
 															"unit": "ms"
 														}
 													}
 												},
 												{
-													"name": "Compute_Execution_time",
+													"name": "Compute_Execution_Time",
 													"property_value": {
-														"range": {
+														"integer_range_unit": {
 															"value_low": "0",
 															"value_high": "5",
-															"unit": "ms"
+															"unit_low": "ms",
+															"unit_high": "ms"
 														}
 													}
 												},
 												{
 													"name": "Period",
 													"property_value": {
-														"number": {
+														"integer_unit": {
 															"value": "500",
 															"unit": "ms"
 														}
@@ -110,7 +124,7 @@
 												{
 													"name": "Priority",
 													"property_value": {
-														"number": {
+														"integer": {
 															"value": "2"
 														}
 													}
@@ -144,49 +158,13 @@
 						{
 							"category": "processor",
 							"identifier": "cpu",
-							"classifier": "cpu.impl",
+							"classifier": {
+								"namespace": "RMAAadl",
+								"$t": "cpu.impl"
+							},
 							"features": {},
 							"subcomponents": {},
-							"properties": {
-								"property": [
-									{
-										"name": "Scheduling_Protocol",
-										"property_value": {
-											"list": {
-												"enumeration": {
-													"value": "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
-												}
-											}
-										}
-									},
-									{
-										"name": "Processor_properties::Max_Prio_First",
-										"property_value": {
-											"enumeration": {
-												"value": "high"
-											}
-										}
-									},
-									{
-										"name": "Scheduling_Protocol",
-										"property_value": {
-											"list": {
-												"enumeration": {
-													"value": "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
-												}
-											}
-										}
-									},
-									{
-										"name": "Deployment::Execution_Platform",
-										"property_value": {
-											"enumeration": {
-												"value": "Native"
-											}
-										}
-									}
-								]
-							}
+							"properties": {}
 						}
 					]
 				},
