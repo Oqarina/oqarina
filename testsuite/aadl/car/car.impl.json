@@ -74,7 +74,7 @@
 										"identifier": "T1",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T1"
+											"$t": "T1.i"
 										},
 										"features": {
 											"feature": {
@@ -101,14 +101,54 @@
 											}
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "100",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "200",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "52",
+															"value_high": "52",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T2",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T2"
+											"$t": "T2.i"
 										},
 										"features": {
 											"feature": {
@@ -135,11 +175,62 @@
 											}
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "160",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "280",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "52",
+															"value_high": "52",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									}
 								]
 							},
-							"properties": {},
+							"properties": {
+								"property": {
+									"name": "Actual_Processor_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CPU_A"
+											}
+										}
+									}
+								}
+							},
 							"connections": {
 								"connection": [
 									{
@@ -178,7 +269,18 @@
 							},
 							"features": {},
 							"subcomponents": {},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Scheduling_Protocol",
+									"property_value": {
+										"list": {
+											"enumeration": {
+												"value": "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
+											}
+										}
+									}
+								}
+							}
 						},
 						{
 							"category": "process",
@@ -264,29 +366,109 @@
 										"identifier": "T3",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T"
+											"$t": "T.i"
 										},
 										"features": {},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "40",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "60",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "10",
+															"value_high": "10",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T4",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T"
+											"$t": "T.i"
 										},
 										"features": {},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "60",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "85",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "20",
+															"value_high": "20",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T5",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T5"
+											"$t": "T5.i"
 										},
 										"features": {
 											"feature": {
@@ -313,14 +495,54 @@
 											}
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "160",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "150",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "52",
+															"value_high": "52",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T6",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T6"
+											"$t": "T6.i"
 										},
 										"features": {
 											"feature": [
@@ -371,11 +593,62 @@
 											]
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "100",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "220",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "52",
+															"value_high": "52",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									}
 								]
 							},
-							"properties": {},
+							"properties": {
+								"property": {
+									"name": "Actual_Processor_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CPU_B"
+											}
+										}
+									}
+								}
+							},
 							"connections": {
 								"connection": [
 									{
@@ -426,7 +699,18 @@
 							},
 							"features": {},
 							"subcomponents": {},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Scheduling_Protocol",
+									"property_value": {
+										"list": {
+											"enumeration": {
+												"value": "EDF"
+											}
+										}
+									}
+								}
+							}
 						},
 						{
 							"category": "process",
@@ -466,18 +750,58 @@
 										"identifier": "T7",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T"
+											"$t": "T.i"
 										},
 										"features": {},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "60",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "60",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "28",
+															"value_high": "28",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T8",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T8"
+											"$t": "T8.i"
 										},
 										"features": {
 											"feature": {
@@ -504,14 +828,54 @@
 											}
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "100",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "320",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "25",
+															"value_high": "25",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									},
 									{
 										"category": "thread",
 										"identifier": "T9",
 										"classifier": {
 											"namespace": "Car",
-											"$t": "T9"
+											"$t": "T9.i"
 										},
 										"features": {
 											"feature": [
@@ -562,11 +926,62 @@
 											]
 										},
 										"subcomponents": {},
-										"properties": {}
+										"properties": {
+											"property": [
+												{
+													"name": "Period",
+													"property_value": {
+														"integer_unit": {
+															"value": "100",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Deadline",
+													"property_value": {
+														"integer_unit": {
+															"value": "250",
+															"unit": "ms"
+														}
+													}
+												},
+												{
+													"name": "Compute_Execution_Time",
+													"property_value": {
+														"integer_range_unit": {
+															"value_low": "14",
+															"value_high": "14",
+															"unit_low": "ms",
+															"unit_high": "ms"
+														}
+													}
+												},
+												{
+													"name": "Dispatch_Protocol",
+													"property_value": {
+														"enumeration": {
+															"value": "Periodic"
+														}
+													}
+												}
+											]
+										}
 									}
 								]
 							},
-							"properties": {},
+							"properties": {
+								"property": {
+									"name": "Actual_Processor_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CPU_C"
+											}
+										}
+									}
+								}
+							},
 							"connections": {
 								"connection": [
 									{
@@ -606,14 +1021,25 @@
 							},
 							"features": {},
 							"subcomponents": {},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Scheduling_Protocol",
+									"property_value": {
+										"list": {
+											"enumeration": {
+												"value": "POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL"
+											}
+										}
+									}
+								}
+							}
 						},
 						{
 							"category": "bus",
 							"identifier": "CAN",
 							"classifier": {
 								"namespace": "Car",
-								"$t": "CAN"
+								"$t": "CAN.i"
 							},
 							"features": {},
 							"subcomponents": {},
@@ -635,7 +1061,18 @@
 								"component": "Process_B",
 								"feature": "m1_in"
 							},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Actual_Connection_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CAN"
+											}
+										}
+									}
+								}
+							}
 						},
 						{
 							"name": "C2",
@@ -648,7 +1085,18 @@
 								"component": "Process_A",
 								"feature": "m2_in"
 							},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Actual_Connection_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CAN"
+											}
+										}
+									}
+								}
+							}
 						},
 						{
 							"name": "C3",
@@ -661,7 +1109,18 @@
 								"component": "Process_C",
 								"feature": "m3_in"
 							},
-							"properties": {}
+							"properties": {
+								"property": {
+									"name": "Actual_Connection_Binding",
+									"property_value": {
+										"list": {
+											"reference": {
+												"value": "CAN"
+											}
+										}
+									}
+								}
+							}
 						}
 					]
 				}

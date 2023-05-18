@@ -10,12 +10,15 @@ public
   -- Generic Components
 
   thread T
---  properties
---    Dispatch_Protocol => Periodic;
+  properties
+    Dispatch_Protocol => Periodic;
   end T;
+
+  thread implementation T.i end T.i;
 
   processor CPU end CPU;
   bus CAN end CAN;
+  bus implementation CAN.i end CAN.i;
 
   data M1 end M1;
   data M2 end M2;
@@ -31,10 +34,14 @@ public
     M1_Out : out event data port M1;
   end T1;
 
+  thread implementation T1.i end T1.i;
+
   thread T2 extends T
   features
     M2_In : in event data port M2;
   end T2;
+
+  thread implementation T2.i end T2.i;
 
   process PA
   features
@@ -44,25 +51,24 @@ public
 
   process implementation PA.A
   subcomponents
-    T1 : thread T1;
---    {
- --    Compute_Execution_Time => 52 ms .. 52 ms;
-   --   Deadline               => 200 ms;
---      Period                 => 100 ms;
---    };
-    T2 : thread T2;-- {
---      Compute_Execution_Time => 52 ms .. 52 ms;
---      Deadline               => 280 ms;
---      Period                 => 160 ms;
---    };
+    T1 : thread T1.i {
+       Compute_Execution_Time => 52 ms .. 52 ms;
+       Deadline               => 200 ms;
+       Period                 => 100 ms;
+    };
+    T2 : thread T2.i {
+       Compute_Execution_Time => 52 ms .. 52 ms;
+       Deadline               => 280 ms;
+       Period                 => 160 ms;
+    };
   connections
     C1 : port T1.M1_Out -> M1_Out;
     C2 : port M2_In -> T2.M2_In;
   end PA.A;
 
   processor implementation CPU.A
---  properties
---    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
+  properties
+    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
   end CPU.A;
 
   ------------
@@ -80,6 +86,9 @@ public
     M3_Out : out event data port M3;
   end T6;
 
+  thread implementation T5.i end T5.i;
+  thread implementation T6.i end T6.i;
+
   process PB
   features
     M1_In  : in  event data port M1;
@@ -89,27 +98,26 @@ public
 
   process implementation PB.B
   subcomponents
-    T3 : thread T;
-    --{
---      Compute_Execution_Time => 10 ms .. 10 ms;
---      Deadline               => 60 ms;
---      Period                 => 40 ms;
---    };
-    T4 : thread T;-- {
---      Compute_Execution_Time => 20 ms .. 20 ms;
---      Deadline               => 85 ms;
---      Period                 => 60 ms;
---    };
-    T5 : thread T5;-- {
---      Compute_Execution_Time => 52 ms .. 52 ms;
---      Deadline               => 150 ms;
---      Period                 => 160 ms;
---    };
-    T6 : thread T6; -- {
---      Compute_Execution_Time => 52 ms .. 52 ms;
---      Deadline               => 220 ms;
---      Period                 => 100 ms;
---    };
+    T3 : thread T.i {
+      Compute_Execution_Time => 10 ms .. 10 ms;
+      Deadline               => 60 ms;
+      Period                 => 40 ms;
+      };
+    T4 : thread T.i {
+      Compute_Execution_Time => 20 ms .. 20 ms;
+      Deadline               => 85 ms;
+      Period                 => 60 ms;
+    };
+    T5 : thread T5.i {
+      Compute_Execution_Time => 52 ms .. 52 ms;
+      Deadline               => 150 ms;
+      Period                 => 160 ms;
+    };
+    T6 : thread T6.i {
+      Compute_Execution_Time => 52 ms .. 52 ms;
+      Deadline               => 220 ms;
+      Period                 => 100 ms;
+    };
   connections
     C1 : port M1_In -> T6.M1_In;
     C2 : port T5.M2_Out -> M2_Out;
@@ -117,8 +125,8 @@ public
   end PB.B;
 
   processor implementation CPU.B
---  properties
---    Scheduling_Protocol => (EDF);
+  properties
+    Scheduling_Protocol => (EDF);
   end CPU.B;
 
   ------------
@@ -136,6 +144,9 @@ public
     M4_In : in event data port M4;
   end T8;
 
+  thread implementation T8.i end T8.i;
+  thread implementation T9.i end T9.i;
+
   process PC
   features
     M3_In : in event data port M3;
@@ -143,31 +154,29 @@ public
 
   process implementation PC.C
   subcomponents
-    T7 : thread T;
---    {
---      Compute_Execution_Time => 28 ms .. 28 ms;
---      Deadline               => 60 ms;
---      Period                 => 60 ms;
---    };
-T8 : thread T8;
---{
-  --    Compute_Execution_Time => 25 ms .. 25 ms;
---      Deadline               => 320 ms;
---      Period                 => 100 ms;
---    };
-    T9 : thread T9;-- {
---      Compute_Execution_Time => 14 ms .. 14 ms;
---      Deadline               => 250 ms;
---      Period                 => 100 ms;
---    };
+    T7 : thread T.i {
+      Compute_Execution_Time => 28 ms .. 28 ms;
+      Deadline               => 60 ms;
+      Period                 => 60 ms;
+    };
+    T8 : thread T8.i {
+       Compute_Execution_Time => 25 ms .. 25 ms;
+       Deadline               => 320 ms;
+       Period                 => 100 ms;
+    };
+    T9 : thread T9.i {
+      Compute_Execution_Time => 14 ms .. 14 ms;
+      Deadline               => 250 ms;
+      Period                 => 100 ms;
+    };
   connections
     C1 : port M3_In -> T9.M3_In;
     C2 : port T9.M4_Out -> T8.M4_In;
   end PC.C;
 
   processor implementation CPU.C
---  properties
---    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
+  properties
+    Scheduling_Protocol => (POSIX_1003_HIGHEST_PRIORITY_FIRST_PROTOCOL);
   end CPU.C;
 
   ----------------
@@ -187,20 +196,20 @@ T8 : thread T8;
     Process_C : process PC.C;
     CPU_C : processor CPU.C;
 
-    CAN : bus CAN;
+    CAN : bus CAN.i;
   connections
     C1 : port Process_A.M1_Out -> Process_B.M1_In;
     C2 : port Process_B.M2_Out -> Process_A.M2_In;
     C3 : port Process_B.M3_Out -> Process_C.M3_In;
 
---  properties
---    Actual_Processor_Binding => (reference (CPU_A)) applies to Process_A;
---    Actual_Processor_Binding => (reference (CPU_B)) applies to Process_B;
---    Actual_Processor_Binding => (reference (CPU_C)) applies to Process_C;
+  properties
+    Actual_Processor_Binding => (reference (CPU_A)) applies to Process_A;
+    Actual_Processor_Binding => (reference (CPU_B)) applies to Process_B;
+    Actual_Processor_Binding => (reference (CPU_C)) applies to Process_C;
 
---    Actual_Connection_Binding => (reference (CAN)) applies to C1;
---    Actual_Connection_Binding => (reference (CAN)) applies to C2;
---    Actual_Connection_Binding => (reference (CAN)) applies to C3;
+    Actual_Connection_Binding => (reference (CAN)) applies to C1;
+    Actual_Connection_Binding => (reference (CAN)) applies to C2;
+    Actual_Connection_Binding => (reference (CAN)) applies to C3;
 
   end Car.impl;
 
