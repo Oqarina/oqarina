@@ -144,7 +144,7 @@ Proof.
         * simpl ; auto.
         * simpl. apply dec_sumbool_and.
             + apply X ; simpl ; auto.
-            + apply IHl. intuition.
+            + apply IHl. auto with *.
 Qed.
 
 (*| We prove vairous auxiliary results on :coq:`valid_static_fault_tree'` that are useful for proof by induction. |*)
@@ -185,8 +185,7 @@ Proof.
 
     generalize H0.
     unfold valid_static_fault_tree_node.
-    case a ; intuition.
-    apply eq_sym in H1. contradict H1. apply nil_cons.
+    case a ; auto with *. intros. inversion H1.
 Qed.
 
 (*| We show that :coq:`Rewrite_Fault_Tree` and :coq:`Rewrite_Fault_Tree''`preserve the notion of validity of a fault tree. |*)
@@ -236,11 +235,11 @@ Proof.
       apply map_length. rewrite H at 1. auto.
 
     - induction l ; simpl ; intuition.
-      + apply H0 ; intuition. destruct H2. auto.
-      + apply IHl ; intuition.
+      + apply H0 ; auto with *. destruct H2. auto.
+      + apply IHl ; auto with *.
         * destruct x ; intuition.
             -- simpl in H1. contradict H1. discriminate.
-            -- simpl in H1. simpl. intuition.
+            -- simpl in H1. simpl. auto with *.
         * destruct H2. apply H2.
 Qed.
 
@@ -413,7 +412,7 @@ Lemma Map_to_OR_is_Boolean_Expr:
     is_Boolean_Expr (Map_to_OR l).
 Proof.
     intros.
-    induction l ; simpl ; intuition.
+    induction l ; simpl ; auto with *.
 Qed.
 
 Fixpoint Map_to_AND
@@ -431,7 +430,7 @@ Lemma Map_to_AND_is_Boolean_Expr:
     is_Boolean_Expr (Map_to_AND l).
 Proof.
     intros.
-    induction l ; simpl ; intuition.
+    induction l ; simpl ; auto with *.
 Qed.
 
 Definition Map_to_NOT
@@ -449,7 +448,7 @@ Lemma Map_to_NOT_is_Boolean_Expr:
     is_Boolean_Expr (Map_to_NOT l).
 Proof.
     intros.
-    induction l ; simpl ; intuition.
+    induction l ; simpl ; auto with *.
 Qed.
 
 Definition Map_Fault_Node_to_BoolExpr
@@ -499,7 +498,7 @@ Proof.
     - assert (forall x, In x l -> valid_static_fault_tree' x ->
                 Compute_Fault_Tree_2 x v =
                 Eval_PropF v (Map_Fault_Tree_to_BoolExpr' x)).
-     intuition. (* Consequence of H0 *)
+     auto with *. (* Consequence of H0 *)
 
      assert (Compute_Fault_Tree_2 (ltree_cons (OR basic_event) l) v =
         Eval_PropF v
@@ -526,7 +525,7 @@ Proof.
     - assert (forall x, In x l -> valid_static_fault_tree' x ->
                 Compute_Fault_Tree_2 x v =
                 Eval_PropF v (Map_Fault_Tree_to_BoolExpr' x)).
-      intuition. (* Consequence of H0 *)
+      auto with *. (* Consequence of H0 *)
 
      assert (Compute_Fault_Tree_2 (ltree_cons (AND basic_event) l) v =
         Eval_PropF v
@@ -549,7 +548,7 @@ Proof.
     (* NOT *)
     - intuition.
     - simpl.
-      f_equal. apply H ; intuition.
+      f_equal. apply H ; auto with *.
       apply valid_static_fault_tree'_car in H0. apply H0.
 
      (* K_OUT_OF_N *)

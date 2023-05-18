@@ -283,7 +283,7 @@ Definition Feature_Refinement (f1 f2 : feature) :=
 Lemma Feature_Refinement_reflexive: reflexive _ Feature_Refinement.
 Proof.
     unfold Feature_Refinement.
-    intuition.
+    auto with *.
 Qed.
 
 Lemma Feature_Refinement_transitive: transitive _ Feature_Refinement.
@@ -597,7 +597,7 @@ Qed.
 Lemma Component_Refinement_reflexive: reflexive _ Component_Refinement.
 Proof.
     unfold Component_Refinement.
-    intuition.
+    auto with *.
 Qed.
 
 (*| In the following, we extend the concept of component refinement to a list of conponent. |*)

@@ -262,10 +262,13 @@ Proof.
     (* A consequence of the hypotheses is that there is no synchronization
     error. This allows us to prune the tests. *)
     assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
-    rewrite H_tla_n. rewrite H_n_tn. intuition.
+    auto with *.
 
     (* From there, we can simplify the proof term. *)
-    rewrite H_st, H_d, H_if. simpl.
+
+
+    rewrite H_st, H_d.
+    destruct ((tla b<= n) && (n b<= tn)).
 
     (* We perform an induction on all states and message types.
        We discriminate on the value of n to simplify all expressions,
@@ -280,6 +283,8 @@ Proof.
          try (left; apply red_system_abort_1) ;
          try (left; apply red_system_abort_2);
          try (right ; trivial).
+
+    inversion H_if.
 Qed.
 
 (*|
@@ -314,18 +319,21 @@ Proof.
     (* A consequence of the hypotheses is that there is no synchronization
     error. This allows us to prune the tests. *)
     assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
-    rewrite H3. rewrite H4. intuition.
+    auto with *.
 
     (* From there, we can perform an induction over st and compute all
       solutions directly. *)
     generalize H6.
     induction st ;
-
-      inversion H5 ;
-      simpl ; rewrite H_if ;
+      inversion H5 ; hnf ;
       rewrite H, H1 ; simpl ;
-      destruct (n ==b tn) ; compute ;
+      destruct (n ==b tn) ;
+      destruct ((tla b<= n) && (n b<= tn));
+
+      simpl ;
       intros H_s' ; rewrite <- H_s'; trivial.
+      
+      all: inversion H_if.
 Qed.
 
 (*|

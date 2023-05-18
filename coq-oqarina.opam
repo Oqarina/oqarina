@@ -10,7 +10,7 @@ homepage: "https://github.com/oqarina/oqarina"
 bug-reports: "https://github.com/oqarina/oqarina/issues"
 depends: [
   "dune" {>= "2.8" & >= "2.8"}
-  "coq" {dev & >= "8.14"}
+  "coq" {dev & >= "8.16"}
   "coq-ext-lib" {dev}
   "coq-simple-io" {>= "1.6.0"}
   "coq-json" {dev}

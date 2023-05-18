@@ -82,15 +82,15 @@ Class TimeClass (T : Type) := {
     One : T;
 
     time_eq : relation T;
-    time_equiv :> Equivalence time_eq ;
-    time_eq_dec :> EqDec T time_eq ;
+    time_equiv :: Equivalence time_eq ;
+    time_eq_dec :: EqDec T time_eq ;
 
     time_le : relation T ;
-    time_le_preorder :> PreOrder time_le ;
-    time_le_preorderdec :> PreOrderDec ;
+    time_le_preorder :: PreOrder time_le ;
+    time_le_preorderdec :: PreOrderDec ;
 
     time_lt : relation T;
-    time_lt_strictorder :> StrictOrder time_lt;
+    time_lt_strictorder :: StrictOrder time_lt;
 
     time_lt_not_le_iff:
       forall (t1 t2: T), time_le t1 t2 <-> ~ time_lt t2 t1;
@@ -157,13 +157,13 @@ end.
 Lemma TimeInf_eq_reflexive : reflexive TimeInf TimeInf_eq.
 Proof.
     unfold reflexive, TimeInf_eq.
-    induction x ; intuition.
+    induction x ; auto with *.
 Qed.
 
 Lemma TimeInf_eq_symmetric : symmetric TimeInf TimeInf_eq.
 Proof.
     unfold symmetric, TimeInf_eq.
-    induction x ; induction y ; intuition.
+    induction x ; induction y ; auto with *.
 Qed.
 
 Lemma TimeInf_eq_transitive : transitive TimeInf TimeInf_eq.
@@ -183,7 +183,7 @@ Lemma TimeInf_eq_dec : forall x y : TimeInf, { x === y } + { x =/= y }.
 Proof.
     intros.
     destruct x, y.
-    - intuition.
+    - auto with *.
     - right. unfold "=/=". intuition.
     - right. unfold "=/=". intuition.
     - unfold "=/=". unfold "===". simpl.
@@ -387,10 +387,10 @@ Proof.
 Qed.
 
 Lemma sd_le_refl : reflexive sdTime sd_le.
-Proof. unfold reflexive, sd_le. intuition. Qed.
+Proof. unfold reflexive, sd_le. auto with *. Qed.
 
 Lemma sd_le_trans : transitive sdTime sd_le.
-Proof. unfold transitive, sd_le. intuition. Qed.
+Proof. unfold transitive, sd_le. lia. Qed.
 
 #[global] Instance sd_le_PreOrder : PreOrder sd_le := {|
     PreOrder_Reflexive := sd_le_refl ;
@@ -407,12 +407,12 @@ Definition sd_lt (t1 t2: sdTime) :=
 
 Lemma sd_lt_irreflexive : reflexive sdTime (complement sd_lt).
 Proof.
-    unfold reflexive, sd_lt, complement. intuition.
+    unfold reflexive, sd_lt, complement. auto with *.
 Qed.
 
 Lemma sd_lt_trans : transitive sdTime sd_lt.
 Proof.
-    unfold transitive, sd_lt. intuition. Qed.
+    unfold transitive, sd_lt. lia. Qed.
 
 #[global] Instance sd_lt_StrictOrder : StrictOrder (sd_lt) := {|
     StrictOrder_Irreflexive := sd_lt_irreflexive ;
@@ -425,13 +425,13 @@ Proof.
     unfold sd_le, sd_lt.
     intros.
     split.
-    - intuition.
+    - auto with *.
     - firstorder.
       assert (H1: c t1 <= c t2). lia.
       assert (H2: c t1 < c t2 \/ c t1 = c t2). lia.
       destruct H2.
       + left. trivial.
-      + right. intuition.
+      + right. auto with *.
 Qed.
 
 #[global] Instance SuperDenseTime_equiv : Equivalence (@eq sdTime) := _.
@@ -556,10 +556,12 @@ Proof.
     intros.
     destruct t0, t1.
     simpl in *.
-    intuition.
+    destruct H.
 
-    assert (t0 = t1). lia.
-    rewrite H0, H. reflexivity.
+    assert (Ht: t0 = t1). lia.
+    assert (Hc: c0 = c1). lia.
+
+    rewrite Ht, Hc. reflexivity.
 Qed.
 
 (*| .. coq:: none |*)

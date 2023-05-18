@@ -367,7 +367,7 @@ end.
 Lemma Rewrite_PropF_Complete: forall (p : PropF),
   clos_refl_trans _ red p (Rewrite_PropF p).
 Proof.
-  intros ; induction p ; intuition.
+  intros ; induction p ; auto with *.
   - case p2 ; prove_Rewrite_PropF_Complete.
   - case p2 ; prove_Rewrite_PropF_Complete.
   - case p2 ; prove_Rewrite_PropF_Complete.
@@ -438,7 +438,7 @@ Proof.
       * subst. destruct p1 ;
         try rewrite Rewrite_PropF_r_red_or_1, IHp1, IHp2 ; reflexivity.
 
-      * subst. destruct p1 ; rewrite <- IHp1 ; simpl ; intuition.
+      * subst. destruct p1 ; rewrite <- IHp1 ; simpl ; auto with *.
 
       * subst. destruct p1 ; rewrite <- IHp1.
         + rewrite Rewrite_PropF_r_red_or_1, IHp1, IHp2. reflexivity.
@@ -455,7 +455,7 @@ Proof.
         try rewrite Rewrite_PropF_r_red_or_1, IHp1, IHp2 ; reflexivity.
 
       * subst. destruct p1 ; rewrite <- IHp1 ;
-        destruct p ; try rewrite Rewrite_PropF_r_red_or_1, IHp2 ; intuition.
+        destruct p ; try rewrite Rewrite_PropF_r_red_or_1, IHp2 ; auto with *.
 
     - rewrite IHp ; reflexivity.
 Qed.
@@ -614,7 +614,7 @@ Lemma Literal_eq_reflect: forall t1 t2,
   reflect (t1 = t2) (Literal_beq t1 t2).
 Proof.
   intros.
-  induction t1 ; induction t2 ; simpl ; intuition ;
+  induction t1 ; induction t2 ; simpl ; auto with * ;
   destruct (PropVars_beq p p0) eqn:pp0.
   - apply ReflectT. apply f_equal.
     eapply (elimT (PropVars_reflect p p0)). auto.
@@ -1092,7 +1092,7 @@ Proof.
   intros c1 l v n p.
   induction l.
   - tauto.
-  - assert (incl c1 a). intuition.
+  - assert (incl c1 a). auto with *.
 
     assert (Eval_DNF v [ c1 ; a ] = Eval_DNF v [c1]).
     apply Eval_DNF_red_incl_1. apply n. apply H.
@@ -1106,7 +1106,7 @@ Proof.
     rewrite orb_assoc. rewrite Eval_DNF_singleton.
     rewrite orb_diag.
     rewrite <- Eval_DNF_cons.
-    apply IHl. intuition.
+    apply IHl. auto with *.
 Qed.
 
 Lemma Eval_PropF_DNF: forall v p,
@@ -1118,7 +1118,8 @@ Proof.
   - rewrite Eval_DNF_cons.
     rewrite DNF_or_valid_2. rewrite IHp.
     simpl. rewrite Eval_PropF_DNF_Clause.
-    rewrite orb_comm, orb_assoc, orb_false_r. intuition.
+    rewrite orb_comm, orb_assoc, orb_false_r.
+    auto with *.
 Qed.
 
 (*|
@@ -1373,7 +1374,7 @@ Proof.
     * eapply (introF (incl_reflect _ Literal_eq_reflect c1 c2)) in H.
       rewrite H. intuition.
     * eapply (introT (Clause_eq_reflect c1 c2)) in H.
-      rewrite H. intuition.
+      rewrite H. auto with *.
 Qed.
 
 Lemma filter_not_incl_true: forall (c1 c2 : Clause),
@@ -1409,7 +1410,7 @@ Proof.
   rewrite negb_andb.
   rewrite negb_involutive.
   rewrite Clause_beq_idem.
-  intuition.
+  auto with *.
 Qed.
 
 Lemma filter_incl_l: forall x y l,
@@ -1492,7 +1493,7 @@ Proof.
   = Eval_DNF v (l1 ++ l2)
   || Eval_DNF v ( x :: (filter (λ y : Clause, ~~ filter_incl x y) l))
   ).
-  rewrite Eval_DNF_cons. intuition.
+  rewrite Eval_DNF_cons. auto with *.
 
   rewrite H7.
 
@@ -1553,7 +1554,7 @@ Proof.
   - simpl.
 
     assert (NoDup a).
-    specialize (H0 a). apply H0. intuition.
+    specialize (H0 a). apply H0. auto with *.
 
     assert(Eval_DNF v (min_cut_set_fix l1 l2) =
             Eval_DNF v (rewrite_filtering' a (min_cut_set_fix l1 l2))).
@@ -1561,7 +1562,7 @@ Proof.
 
     rewrite <- H2.
     apply IHl1.
-    intuition.
+    auto with *.
 Qed.
 
 Definition min_cut_set l := min_cut_set_fix l l.

@@ -319,7 +319,7 @@ Lemma ni_max_max: forall x y : natinf, ni_max (ni_max x y) x = ni_max x y.
 Proof.
   intros.
   unfold ni_max.
-  destruct x, y ; intuition.
+  destruct x, y ; auto with *.
 Qed.
 
 End NatinfTotalOrder.

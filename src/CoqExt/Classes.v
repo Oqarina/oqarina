@@ -87,7 +87,7 @@ Proof.
 Lemma beq_dec_false_iff {A} (EQ: EqDec2 A) a1 a2 :
     beq_dec a1 a2 = false <-> a1 <> a2.
 Proof.
-    unfold beq_dec ; destruct eq_dec ; intuition.
+    unfold beq_dec ; destruct eq_dec ; auto with *.
 Qed.
 
 Lemma beq_reflect {A} (EQ: EqDec2 A) x y: reflect (x=y) (beq_dec x y).

@@ -105,7 +105,7 @@ Inductive statements : Type :=
 Infix ";;" := SEQ (at level 80, right associativity).
 
 (*| * Example of Ravenscar programs |*)
-Print One.
+
 Example A_Program := COMP One ;; SKIP.
 
 Example Ravenscar_Cyclic_Program := WHILE TRUE (COMP One ;;
@@ -634,7 +634,7 @@ Lemma Eval_end: forall fuel st s st',
 Proof.
   induction fuel as [ | fuel ].
   - discriminate.
-  - intuition.
+  - auto with *.
 Qed.
 
 Lemma Eval_split_seq: forall fuel st s1 s2 st',
@@ -864,7 +864,7 @@ Lemma Eval2_end: forall fuel st s st' cet,
 Proof.
   induction fuel as [ | fuel ].
   - discriminate.
-  - intuition.
+  - auto with *.
 Qed.
 
 Lemma Eval2_split_seq: forall fuel st s1 s2 st' cet,
@@ -1574,7 +1574,6 @@ Definition Initial_thread_state (p : Time):=
      th_next_dispatch := 0 |}.
 
 Example Test_Program_1 := COMP 1 ;; SKIP ;; COMP 2 ;; SKIP ;; COMP 3.
-Check Test_Program_1.
 
 Fixpoint Eval_cont' (fuel : nat) (st :thread_state) (k : cont)
   : thread_state * cont
@@ -1611,7 +1610,7 @@ Lemma Eval_cont'_end: forall k st x fuel, k <> Kstop ->
 Proof.
   induction fuel as [ | fuel ].
   - simpl. intros H H0. inversion H0. contradiction.
-  - intuition.
+  - auto with *.
 Qed.
 
 Lemma Eval_cont'_end': forall fuel k st x ,

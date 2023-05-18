@@ -140,7 +140,7 @@ Scheme Equality for basic_event.
 Lemma basic_event_reflect: forall x y : basic_event,
     Bool.reflect (x = y) (basic_event_beq x y).
 Proof.
-    induction x, y ; simpl ; intuition.
+    induction x, y ; simpl ; auto with *.
 Qed.
 
 (*| Actual definition of the basic event propability values and the fault tree. |*)
@@ -253,7 +253,7 @@ Scheme Equality for basic_event.
 Lemma basic_event_reflect: forall x y : basic_event,
     Bool.reflect (x = y) (basic_event_beq x y).
 Proof.
-    induction x, y ; simpl ; intuition.
+    induction x, y ; simpl ; auto with *.
 Qed.
 
 (*| Actual definition of the basic event propability values and the fault tree. |*)

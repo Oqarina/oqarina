@@ -92,8 +92,8 @@ compatibility relation. |*)
 Class Composition (T : Type) `{Refinement T} `{Setoid T} := {
     compose: T -> T -> T;
 
-    compose_comm :> Setoid_Commutative compose;
-    compose_assoc :> Setoid_SemiGroup compose;
+    compose_comm :: Setoid_Commutative compose;
+    compose_assoc :: Setoid_SemiGroup compose;
     compose_compatible : forall S1 S2 T1 T2,
         S1 ≼ S2 -> T1 ≼ T2 -> (compose S1 T1) ≼ (compose S2 T2);
 }.
@@ -102,9 +102,9 @@ Class Composition (T : Type) `{Refinement T} `{Setoid T} := {
 typeclass, equipped with a refinement and a composition operation. |*)
 
 Class Specification (T : Type) `{s : Setoid T} := {
-    m :> Model T;
-    refinement_op :> Refinement T;
-    compose_op :> Composition;
+    m :: Model T;
+    refinement_op :: Refinement T;
+    compose_op :: Composition;
 }.
 
 (*| In :cite:`10.1007/978-3-642-28872-2_3`, the authors only consider composition operator as total function. We acknowledge that this is a strong hypothesis: semantic or syntactic rules may forbid some compositions to happem, or they might be incomplete. A typical example being two AADL components being composed: composition can be done in multiple ways, e.g. variations in connections, as subcomponents of different components, etc. Instead, we define a composition operation as a partial function. Partial composition is commutative and compatible with the notion of refinement. |*)
@@ -126,9 +126,9 @@ Class Partial_Composition (T : Type)  `{Refinement T} := {
 (*| From these considerations, we can now define the :coq:`Rich_Specification` typeclass, equipped with a refinement and a partial composition operation. We call this "rich" as a partial composition is a natural consequence of rich modeling languages. |*)
 
 Class Rich_Specification (T : Type) `{s : Setoid T} := {
-    r :> Model T;
-    r_refinement_op :> Refinement T;
-    r_compose_op :> Partial_Composition;
+    r :: Model T;
+    r_refinement_op :: Refinement T;
+    r_compose_op :: Partial_Composition;
 }.
 
 (*| .. coq:: none |*)
