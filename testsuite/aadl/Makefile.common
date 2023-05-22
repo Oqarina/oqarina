@@ -2,7 +2,7 @@ OCARINA = ocarina
 OCARINA_FLAGS = -aadlv2 -y -disable-annexes=emv2
 OQARINA_BIN = ../../../_build/default/extraction/extraction.native
 
-all: test
+all: test distclean
 
 aadl_xml:
 	@$(OCARINA) $(OCARINA_FLAGS) -g aadl_xml -r $(AADL_ROOT) \
@@ -13,9 +13,12 @@ aadl_json: aadl_xml
 	@python3 -c 'import json, sys;json.dump(json.load(sys.stdin), sys.stdout)'  < $(AADL_ROOT).json > $(AADL_ROOT).json.mini
 
 clean:
-	rm -f *~
+	@-rm -f *~
 
 distclean: clean
-	rm -f *json.mini *xml*
+	@echo Cleaning-up generated files
+	@-rm -f *json.mini *xml*
+
 test: aadl_json
-	$(OQARINA_BIN) --parse $(AADL_ROOT).json
+	@echo Compiling [$(AADL_ROOT).json]
+	@$(OQARINA_BIN) --parse $(AADL_ROOT).json
