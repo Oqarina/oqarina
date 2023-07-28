@@ -65,7 +65,7 @@ Definitions
 
 |*)
 
-(*| Notion of time: we consider time based on natural values. This is consistent with the idea of using time tickets to measure instruction CET. *)
+(*| Notion of time: we consider time based on natural values. This is consistent with the idea of using time ticks to measure instruction CET. *)
 
 Definition Time : Type := nat.
 Import Time_Notations.
@@ -96,6 +96,9 @@ Inductive statements : Type :=
 
   (* Sequence of statements *)
   | SEQ (s1: statements) (s2: statements)
+
+  (* Condition: if b then s1 else s2 *)
+  | IFTHENELSE (b: bexp) (s1: statements) (c2: statements)
 
   (* While b is true, execute s1 *)
   | WHILE (b: bexp) (s: statements)
@@ -169,6 +172,7 @@ Definition ICET (s: statements) : nat :=
   | DELAY_UNTIL_NEXT_PERIOD => 0
   | SKIP => 0
   | SEQ _ _ => 0
+  | IFTHENELSE _ _ _ => 0
   | WHILE _ _ => 0
   end.
 
@@ -249,7 +253,9 @@ Fixpoint Legal_Periodic_Body (p : statements) :=
   match p with
   (* Atomic statements are always valid *)
   | COMP _ | PO_FUNCTION _ _  => True (* XXX *)
-  | SKIP | DELAY_UNTIL_NEXT_PERIOD | WHILE _ _ => True
+
+  | SKIP | DELAY_UNTIL_NEXT_PERIOD | WHILE _ _
+  | IFTHENELSE _ _ _ => True
 
   (* Sequences of statements:
     - COMP, PO_GET, PO_SET, and PO_SENT are accepted *)
@@ -309,7 +315,7 @@ Qed.
 Fixpoint Legal_PO_Body (p : statements) :=
   match p with
   (* Atomic statements are always valid *)
-  | COMP _  | SKIP   | WHILE _ _ => True
+  | COMP _  | SKIP   | WHILE _ _  | IFTHENELSE _ _ _ => True
 
   (* Sequences of statements:
     - COMP, PO_GET, PO_SET, and PO_SENT are accepted *)
@@ -361,13 +367,17 @@ A reduction semantics (or rewriting semantics) defines an an evaluation function
 The reduction relation ->* is the reflexive and transitive closure of the simpler reduction relation ->. That is, ->* consists of zero or more -> steps.
 |*)
 
-Inductive red : statements * thread_state -> statements * thread_state -> Prop :=
+Inductive red : statements * thread_state
+                -> statements * thread_state -> Prop :=
   | red_seq_done: forall c s,
     red (SEQ SKIP c, s) (c, s)
 
   | red_seq_step: forall c1 c s1 c2 s2,
     red (c1, s1) (c2, s2) ->
     red (SEQ c1 c, s1) (SEQ c2 c, s2)
+
+  | red_ifthenelse: forall b c1 c2 s,
+      red (IFTHENELSE b c1 c2, s) ((if beval b then c1 else c2), s)
 
   | red_comp: forall s t,
     red (COMP t, s)
@@ -393,7 +403,7 @@ Inductive red : statements * thread_state -> statements * thread_state -> Prop :
       beval b = true ->
       red (WHILE b c, s) (SEQ c (WHILE b c), s).
 
-(*| A configuration [(c,s)] reduces to at most one configuration, in other words all Ravenscar programs are determinstic. |*)
+(*| A configuration [(c,s)] reduces to at most one configuration, in other words all Ravenscar programs are deterministic. |*)
 
 Lemma red_determ:
     forall cs cs1, red cs cs1 -> forall cs2, red cs cs2 -> cs1 = cs2.
@@ -423,7 +433,8 @@ Natural semantics of Ravenscar programs
 
 |*)
 
-Inductive rexec: thread_state -> statements -> thread_state -> Prop :=
+Inductive rexec: thread_state -> statements -> thread_state
+-> Prop :=
   | rexec_skip: forall s,
     rexec s SKIP s
 
@@ -436,6 +447,10 @@ Inductive rexec: thread_state -> statements -> thread_state -> Prop :=
   | rexec_seq: forall c1 c2 s s' s'',
     rexec s c1 s' -> rexec s' c2 s'' ->
       rexec s (SEQ c1 c2) s''
+
+  | rexec_ifthenelse: forall b c1 c2 s s',
+      rexec s (if beval b then c1 else c2) s' ->
+      rexec s (IFTHENELSE b c1 c2) s'
 
   | rexec_comp: forall s t,
       rexec s (COMP t) (Update_CET s (COMP t))
@@ -471,6 +486,9 @@ Proof.
     eapply rt1n_trans'. apply red_seq_steps. apply IHrexec1.
     eapply rt1n_trans.  apply red_seq_done.  apply IHrexec2.
 
+  - (* IFTHENELSE *)
+    eapply rt1n_trans. apply red_ifthenelse. auto.
+
   - (* COMP *)
     eapply rt1n_trans. apply red_comp. apply rt1n_refl.
 
@@ -505,6 +523,9 @@ Proof.
     inversion H; subst. apply rexec_seq with s'0.
     eapply IHSTEP; eauto.
     auto.
+
+  - (* red_ifthenelse *)
+    apply rexec_ifthenelse. auto.
 
   - (* COMP *)
     inversion H. subst. apply rexec_comp.
@@ -572,6 +593,9 @@ Fixpoint Eval (fuel : nat) (st :thread_state) (s : statements)
         end
       else (st, true)
 
+    | IFTHENELSE b s1 s2 =>
+      Eval fuel' st (if beval b then s1 else s2)
+
     | SEQ s1 s2 =>
       match Eval fuel' st s1 with
       | (st', false) => (st', false)
@@ -610,6 +634,11 @@ Proof.
 
       apply IHfuel.
       destruct b eqn:H0. apply H. inversion H.
+
+    + (* IFTHENELSE *)
+      intros. destruct (beval b) eqn:H2.
+      -- eapply rexec_ifthenelse. rewrite H2. apply IHfuel. apply H.
+      -- eapply rexec_ifthenelse. rewrite H2. apply IHfuel. apply H.
 
     + (* WHILE *)
       intros. destruct (beval b) eqn:H2.
@@ -695,19 +724,39 @@ Proof.
       rewrite H3 in H1.
       trivial.
 
+    + (* IFTHENELSE *)
+      assert (H1:
+        Eval (S fuel) st (IFTHENELSE b s1 s2) =
+        Eval fuel st (if beval b then s1 else s2)).
+      intuition.
+
+      assert (H1b:
+        Eval (S (S fuel)) st (IFTHENELSE b s1 s2) =
+        Eval (S fuel) st (if beval b then s1 else s2)).
+      intuition.
+
+      destruct (beval b) eqn:beval.
+
+      * assert (H2: Eval fuel st s1 = (st', true)).
+        rewrite <- H1. trivial.
+        rewrite H1b. apply IHfuel ; trivial.
+
+      * assert (H2: Eval fuel st s2 = (st', true)).
+        rewrite <- H1. trivial.
+        rewrite H1b. apply IHfuel ; trivial.
+
     + (* WHILE *)
+      assert (H1 : Eval (S (S fuel)) st (WHILE b s) =
+            if (beval b) then
+            match Eval (S fuel) st s with
+            | (st'', false) => (st'', false)
+            | (st'', true) => Eval (S fuel) st'' (WHILE b s)
+            end
+            else (st, true)).
+      intuition.
+      apply Eval_split_while in H.
 
-    assert (H1 : Eval (S (S fuel)) st (WHILE b s) =
-          if (beval b) then
-          match Eval (S fuel) st s with
-          | (st'', false) => (st'', false)
-          | (st'', true) => Eval (S fuel) st'' (WHILE b s)
-          end
-          else (st, true)).
-    intuition.
-    apply Eval_split_while in H.
-
-    destruct (beval b).
+      destruct (beval b).
 
     * destruct H. destruct H.
       destruct H0 as (st'', H0).
@@ -779,6 +828,17 @@ Proof.
     rewrite H4.
     apply IHrexec2'. lia.
 
+  - (* IFTHENELSE *)
+    destruct IHrexec as (fuel, IHrexec').
+    exists (fuel + 1).
+    intros.
+    assert (exists n, fuel0 = S n).
+    apply zero_or_succ_positive. lia.
+    destruct H1 as (n, H1).
+    subst. simpl.
+
+    apply IHrexec'. lia.
+
   - (* COMP *)
     exists 1. intros.
     assert (exists n, fuel = S n).
@@ -839,9 +899,13 @@ Fixpoint Eval2 (fuel : nat) (st :thread_state) (s : statements)
 
     | SKIP => (st, true, ICET s)
 
+    | IFTHENELSE b s1 s2 =>
+      if beval b then
+         Eval2 fuel' st s1 else
+         Eval2 fuel' st s2
+
     | WHILE b s1 =>
       if beval b then
-
         match Eval2 fuel' st s1 with
         | (st', false, _) => (st', false, 0)
         | (st', true, cet) => Eval2 (fuel' - cet) st' (WHILE b s1)
@@ -912,6 +976,16 @@ Proof.
   - right. split. trivial. inversion H. split; trivial.
 Qed.
 
+Lemma Eval2_split_ifthenelse: forall fuel st st' cet b s1 s2,
+Eval2 (S fuel) st (IFTHENELSE b s1 s2) = (st', true, cet) ->
+  ((beval b = true) /\ Eval2 fuel st s1 = (st', true, cet)) \/
+  ((beval b = false) /\ Eval2 fuel st s2 = (st', true, cet)).
+Proof.
+  intros.
+  simpl in H.
+  destruct (beval b) ; intuition.
+Qed.
+
 Lemma Eval2_complete: forall s c s',
   rexec s c s' -> exists fuel1 cet,
     forall fuel, (fuel >= fuel1)%nat -> Eval2 fuel s c = (s', true, cet).
@@ -961,6 +1035,20 @@ Proof.
     assert (Eval2 n s c1 = (s', true, cet1)). apply IHrexec1. lia.
     rewrite H4.
     apply IHrexec2. lia.
+
+  - (* IFTHENELSE *)
+    destruct IHrexec as (fuel, IHrexec).
+    destruct IHrexec as (t, IHrexec).
+
+    exists (fuel + 1). exists t.
+    intros.
+    assert (exists n, fuel0 = S n).
+    apply zero_or_succ_positive. lia.
+    destruct H1 as (n, H1).
+    subst. simpl.
+
+    destruct (beval b) ;
+      apply IHrexec ; lia.
 
   - (* COMP *)
     exists 1. exists t. intros.
@@ -1096,6 +1184,42 @@ Proof.
       rewrite H3 in H1.
       trivial.
 
+  - (* IFTHENELSE *)
+    strong induction fuel.
+    intros.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H0.
+
+    assert (exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+    destruct H1 as (n, H1).
+    subst.
+
+    assert (HSSn: Eval2 (S (S n)) st (IFTHENELSE b s1 s2) =
+      if beval b then Eval2 (S n) st s1 else Eval2 (S n) st s2).
+    intuition.
+
+    assert (HSn: Eval2 (S n) st (IFTHENELSE b s1 s2) =
+      if beval b then Eval2 n st s1 else Eval2 n st s2).
+    intuition.
+
+    apply Eval2_split_ifthenelse in H0.
+
+    destruct (beval b).
+    + rewrite HSSn.
+      assert (Eval2 n st s1 = (st', true, cet)).
+      destruct H0.
+      * intuition.
+      * destruct H0. auto with *.
+      * auto.
+    + rewrite HSSn.
+        assert (Eval2 n st s2 = (st', true, cet)).
+        destruct H0.
+        * destruct H0. auto with *.
+        * intuition.
+        * auto.
+
   -  (* WHILE *)
     strong induction fuel.
 
@@ -1138,8 +1262,8 @@ Proof.
             assert (S n - 0 = S n). lia. rewrite H5.
             eapply H. lia. rewrite <- H3.
             assert (n - 0 = n). lia. rewrite H6. reflexivity.
-         ++ rewrite H1.
 
+         ++ rewrite H1.
             assert (n - S n0 > 0). eapply Eval2_end. apply H3.
             assert (S n - S n0 = S (n - S n0)). lia.
             rewrite H6.
@@ -1213,6 +1337,26 @@ Proof.
 
     eapply IHc2.
     destruct b eqn:H0. apply H. inversion H.
+
+  - (* IFTHENELSE *)
+    strong induction fuel.
+    intros.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval2_end. apply H0.
+
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn).
+    subst.
+
+    apply Eval2_split_ifthenelse in H0.
+
+    destruct H0.
+    + destruct H0. eapply rexec_ifthenelse.
+      rewrite H0. eapply IHc1. apply H1.
+    + destruct H0. eapply rexec_ifthenelse.
+      rewrite H0. eapply IHc2. apply H1.
 
   - (* WHILE *)
 
@@ -1364,6 +1508,19 @@ Proof.
 
     rewrite H5 in H3. apply H3.
 
+  + (* IFTHENELSE *)
+    intros.
+
+    assert (Hfuel: fuel > 0). apply Eval2_end in H0. apply H0.
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive. apply Hfuel.
+    destruct Hn as (n, Hn). subst.
+    simpl in H0. simpl.
+
+    destruct (beval b).
+    * eapply H. lia. apply H0.
+    * eapply H. lia. apply H0.
+
   + (* WHILE b c *)
     intros.
     assert (Hfuel: fuel > 0). apply Eval2_end in H0. apply H0.
@@ -1470,11 +1627,14 @@ Inductive step: statements * cont * thread_state ->
     step (PO_ENTRY c1 c2, k, s)
           (SKIP, k, (Update_CET s (PO_ENTRY c1 c2)))
 
-  | step_while_done: forall b c k s,          (**r computation *)
+  | step_ifthenelse: forall b c1 c2 k s,
+      step (IFTHENELSE b c1 c2, k, s) ((if beval b then c1 else c2), k, s)
+
+  | step_while_done: forall b c k s,
     beval b = false ->
       step (WHILE b c, k, s) (SKIP, k, s)
 
-  | step_while_loop: forall b c k s,          (**r computation + focusing *)
+  | step_while_loop: forall b c k s,
     beval b = true ->
       step (WHILE b c, k, s) (c, Kwhile b c k, s).
 
@@ -1706,7 +1866,7 @@ Lemma statement_to_cont_no_Kstop:
 Proof.
   intros.
   induction s ; simpl.
-  1-5,7: left ; eexists ; eexists ; trivial.
+  1-6,8: left ; eexists ; eexists ; trivial.
   right. exists b; exists s; exists Kstop ; trivial.
 Qed.
 
@@ -1848,12 +2008,35 @@ Proof.
 
     eapply IHfuel. apply H.
 
+  + (* s = IFTHENELSE b s1 s2 *)
+    intros. simpl in H. simpl.
+
+    assert (H1: exists st',  Eval fuel st (IFTHENELSE b s1 s2) = (st', true)).
+    destruct (Eval fuel st (IFTHENELSE b s1 s2)).
+    destruct b0. exists t. trivial. inversion H.
+
+    destruct H1 as (st', H1).
+    rewrite H1 in H.
+
+    assert (Hfuel: fuel > 0).
+    eapply Eval_end. apply H1.
+
+    assert (Hn: exists n, fuel = S n).
+    apply zero_or_succ_positive, Hfuel.
+
+    destruct Hn as (n, Hn).
+    subst. simpl in H1.
+
+    assert (st' = x).
+    simpl in H. inversion H. trivial.
+    subst.
+    apply Eval_end_fix. trivial.
+
   + (* s = WHILE b s *)
-
     intros.
-
     simpl in H. simpl.
     destruct (beval b) eqn:beval.
+
     * (* beval b = true *)
 
       assert (H1: exists st',  Eval fuel st s = (st', true)).
@@ -2027,6 +2210,34 @@ Proof.
 
       * apply IHfuel.
       * right. intros. rewrite pair_equal_spec. intuition. inversion H2.
+
+    + (* s = IFTHENELSE b s1 s2 *)
+      intros. simpl.
+      destruct (Eval fuel st (IFTHENELSE b s1 s2)) eqn:hh.
+      destruct b0.
+
+      * (* b = true *)
+        left.
+        intros.
+        assert (Hfuel: fuel > 0).
+        eapply Eval_end. apply H.
+
+        assert (Hn: exists n, fuel = S n).
+        apply zero_or_succ_positive, Hfuel.
+        destruct Hn as (n, Hn).
+
+        subst.
+        simpl.
+        simpl in hh.
+        apply Eval_end_fix in hh.
+        rewrite H in hh.
+        inversion hh.
+        intuition.
+
+      * (* b = false *)
+        right.
+        intros.
+        intuition. inversion H0.
 
     + (* s = WHILE b s *)
       intros. simpl.
