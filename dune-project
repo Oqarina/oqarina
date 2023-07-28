@@ -1,5 +1,5 @@
-(lang dune 2.8)
-(using coq 0.3)
+(lang dune 3.5)
+(using coq 0.6)
 (name coq-oqarina)
 
 (generate_opam_files true)
@@ -14,7 +14,7 @@
  (synopsis "Oqarina is a mechanization of AADL in Coq.")
  (description "Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.")
  (depends
-  (dune (>= 2.8))
+  (dune (>= 3.5))
   (coq (and :dev (>= 8.16))) ;; LGPLv2.1, https://github.com/coq/coq/blob/master/LICENSE
   (coq-ext-lib :dev)         ;; BSD 2-Clause, https://github.com/coq-community/coq-ext-lib/blob/master/LICENSE
   (coq-simple-io (>= 1.6.0)) ;; MIT, https://github.com/Lysxia/coq-simple-io/blob/master/LICENSE

@@ -1,6 +1,14 @@
 (coq.theory
  (name Oqarina)
  (package coq-oqarina)
- (synopsis "AADL mechanization in Coq"))
+ (synopsis "AADL mechanization in Coq")
+; (theories JSON         ; coq-json
+;           ExtLib       ; coq-extlib
+;           KruskalTrees ; coq-kruskal-trees
+;           MenhirLib    ; coq-menhirlib
+;           )
+
+ )
+
 
 (include_subdirs qualified)
