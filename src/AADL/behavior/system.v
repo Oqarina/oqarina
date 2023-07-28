@@ -47,9 +47,8 @@ Require Import Oqarina.coq_utils.all.
 Require Import Oqarina.formalisms.DEVS.parallel.all.
 Require Import Oqarina.formalisms.all.
 
-Require Import Oqarina.AADL.Kernel.all.
-Import AADL_Notations.
-Require Import Oqarina.AADL.property_sets.all.
+
+Definition Time := nat.
 
 Set Implicit Arguments.
 (*| .. coq::  |*)
@@ -195,8 +194,7 @@ Definition λ_system (s : S_system) : list Y_output_system :=
 
 Definition ta_system (s : S_system) : Time := 1. (* replace with infinity *)
 
-(*| * :coq:`system_DEVS` is the consolidated data type that aggregates all
-definitions. |*)
+(*| * :coq:`system_DEVS` is the consolidated data type that aggregates all definitions. |*)
 
 Definition system_DEVS_type : Type :=
     DEVS_Atomic_Model Time S_system X_system Y_system.
@@ -231,109 +229,260 @@ Correctness of the DEVS semantics
 |*)
 
 (*|
-In the following, we show that the LTS derived from a DEVS is both sound and complete with respect to the reduction semantics we have defined.
+In the following, we show that the LTS derived from a DEVS is both sound and complete with respect to the reduction semantics we have defined. We also demonstrate that it is live.
 
-* Soundness:
-
-Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS timing semantics. Then either the next state computed by :coq:`step_lts` matches the reduction semantics (case of a valid message) or the next state is the same (case of an out of band message).
+First, we define the notion of :coq:`Firable_system_DEVS_LTS`: Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS firing semantics.
 
 |*)
 
+Definition Firable_system_DEVS_LTS
+    (S: S_system)
+    (s: States system_DEVS_LTS)
+    (n: Time)
+:=
+    DEVS_Simulator_model s = system_DEVS /\ (* 1 *)
+    DEVS_Simulator_state s = S /\ (* 3 *)
+    DEVS_Simulator_outputs s = [] /\ (* 2 *)
+    (DEVS_Simulator_tla s) b<= (DEVS_Simulator_tn s) = true /\ (* 4 *)
+    (DEVS_Simulator_tla s) b<= n = true /\
+    n b<= (DEVS_Simulator_tn s) = true .
+
+
+(*| The tactics :coq:`prove_LTS_DEVS_clean_hyp` and :coq:`prove_LTS_DEVS_clean_hyp2` helps reducing hypothesis that uses :coq:`Firable_system_DEVS_LTS`.
+
+|*)
+
+(*|.. coq:: none |*)
+Ltac prove_LTS_DEVS_clean_hyp :=
+    intros s ;
+    match goal with
+        | [ H : States system_DEVS_LTS |- _ ] =>
+            let H2 := fresh "H" in
+                destruct H eqn:H2
+        end ;
+    match goal with
+        | [ H : Q Time S_system |- _ ] => destruct H
+    end ;
+    intros s' x st0 n H_firable H_step_lts
+    ;
+    match goal with
+        | [ H : Firable_system_DEVS_LTS ?st ?s ?n |- _ ] =>
+            unfold Firable_system_DEVS_LTS in H ; simpl in H  ;
+            inversion H as [Hd [Hs [Houtputs [H_tla_tn [H_tla_n H_n]]]]] ;
+            compute in Hs ; rewrite Hd, Houtputs in * ; simpl in * ;
+            generalize H_step_lts ;
+            simpl
+    end.
+
+(* This tactic intros and cleans hypotheses of the form
+
+    forall (s s': States system_DEVS_LTS) (x : X_system) st st2 n,
+    Firable_system_DEVS_LTS st s n -> [...]
+*)
+
+Ltac prove_LTS_DEVS_clean_hyp_2 :=
+    intros s ;
+    match goal with
+        | [ H : States system_DEVS_LTS |- _ ] =>
+            let H2 := fresh "H" in
+                destruct H eqn:H2
+        end ;
+    match goal with
+        | [ H : Q Time S_system |- _ ] => destruct H
+    end ;
+    intros s' x st0 st2 n H_firable H_red H_step_lts
+    ;
+    match goal with
+        | [ H : Firable_system_DEVS_LTS ?st ?s ?n |- _ ] =>
+            unfold Firable_system_DEVS_LTS in H ; simpl in H  ;
+            inversion H as [Hd [Hs [Houtputs [H_tla_tn [H_tla_n H_n]]]]] ;
+            compute in Hs ; rewrite Hd, Houtputs in * ; simpl in * ;
+            generalize H_step_lts ;
+            simpl ; clear H_firable
+    end.
+
+(*|.. coq:: |*)
+
+(*|
+
+* Soundness:
+
+Then either the next state computed by :coq:`step_lts` matches the reduction semantics (case of a valid message) or the next state is the same (case of an out of band message).
+
+|*)
+
+Ltac prove_system_red :=
+    match goal with
+    (* Typical case: we are given an exact system_red_* rule *)
+    | [ |-  system_red (system_offline, start_system) system_starting \/ _ ]
+        => left; apply red_system_offline
+
+    | [ |- system_red (system_starting, abort_system) system_offline \/ _ ]
+        => left ; apply red_system_abort_1
+
+    | [ |- system_red (system_starting, started_system) system_operational \/ _ ]
+        => left ; apply red_system_starting
+
+    | [ |- system_red (system_operational, abort_system) system_offline \/ _ ]
+        => left ; apply red_system_abort_2
+
+    | [ |- system_red (system_operational, stop_system) system_stoping \/ _ ]
+        => left ; apply red_system_operational
+
+    | [ |- system_red (system_stoping, stopped_system) system_offline \/ _ ]
+        => left ; apply red_system_stoping
+
+    (* an alternative is that right is an exact egality statement *)
+    | [ |- _ \/ ?x = ?x ] => right ; reflexivity
+
+    | [ |- _ ] => idtac
+    end.
+
 Lemma LTS_DEVS_sound:
     forall (s s': States system_DEVS_LTS) (x : X_system) st n,
-    DEVS_Simulator_model s = system_DEVS -> (* 1 *)
-    DEVS_Simulator_state s = st -> (* 3 *)
-    DEVS_Simulator_outputs s = [] -> (* 2 *)
-    (DEVS_Simulator_tla s) b<= (DEVS_Simulator_tn s) = true -> (* 4 *)
-    (DEVS_Simulator_tla s) b<= n = true ->
-    n b<= (DEVS_Simulator_tn s) = true ->
+
+    Firable_system_DEVS_LTS st s n ->
 
     (step_lts s (xs Y_system Parent Parent (n) [ x ])) = s' ->
         system_red (DEVS_Simulator_state s, x) (DEVS_Simulator_state s')
         \/ (DEVS_Simulator_state s) = (DEVS_Simulator_state s').
 Proof.
-    intros s s' x st n H_d H_st H_outputs H_tla H_tla_n H_n_tn.
+    (* First, we clean hypotheses *)
+    prove_LTS_DEVS_clean_hyp.
 
-    destruct s, cs.
-
-    (* We first simplify all hypotheses. *)
-    simpl in *. compute in H_st.
-
-    (* A consequence of the hypotheses is that there is no synchronization
-    error. This allows us to prune the tests. *)
-    assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
-    auto with *.
-
-    (* From there, we can simplify the proof term. *)
-
-
-    rewrite H_st, H_d.
-    destruct ((tla b<= n) && (n b<= tn)).
+    replace (tla b<= n) with true in * ;
+    replace (n b<= tn) with true in *.
 
     (* We perform an induction on all states and message types.
        We discriminate on the value of n to simplify all expressions,
        and conclude. *)
-    induction st, x ; destruct (n ==b tn) ; compute ;
-    intros H_s' ; rewrite <- H_s'.
+    induction st, x ; destruct (n ==b tn) ;
+    compute ; intros H_s' ; rewrite <- H_s'.
 
-    all: try (left; apply red_system_offline) ;
-         try (left; apply red_system_starting) ;
-         try (left; apply red_system_operational) ;
-         try (left; apply red_system_stoping) ;
-         try (left; apply red_system_abort_1) ;
-         try (left; apply red_system_abort_2);
-         try (right ; trivial).
-
-    inversion H_if.
+    all: prove_system_red.
 Qed.
 
 (*|
 * Completeness:
 
-Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS timing semantics. Then if state :coq:`st` reduces to state :coq:`st2` then the corresponding LTS state also reduces to a LTS state whose state is :coq:`st2`.
+Let assume a state of a LTS instanciated from a DEVS that represents an AADL System component category (1).  Let assume this state is valid, i.e., no outputs (2). We assume the state is :coq:`st` (3) and assume the DEVS component receives an event at time :coq:`n` that is compatible with DEVS firing semantics. Then if state :coq:`st` reduces to state :coq:`st2` then the corresponding LTS state also reduces to a LTS state whose state is :coq:`st2`.
 
 |*)
 
+
 Lemma LTS_DEVS_complete:
     forall (s s': States system_DEVS_LTS) (x : X_system) st st2 n,
-    DEVS_Simulator_model s = system_DEVS -> (* 1 *)
-    DEVS_Simulator_state s = st -> (* 3 *)
-    DEVS_Simulator_outputs s = [] -> (* 2 *)
-    (DEVS_Simulator_tla s) b<= (DEVS_Simulator_tn s) = true -> (* 4 *)
-    (DEVS_Simulator_tla s) b<= n = true ->
-    n b<= (DEVS_Simulator_tn s) = true ->
+
+    Firable_system_DEVS_LTS st s n ->
 
     system_red (st, x) (st2) ->
         step_lts s (xs Y_system Parent Parent (n) [ x ]) = s' ->
         DEVS_Simulator_state s' = st2.
 
 Proof.
+
     (* This proof follows the same pattern as the previous one *)
-    intros.
-    destruct s, cs.
-
-    (* First, we simplify all hypotheses, *)
-    simpl in H, H1, H2, H3, H4.
-    compute in H0. rewrite H0 in *.
-
-    (* A consequence of the hypotheses is that there is no synchronization
-    error. This allows us to prune the tests. *)
-    assert (H_if: ((tla b<= n) && (n b<= tn)) = true).
-    auto with *.
+    (* First, we clean hypotheses *)
+    prove_LTS_DEVS_clean_hyp_2.
 
     (* From there, we can perform an induction over st and compute all
       solutions directly. *)
-    generalize H6.
-    induction st ;
-      inversion H5 ; hnf ;
-      rewrite H, H1 ; simpl ;
-      destruct (n ==b tn) ;
-      destruct ((tla b<= n) && (n b<= tn));
 
-      simpl ;
-      intros H_s' ; rewrite <- H_s'; trivial.
-      
-      all: inversion H_if.
+    induction st0 ;
+        inversion H_red ;
+        destruct (n ==b tn) ;
+        replace (tla b<= n) with true ;
+        replace (n b<= tn) with true ;
+        simpl ;
+        rewrite Hs ; intros H_s' ; rewrite <- H_s'; trivial.
+Qed.
+
+(*|
+* Liveness: we show that a LTS instanciated from a DEVS that represents an AADL System component category is live. That is, as long as the DEVS is firable, there exists a transition that can be activated. This proof is by induction on the state :coq:`S_system`.
+
+This proof procedes in two steps. First, we prove a collection of lemmas :coq:`red_system_DEVS_<state>` that shows that how a system DEVS may move from one state to another. Then, we show the general liveness theorem. It is a specific instance of the general :coq:`red_system_DEVS` definition.
+
+The proof of :coq:`red_system_DEVS_<state>` relies on the tactic :coq:`prove_red_system_DEVS `. It simply reduces all termes to basic computations that can be simplified.
+|*)
+
+Ltac prove_red_system_DEVS :=
+    (* First, we clean hypotheses *)
+    prove_LTS_DEVS_clean_hyp ;
+    intros ; subst ;
+    (* We propagate the value of all inequalities *)
+    repeat match goal with
+    | [ H : ?X b<= ?Y = true |-  ?G ] =>
+        replace (X b<= Y) with true in * ; clear H
+    end ;
+    simpl;
+    (* We destruct basic cases "?X ==b ?Y]" *)
+    match goal with
+    | [ H: _ |- context[?X ==b ?Y] ] =>
+        destruct (X ==b Y)
+    end ;
+    simpl; discriminate.
+
+Definition red_system_DEVS (x' : X_system) st' : Prop :=
+    forall (s s': States system_DEVS_LTS) x st n,
+        Firable_system_DEVS_LTS st s n ->
+        st = st' ->
+        x = x'  ->
+        step_lts s (xs Y_system Parent Parent (n) [ x ]) = s' ->
+        DEVS_Simulator_state s' <> st.
+
+Lemma red_system_DEVS_system_offline:
+    red_system_DEVS start_system system_offline.
+Proof.
+    prove_red_system_DEVS.
+Qed.
+
+Lemma red_system_DEVS_system_starting:
+    red_system_DEVS started_system system_starting.
+Proof.
+    prove_red_system_DEVS.
+Qed.
+
+Lemma red_system_DEVS_system_operational:
+    red_system_DEVS stop_system system_operational.
+Proof.
+    prove_red_system_DEVS.
+Qed.
+
+Lemma red_system_DEVS_system_stoping:
+    red_system_DEVS stopped_system system_stoping.
+Proof.
+    prove_red_system_DEVS.
+Qed.
+
+Lemma system_DEVS_LTS_live :
+    forall (S: S_system) (s1: States system_DEVS_LTS) n,
+        Firable_system_DEVS_LTS S s1 n ->
+        (exists t (s2:States system_DEVS_LTS),
+            Transitions system_DEVS_LTS s1 t s2 ->
+            DEVS_Simulator_state s2 <> S).
+Proof.
+    intros S s1 n H.
+    induction S.
+
+    - (* S = system_offline *)
+      exists (xs Y_system Parent Parent (n) [start_system]).
+      exists ((step_lts s1 (xs Y_system Parent Parent (n) [start_system]))).
+      eapply red_system_DEVS_system_offline ; auto.
+
+    - (* S = system_starting *)
+      exists (xs Y_system Parent Parent (n) [started_system]).
+      exists ((step_lts s1 (xs Y_system Parent Parent (n) [started_system]))).
+      eapply red_system_DEVS_system_starting ; auto.
+
+    - (* S = system_operational *)
+      exists (xs Y_system Parent Parent (n) [stop_system]).
+      exists ((step_lts s1 (xs Y_system Parent Parent (n) [stop_system]))).
+      eapply red_system_DEVS_system_operational ; auto.
+
+    - (* S = system_stoping *)
+      exists (xs Y_system Parent Parent (n) [stopped_system]).
+      exists ((step_lts s1 (xs Y_system Parent Parent (n) [stopped_system]))).
+      eapply red_system_DEVS_system_stoping ; auto.
 Qed.
 
 (*|
@@ -343,6 +492,10 @@ Mapping a system hierarchy to a DEVS
 
 (*|
 * Map a system component and system subcomponents into a list of DEVS system |*)
+
+Require Import Oqarina.AADL.Kernel.all.
+Import AADL_Notations.
+Require Import Oqarina.AADL.property_sets.all.
 
 Definition Map_AADL_System_DEVS_System (c : component) :=
     map (fun s => Instantiate_DEVS_Simulator (s->id) system_DEVS)
