@@ -34,7 +34,7 @@
 (**
 This module introduces a JSON-based parser for Oqarina. It maps a JSON file produced by Ocarina to a Coq term denoting an AADL instance model.
 
-This implementation relies on the `coq-json` library for parsing a JSON file, producing an AST. Then the [Map_JSON_String_To_Component ] function maps this AST onto a valid AADL instance file. Because of Coq typing rules, we can only build a valid instance model, albeit incomplete.
+This implementation relies on the `coq-json` library for parsing a JSON file, producing an AST. Then the [Map_JSON_String_To_Component ] function maps this AST onto a valid AADL instance model. Because of Coq typing rules, we can only build a valid instance model, albeit incomplete.
 *)
 
 (* begin hide *)
