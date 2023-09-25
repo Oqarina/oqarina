@@ -1193,10 +1193,6 @@ Definition δint_thread (s : S_thread) : S_thread :=
         end
 
     | Running => (* (2) *)
-    (* XXX must split compute_entrypoint into parts: await/fetch/execute/write
-all atomic except execute
-
-    *)
       let state := s.(thread_ce) s.(thread_st) in
 
       if state.(wcet) <=? state.(cet) then
