@@ -369,7 +369,6 @@ Let assume a state of a LTS instanciated from a DEVS that represents an AADL Sys
 
 |*)
 
-
 Lemma LTS_DEVS_complete:
     forall (s s': States system_DEVS_LTS) (x : X_system) st st2 n,
 
@@ -400,7 +399,7 @@ Qed.
 (*|
 * Liveness: we show that a LTS instanciated from a DEVS that represents an AADL System component category is live. That is, as long as the DEVS is firable, there exists a transition that can be activated. This proof is by induction on the state :coq:`S_system`.
 
-This proof procedes in two steps. First, we prove a collection of lemmas :coq:`red_system_DEVS_<state>` that shows that how a system DEVS may move from one state to another. Then, we show the general liveness theorem. It is a specific instance of the general :coq:`red_system_DEVS` definition.
+This proof procedes in two steps. First, we prove a collection of lemmas :coq:`red_system_DEVS_<state>` that shows how a system DEVS may move from one state to another. Then, we show the general liveness theorem. It is a specific instance of the general :coq:`red_system_DEVS` definition.
 
 The proof of :coq:`red_system_DEVS_<state>` relies on the tactic :coq:`prove_red_system_DEVS `. It simply reduces all termes to basic computations that can be simplified.
 |*)
