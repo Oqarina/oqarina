@@ -14,8 +14,8 @@ depends: [
   "coq-ext-lib" {dev}
   "coq-simple-io" {>= "1.6.0"}
   "coq-json" {dev}
-  "coq-kruskal-trees" {dev}
-  "coq-prosa" {dev}
+  "coq-kruskal-trees" {= "1.0"}
+  "coq-prosa" {= "0.5"}
   "odoc" {with-doc}
 ]
 build: [
