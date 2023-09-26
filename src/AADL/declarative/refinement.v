@@ -740,6 +740,53 @@ Proof.
     apply H0.
 Qed.
 
+Definition valid_list_component := { x : list component | Well_Formed_Subcomponents x}.
+
+Definition cast (l: valid_list_component) : list component.
+Proof.
+    unfold valid_list_component in *.
+    destruct l.
+    exact x.
+Defined.
+
+Definition Valid_Component_Refinements (l1 l2 : valid_list_component ) :=
+    Component_Refinements (cast l1) (cast l2).
+
+Lemma Valid_Component_Refinements_reflexive: reflexive _
+Valid_Component_Refinements.
+Proof.
+    unfold reflexive.
+    intros.
+    unfold valid_list_component in *.
+    destruct x.
+    unfold Valid_Component_Refinements; simpl.
+    now apply Component_Refinements_reflexive.
+Qed.
+
+Lemma Valid_Component_Refinements_transitive:
+    transitive _ Valid_Component_Refinements.
+Proof.
+    unfold transitive.
+    intros.
+    unfold Valid_Component_Refinements in *.
+
+    destruct x, y, z.
+    simpl in *.
+
+    induction x.
+    - trivial.
+    - simpl in H. destruct H.
+      simpl. split.
+      + eapply Component_Refinements_elt. apply H. apply H0.
+      + apply Well_Formed_Subcomponents_cons in w. destruct w. apply IHx ; auto.
+Qed.
+
+#[global] Instance Valid_Component_Refinements_Preorder
+    : PreOrder Valid_Component_Refinements := {
+        PreOrder_Reflexive := Valid_Component_Refinements_reflexive ;
+        PreOrder_Transitive := Valid_Component_Refinements_transitive ;
+    }.
+
 (*|
 
 Implementation Extension
