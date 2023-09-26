@@ -16,6 +16,7 @@ depends: [
   "coq-json" {dev}
   "coq-kruskal-trees" {= "1.0"}
   "coq-prosa" {= "0.5"}
+  "coq-mathcomp-finmap" {= "1.5.2"}
   "odoc" {with-doc}
 ]
 build: [
