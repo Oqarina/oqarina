@@ -82,15 +82,15 @@ Class TimeClass (T : Type) := {
     One : T;
 
     time_eq : relation T;
-    time_equiv :: Equivalence time_eq ;
-    time_eq_dec :: EqDec T time_eq ;
+    time_equiv :> Equivalence time_eq ;
+    time_eq_dec :> EqDec T time_eq ;
 
     time_le : relation T ;
-    time_le_preorder :: PreOrder time_le ;
-    time_le_preorderdec :: PreOrderDec ;
+    time_le_preorder :> PreOrder time_le ;
+    time_le_preorderdec :> PreOrderDec ;
 
     time_lt : relation T;
-    time_lt_strictorder :: StrictOrder time_lt;
+    time_lt_strictorder :> StrictOrder time_lt;
 
     time_lt_not_le_iff:
       forall (t1 t2: T), time_le t1 t2 <-> ~ time_lt t2 t1;
