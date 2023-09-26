@@ -22,5 +22,5 @@
   (coq-kruskal-trees (= 1.0))   ;; CeCILL-B, https://github.com/DmxLarchey/Kruskal-Trees
   (coq-prosa (= 0.5))           ;; BSD 2-Clause, https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs/-/blob/master/LICENSE
   (coq-mathcomp-finmap (= 1.5.2))
-
+  (coq-mathcomp-multinomials (= 1.6.0))
 ))
