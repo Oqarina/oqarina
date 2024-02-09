@@ -279,7 +279,8 @@ Definition parse_feature_ref_name (s : string) : feature_ref :=
   end.
 
 Class Element_id A : Type := {
-  get_id : A -> identifier ; (* Id *) }.
+  get_id : A -> identifier ; (* Id *)
+}.
 
 Notation "c '->id' " := (get_id c)
   (at level 80, right associativity).

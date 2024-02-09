@@ -105,4 +105,4 @@ Qed.
 Definition list_identifiers_map := total_map (list identifier).
 
 Definition empty_list_identifiers_map : list_identifiers_map :=
-    (_ !-> nil).
+  t_empty nil.
