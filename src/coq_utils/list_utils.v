@@ -189,6 +189,11 @@ Section in_boolean.
     eapply (introT (In_reflect x L)).
   Qed.
 
+  Theorem In_b_In (x: A) (L: list A) : In_b x L = true -> In x L.
+  Proof.
+    eapply(elimT (In_reflect x L)).
+  Qed.
+
   Definition NoDup_bool (L: list A): bool.
   Proof.
     induction L.
@@ -921,7 +926,7 @@ Proof.
   - intuition.
   - simpl.
     rewrite filter_lists_by_length_map_comm.
-    unfold k_of_N. rewrite <- Arith_prebase.minus_n_O_stt.
+    unfold k_of_N. rewrite PeanoNat.Nat.sub_0_r.
 
     assert (Nat.eqb n 0 = false).
     apply PeanoNat.Nat.eqb_neq. lia.
