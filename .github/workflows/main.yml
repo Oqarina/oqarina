@@ -17,6 +17,8 @@ jobs:
         coq_version:
           - '8.16'
           - '8.17'
+          - '8.18'
+          - '8.19'
           - 'dev'
         ocaml_version: ['default']
       max-parallel: 4
