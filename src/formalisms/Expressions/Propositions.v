@@ -212,7 +212,7 @@ Proof.
 Qed.
 
 Lemma sat_PropF_neg_rewrite: forall v A1,
-    sat_PropF v (Neg A1) <-> unsat_PropF v  A1.
+    sat_PropF v (Neg A1) <-> unsat_PropF v A1.
 Proof.
   split; intro H.
   - inversion H ; intuition.
