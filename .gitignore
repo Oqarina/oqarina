@@ -32,3 +32,8 @@ latex-src/techreport.pdf
 *.blg
 *.out
 latex-src/X.tex
+
+# VScode and other tools stuff
+.csdp.cache
+.VScode
+.DS_Store
