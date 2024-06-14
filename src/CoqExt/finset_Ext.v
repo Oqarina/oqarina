@@ -30,9 +30,19 @@
  * DM21-0762
 ***)
 
+(*| .. coq:: none |*)
 From mathcomp Require Import finset fintype ssrbool eqtype.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Bool.BoolEq.
+(*| .. coq::  |*)
+
+(*|
+Extensions to finset
+=====================
+
+The following extends finsets with trivial lemmas.
+
+|*)
 
 Section finset_Ext.
 
