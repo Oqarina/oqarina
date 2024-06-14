@@ -22,9 +22,12 @@ The following packages should be installed separately using opam:
 * https://github.com/Lysxia/coq-simple-io: IO monad with user-definable primitive operations
 * https://github.com/coq-community/coq-ext-lib: Additional theories for Coq
 * https://github.com/DmxLarchey/Kruskal-Trees: rose tree library with proper (nested) induction principles
-* https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs: PROSA scheduling library
 
 Use `make install_deps` to install them.
+
+The following dependence can be installed manually to test a particular examples. See `examples/3rd-party` for details.
+
+* https://gitlab.mpi-sws.org/RT-PROOFS/rt-proofs: PROSA scheduling library
 
 ## Usage
 
