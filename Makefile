@@ -98,11 +98,16 @@ ALECTRYON_FILES= \
 	src/CoqExt/Classes.v  \
 	src/CoqExt/PeanoNat_Ext.v  \
 	src/CoqExt/Reflexive_Transitive_Closure_Ext.v \
+	src/CoqExt/finset_Ext.v \
 	src/CoqExt/all.v \
 	src/CoqExt/strong_ind.v \
 	examples/AADL/full_example.v \
 	examples/3rd-party/aadl2prosa.v \
-	examples/FaultTrees/FaultTrees_Examples.v
+	examples/FaultTrees/FaultTrees_Examples.v \
+	src/Categories/wiring_rel.v \
+	src/Categories/family.v \
+	src/Categories/interface.v \
+	src/Categories/all.v
 
 alectryon:
 	DOCUTILSCONFIG=docs/docutils.conf \
