@@ -63,6 +63,7 @@ Here is the detailed list of contents:
    formalisms__FaultTrees_DynamicFaultTree.v.rst
 |*)
 
+(*| .. coq:: none |*)
 Ltac prove_valid_static_fault_tree :=
     repeat match goal with
     | [ |- forall x : ?T, _ ] => intros t H ; destruct H ; subst
@@ -76,3 +77,4 @@ Ltac prove_valid_static_fault_tree :=
     | [ |- valid_dynamic_fault_tree_node  _ _ ] => compute; auto
     | [ H : In _ _ |- _ ] => destruct H ; subst
 end.
+(*| .. coq:: |*)
