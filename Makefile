@@ -107,6 +107,7 @@ ALECTRYON_FILES= \
 	src/Categories/wiring_rel.v \
 	src/Categories/family.v \
 	src/Categories/interface.v \
+	src/Categories/wiring_rel.v \
 	src/Categories/all.v
 
 alectryon:
@@ -124,6 +125,8 @@ html:               ## Build HTML documentation
 
 pdf:                ## Build LaTeX documentation
 	( cd docs ; make latexpdf )
+
+doc: alectryon html
 
 COQ_FILES = $(shell find src/ -type f -name '*.v')
 sloc:               ## Get SLOCs
