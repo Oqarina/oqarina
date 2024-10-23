@@ -34,7 +34,7 @@
 Oqarina Coq configuration
 =========================
 
-The following declarations "corrects" the configuration of Coq to match our needs. 
+The following declarations "correct" the configuration of Coq to match our needs.
 
 Because some Coq development exports configuration parameters to Oqarina documents, it is recommended this file is imported last.
 
