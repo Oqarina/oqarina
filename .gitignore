@@ -12,6 +12,7 @@ extraction/_build
 extraction/generated-src
 src/AADL/atin_frontend/atin_parser.v
 _build
+_attic
 
 # LaTeX temporary files
 latex-src/coqdoc.sty
