@@ -11,8 +11,9 @@
 
 (package
  (name coq-oqarina)
- (synopsis "mechanization of AADL in Coq")
+ (synopsis "Mechanization of AADL in Coq.")
  (description "Oqarina is a mechanization of AADL in Coq. It provides a collection of libraries to manipulate AADL models as Coq types, and a formalization of the behavioral semantics of AADL faithful to the AADL standard v2.3.")
+
  (depends
   (dune (>= 3.8))
   (coq (and :dev (>= 8.16))) ;; LGPLv2.1, https://github.com/coq/coq/blob/master/LICENSE
@@ -24,4 +25,7 @@
   (coq-mathcomp-finmap (>= 1.5.2))
   (coq-mathcomp-multinomials (>= 1.6.0))
   (coq-coqeal (>= 1.1.3))
-))
+  (coq-category-theory :dev) ;; BSD 3-Clause, https://github.com/jwiegley/category-theory/tree/master
+)
+
+)
