@@ -34,6 +34,8 @@
 From mathcomp Require Import finset fintype ssrbool eqtype.
 Require Import Coq.Bool.Bool.
 Require Import Coq.Bool.BoolEq.
+Require Import Utf8.
+
 (*| .. coq::  |*)
 
 (*|
@@ -76,7 +78,7 @@ Proof.
     apply disjointU.
     - rewrite disjoint_sym. apply disjointU.
     + now rewrite disjoint_sym.
-    + trivial. 
+    + trivial.
     - rewrite disjoint_sym. apply disjointU.
     + trivial.
     + now rewrite disjoint_sym.
@@ -88,6 +90,29 @@ Proof.
   case (set_0Vmem S) => [?|[x1 ini]].
   - subst. rewrite in_set0. intuition.
   - intros. apply (introT (set0Pn S)). now exists x.
+Qed.
+
+Lemma orb_True1 b1 b2 : b1 || b2 = true ↔ b1 ∨ b2.
+Proof. destruct b1, b2 ; simpl ; tauto. Qed.
+
+Lemma orb_True2 b1 b2 : b1 || b2 ↔ b1 ∨ b2.
+Proof.
+    assert (b1 || b2 <-> (b1 || b2) = true) ; auto with *.
+    eapply orb_True1.
+Qed.
+
+Lemma disjoint_in (A B C: set_t) (x:t):
+    [disjoint B & C] ->
+    x \in A :|: B -> x \in A :|: C -> x \in A.
+Proof.
+    intros.
+    rewrite in_setU in *.
+    rewrite orb_True2 in *.
+    destruct H0, H1 ; trivial.
+    assert (x \in B = false).
+    eapply disjointFl. apply H. trivial.
+    rewrite H0 in H2.
+    intuition.
 Qed.
 
 End finset_Ext.
