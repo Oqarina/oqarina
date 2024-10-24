@@ -905,86 +905,18 @@ Proof.
         apply disjoint_set0.
 Qed.
 
-Definition WiringD_0: WiringD Box0 Box0 :=
-    (Wiring_0; Valid_Wiring_Mapping_Wiring_0).
-
-Program Definition WiringD_plus {i j k l}
-    : WiringD i k -> WiringD j l -> WiringD (box_plus i j) (box_plus k l)
-:=
-    λ '(w1; Hw1) '(w2; Hw2), (Wiring_plus w1 w2; _).
- Next Obligation.
-    apply Valid_Wiring_plus ; intuition.
-Defined.
-
-Program Definition WiringD_Tensor: WiringDCat ∏ WiringDCat ⟶ WiringDCat :=
-{|
-    fobj := λ '(x, y), box_plus x y;
-    fmap := λ (x y : Box ∧ Box)
-              (f : WiringD (fst x) (fst y) ∧ WiringD (snd x) (snd y)), _;
-|}.
-
-Next Obligation.
-    unfold WiringD in *.
-    destruct w. destruct w0.
-
-    exists (Wiring_plus x x0).
-    apply (Valid_Wiring_plus x x0 v v0).
-Defined.
-
-Next Obligation.
-    proper.
-    destruct x. destruct H0.
-    destruct y. destruct H1.
-
-    simpl in *.
-    unfold connection_map_plus in *.
-    destruct X as [H_phi_int_x [H_phi_in_x H_phi_out_x]].
-    destruct H as [H_phi_int_x2 [H_phi_in_x2 H_phi_out_x2]].
-
-    split.
-    rewrite H_phi_int_x. rewrite H_phi_int_x2. reflexivity.
-
-    split.
-    - intros.
-    specialize (H_phi_in_x x3 y) ;
-    specialize (H_phi_in_x2 x3 y) ; intuition.
-
-    - intros.
-    specialize (H_phi_out_x x3 y) ;
-    specialize (H_phi_out_x2 x3 y) ; intuition.
-Defined.
-
-Next Obligation. (* 3 *)
-    unfold connection_map_plus.
-    simplify_finset.
-
-    + split.
-    * intros. rewrite in_setU. intuition.
-    * rewrite in_setU. intros. destruct H.
-        rewrite orb_True2 in H. destruct H.
-        left.  intuition.
-        right. intuition.
-
-    + split.
-    * intros. rewrite in_setU. intuition.
-    * rewrite in_setU. intros. destruct H.
-        rewrite orb_True2 in H. destruct H.
-        left.  intuition.
-        right. intuition.
-Defined.
-
-Next Obligation. (* 4 *)
-    destruct w1, w2, w, w0.
-    unfold WiringD_compose.
-
-
-assert (
-
-Wiring_plus (Wiring_compose x x1) (Wiring_compose x0 x2) ≈
-Wiring_compose (Wiring_plus x x0) (Wiring_plus x1 x2)
-
-).
-- unfold Wiring_plus, Wiring_compose, connection_map_plus, compose_connection_map.
+Lemma Wiring_plus_compose_assoc { b3 b4 b1 b2 b b0 }: forall
+    (x : Wiring b1 b)
+    (x0 : Wiring b2 b0)
+    (x1 : Wiring b3 b1)
+    (x2 : Wiring b4 b2),
+        Valid_Wiring b1 b x -> Valid_Wiring b2 b0 x0 ->
+         Valid_Wiring b3 b1 x1 -> Valid_Wiring b4 b2 x2 ->
+    Wiring_plus (Wiring_compose x x1) (Wiring_compose x0 x2)
+        ≈ Wiring_compose (Wiring_plus x x0) (Wiring_plus x1 x2).
+Proof.
+    intros x x0 x1 x2 v v0 v1 v2.
+    unfold Wiring_plus, Wiring_compose, connection_map_plus, compose_connection_map.
     simpl.
 
     split.
@@ -1215,9 +1147,88 @@ Wiring_compose (Wiring_plus x x0) (Wiring_plus x1 x2)
 
             --- intuition.
 
-- simpl in * ; intuition.
-
 Admitted.
+
+Definition WiringD_0: WiringD Box0 Box0 :=
+    (Wiring_0; Valid_Wiring_Mapping_Wiring_0).
+
+Program Definition WiringD_plus {i j k l}
+    : WiringD i k -> WiringD j l -> WiringD (box_plus i j) (box_plus k l)
+:=
+    λ '(w1; Hw1) '(w2; Hw2), (Wiring_plus w1 w2; _).
+ Next Obligation.
+    apply Valid_Wiring_plus ; intuition.
+Defined.
+
+Program Definition WiringD_Tensor: WiringDCat ∏ WiringDCat ⟶ WiringDCat :=
+{|
+    fobj := λ '(x, y), box_plus x y;
+    fmap := λ (x y : Box ∧ Box)
+              (f : WiringD (fst x) (fst y) ∧ WiringD (snd x) (snd y)), _;
+|}.
+
+Next Obligation.
+    unfold WiringD in *.
+    destruct w. destruct w0.
+
+    exists (Wiring_plus x x0).
+    apply (Valid_Wiring_plus x x0 v v0).
+Defined.
+
+Next Obligation.
+    proper.
+    destruct x. destruct H0.
+    destruct y. destruct H1.
+
+    simpl in *.
+    unfold connection_map_plus in *.
+    destruct X as [H_phi_int_x [H_phi_in_x H_phi_out_x]].
+    destruct H as [H_phi_int_x2 [H_phi_in_x2 H_phi_out_x2]].
+
+    split.
+    rewrite H_phi_int_x. rewrite H_phi_int_x2. reflexivity.
+
+    split.
+    - intros.
+    specialize (H_phi_in_x x3 y) ;
+    specialize (H_phi_in_x2 x3 y) ; intuition.
+
+    - intros.
+    specialize (H_phi_out_x x3 y) ;
+    specialize (H_phi_out_x2 x3 y) ; intuition.
+Defined.
+
+Next Obligation. (* 3 *)
+    unfold connection_map_plus.
+    simplify_finset.
+
+    + split.
+    * intros. rewrite in_setU. intuition.
+    * rewrite in_setU. intros. destruct H.
+        rewrite orb_True2 in H. destruct H.
+        left.  intuition.
+        right. intuition.
+
+    + split.
+    * intros. rewrite in_setU. intuition.
+    * rewrite in_setU. intros. destruct H.
+        rewrite orb_True2 in H. destruct H.
+        left.  intuition.
+        right. intuition.
+Defined.
+
+Next Obligation. (* 4 *)
+    destruct w1, w2, w, w0.
+    unfold WiringD_compose.
+
+    assert (
+        Wiring_plus (Wiring_compose x x1) (Wiring_compose x0 x2) ≈
+        Wiring_compose (Wiring_plus x x0) (Wiring_plus x1 x2)
+    ).
+
+    apply Wiring_plus_compose_assoc ; intuition.
+    simpl in * ; intuition.
+Defined.
 
 Program Definition to_unit_left_box_plus {x}
     : (box_plus Box0 x) ~> x
