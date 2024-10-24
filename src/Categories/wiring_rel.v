@@ -30,7 +30,7 @@
  * DM21-0762
 ***)
 
-(*| .. coq:: none |*)  
+(*| .. coq:: none |*)
 (* Packages from the Coq toolset: lists, booleans, and relations *)
 Require Import Coq.Lists.List.
 Import ListNotations. (* Part of Coq.Lists.List *)
@@ -54,31 +54,31 @@ Require Import Category.Structure.Monoidal.
 Require Import Category.Structure.Monoidal.Braided.
 
 (* In the following, we control how goals in proof scripts are handled. We opted for a strict mode to ease proof readabiltiy. *)
-Set Default Goal Selector "1". 
+Set Default Goal Selector "1".
 Set Bullet Behavior "Strict Subproofs". (* This is disabled by ssreflect *)
 
 Require Import Oqarina.CoqExt.finset_Ext.
 Require Import Oqarina.Categories.interface.
 Require Import Oqarina.Tactics.oq_tactics.
-(*| .. coq:: |*)  
+(*| .. coq:: |*)
 
 (*|
 
-Wiring Diagram 
+Wiring Diagram
 ==============
 
 |*)
 
-(*| .. coq:: none |*)  
+(*| .. coq:: none |*)
 Section Wiring_Rel.
-(*| .. coq:: |*)  
+(*| .. coq:: |*)
 
-(*| 
+(*|
 
 Introduction
 ------------
 
-Wiring diagrams are a generic way of connecting "boxes" using wires. Wiring diagrams extends the Box category. 
+Wiring diagrams are a generic way of connecting "boxes" using wires. Wiring diagrams extends the Box category.
 
 Let :coq:`Wire_Type` denote a general finite type, and :coq:`Interface` be a finite set of wires. We can define a box by its input and output interace. |*)
 
@@ -94,12 +94,12 @@ Record Box: Type := {
 (*| We define a connection map as a binary relation between two wires. We opted for a relation as it is more general than a function. |*)
 Definition connection_map := relation Wire_Type.
 
-(*| We can now define a :coq:`Wiring`, a way to connect two boxes. In this definition, 
+(*| We can now define a :coq:`Wiring`, a way to connect two boxes. In this definition,
 
-* :coq:`X` is the inner Box, :coq:`Y` the outer Box 
+* :coq:`X` is the inner Box, :coq:`Y` the outer Box
 * :coq:`phi_int` is the set of internal wires
 * :coq:`phi_in` is connecting :coq:`inp (x)` to  one of :coq:`phi_int` or :coq:`inp (y)`
-* :coq:`phi_out` is connecting :coq:`outp X` to  one of :coq:`phi_int` or :coq:`outp (y)` 
+* :coq:`phi_out` is connecting :coq:`outp X` to  one of :coq:`phi_int` or :coq:`outp (y)`
 
 and :coq:`Valid_Wiring` ensures those constraints are respected. We also expect the sets of input and output ports and internal connections to be all disjoint. |*)
 
@@ -121,12 +121,31 @@ Definition Valid_Wiring (X Y : Box) (W : Wiring X Y) :=
     [disjoint outp Y & phi_int _ _ W] /\
     Valid_Wiring_Mapping X Y W.
 
+Axiom prout2: ∀ {i j k l} (f : Wiring k l) (g : Wiring j k)  (h : Wiring i j),
+    Valid_Wiring i j h -> Valid_Wiring j k g -> Valid_Wiring k l f ->
+        [disjoint inp k &  phi_int _ _ h ] /\
+        [disjoint outp k & phi_int _ _ h ].
+
+Axiom prout4: ∀ {j k l} (f : Wiring k l) (g : Wiring j k),
+    Valid_Wiring j k g -> Valid_Wiring k l f ->
+    [disjoint inp j & phi_int _ _ f :|: phi_int _ _ g] /\
+        [disjoint outp j & phi_int _ _ f :|: phi_int _ _ g] /\
+        [disjoint inp l & phi_int _ _ f :|: phi_int _ _ g] /\
+        [disjoint outp l & phi_int _ _ f :|: phi_int _ _ g].
+
+Axiom prout5: ∀ {i j k l} (f : Wiring i k) (g: Wiring j l) ,
+    Valid_Wiring i k f -> Valid_Wiring j l g ->
+    [disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
+    [disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
+    [disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
+    [disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k].
+
 (*| We define a setoid relation for wirings, |*)
 
 #[export] Program Instance Wiring_Setoid {X Y : Box} :
     Setoid (Wiring X Y) := {|
         equiv := fun W1 W2 =>
-        ( phi_int _ _ W1 = phi_int _ _ W2 ) /\ 
+        ( phi_int _ _ W1 = phi_int _ _ W2 ) /\
             (∀ x y, (phi_in _ _ W1) x y <-> (phi_in _ _ W2) x y) /\
             (∀ x y, (phi_out _ _ W1) x y <-> (phi_out _ _ W2) x y)
     |}.
@@ -143,7 +162,7 @@ Next Obligation.
 
     1-2: specialize (H2 x0 y0) ;
         specialize (H4 x0 y0); intuition.
-Qed.
+Defined.
 
 (*|
 Wiring diagrams as a category
@@ -155,28 +174,28 @@ Compose operator
 ^^^^^^^^^^^^^^^^
 |*)
 
-Definition compose_connection_map (c1 c2: connection_map) := 
+Definition compose_connection_map (c1 c2: connection_map) :=
     fun x z => exists2 y, c1 x y & c2 y z.
 
 (* /!\ We write Wiring_compose g f to mean g o f X -> Z *)
 
-Definition Wiring_compose {X Y Z} 
-    (WYZ : Wiring Y Z ) (WXY : Wiring X Y) 
+Definition Wiring_compose {X Y Z}
+    (WYZ : Wiring Y Z ) (WXY : Wiring X Y)
     : Wiring X Z
-:= 
+:=
 {|
     phi_int := (phi_int _ _ WYZ) :|: (phi_int _ _ WXY);
-    phi_in := 
-        (fun x z => 
+    phi_in :=
+        (fun x z =>
             if (x \in (inp X)) then
                 (exists2 y, (phi_in _ _ WXY) x y & (phi_in _ _ WYZ) y z)
                 \/ ((phi_in _ _ WXY) x z /\ z \in (phi_int _ _ WXY))
             else False);
 
-    phi_out := 
-        (fun x z => 
+    phi_out :=
+        (fun x z =>
             if (z \in (outp Z)) || (z \in (phi_int _ _ WYZ)) then
-                (compose_connection_map (phi_out _ _ WXY) 
+                (compose_connection_map (phi_out _ _ WXY)
                                         (phi_out _ _ WYZ)) x z
             else if (z \in (phi_int _ _ WXY)) then (phi_out _ _ WXY) x z
             else False)
@@ -202,7 +221,7 @@ Definition Wiring_id {X} : Wiring X X := {|
 
 (*| :coq:`Wiring_Id` is actually a valid Wiring. |*)
 
-Lemma Valid_Wiring_Wiring_id: ∀ X, 
+Lemma Valid_Wiring_Wiring_id: ∀ X,
     Valid_Wiring X X (Wiring_id).
 Proof.
     unfold Wiring_id, Valid_Wiring.
@@ -218,22 +237,22 @@ Lemma Wiring_id_right {i j} (f : Wiring i j) :
     Valid_Wiring _ _ f -> (Wiring_compose f (Wiring_id)) ≈ f.
 Proof.
     unfold Wiring_compose, Wiring_id, Valid_Wiring, Valid_Wiring_Mapping.
-    intro_proof ; my_tauto ; 
+    intro_proof ; my_tauto ;
         simplify_finset ;
         split_goals.
 
     - intros. destruct (x \in inp i) eqn:x_inpi.
         + my_tauto.
             * smart_destruct H4.
-            * by simplify_finset. 
+            * by simplify_finset.
         + my_tauto.
-    - destruct_if. 
+    - destruct_if.
         + left. exists x ; my_tauto.
         + specialize (H3 x y). my_tauto.
             by rewrite H3 in if0.
     - unfold compose_connection_map in *.
         smart_destruct H4.
-    
+
     - specialize (H3 x y). destruct_if.
         + unfold compose_connection_map. exists x ; my_tauto.
         + rewrite_in_setU. my_tauto.
@@ -245,28 +264,28 @@ Lemma Wiring_id_left {i j} (f : Wiring i j) :
 Proof.
     unfold Wiring_compose, Wiring_id, Valid_Wiring, Valid_Wiring_Mapping,
         compose_connection_map.
-    intro_proof ; my_tauto ; 
-        simplify_finset ; 
+    intro_proof ; my_tauto ;
+        simplify_finset ;
         split_goals.
 
-    - smart_destruct H4. 
-    
+    - smart_destruct H4.
+
     - destruct_if ;
-        specialize (H3 x y); my_tauto ; rewrite_in_setU.   
+        specialize (H3 x y); my_tauto ; rewrite_in_setU.
         + rewrite orb_True2 in H6 ; destruct H6.
             * left. exists y ; my_tauto.
             * right. my_tauto.
-        
+
         + rewrite H3 in if0. intuition.
 
-    - smart_destruct H4. 
+    - smart_destruct H4.
 
     - rewrite orb_false_r.
         specialize (H3 x y); destruct_if.
         + exists y ; my_tauto.
         + rewrite_in_setU. my_tauto.
             rewrite if0 in H5. rewrite orb_false_l in H5.
-            my_tauto.  
+            my_tauto.
 Qed.
 
 (*|
@@ -279,13 +298,13 @@ Lemma Wiring_compose_respects {X Y Z} :
 Proof.
     proper.
 
-    - 
+    -
     (* phi_int _ _ x :|: phi_int _ _ x0 = phi_int _ _ y :|: phi_int _ _ y0 *)
     destruct X0 ; destruct X1.
     rewrite H. rewrite H1. trivial.
 
     -
-    (* 
+    (*
 
     if x1 \in inp X then
         (exists2 y2 : Wire_Type, phi_in _ _ y0 x1 y2 & phi_in _ _ y y2 y1) \/
@@ -306,7 +325,7 @@ Proof.
             split. intuition.
             rewrite <- H2. trivial.
 
-    + intuition.    
+    + intuition.
 
     -
     (*
@@ -323,7 +342,7 @@ Proof.
     exists L.
     * specialize (H3 x1 L). intuition.
     * specialize (H1 L y1). intuition.
-    
+
     + right. split.
     * specialize (H x1 y1). intuition.
     * rewrite H2. trivial.
@@ -344,7 +363,7 @@ Proof.
         * my_tauto. specialize (H4 x1 y1). intuition.
         * intuition.
 
-    - 
+    -
     destruct X0 ; destruct X1.
     rewrite H2. rewrite H0.
     unfold compose_connection_map in *.
@@ -359,8 +378,8 @@ Proof.
             * intuition.
 Qed.
 
-(*| 
-composition lemmas 
+(*|
+composition lemmas
 ^^^^^^^^^^^^^^^^^^
 
 We show that the composition of two valid wirings is also valid.
@@ -380,7 +399,7 @@ Proof.
     - destruct (x \in inp j) eqn:x_inpj.
       + trivial.
       + simpl in H1. rewrite x_inpj in H1. intuition.
-    
+
     - simpl in H1. destruct (x \in inp j) eqn:x_inpj.
       + smart_destruct H1.
         * specialize (H x L). specialize (H0 L y). my_tauto.
@@ -398,7 +417,7 @@ Proof.
         rewrite orb_True2  in H2.
         destruct H2 ; rewrite H2 ; auto with *.
       + smart_destruct H1 ; auto with *.
-      
+
     - simpl in H1.
        unfold compose_connection_map in *.
        destruct ((y  \in outp l) || (y  \in phi_int _ _ f) ).
@@ -408,14 +427,6 @@ Proof.
          specialize (H x y). specialize (H0 x y). my_tauto.
     Defined.
 
-Axiom prout4: ∀ {j k l} (f : Wiring k l) (g : Wiring j k),
-Valid_Wiring j k g ->
-Valid_Wiring k l f ->
-[disjoint inp j & phi_int _ _ f :|: phi_int _ _ g] /\
-        [disjoint outp j & phi_int _ _ f :|: phi_int _ _ g] /\
-        [disjoint inp l & phi_int _ _ f :|: phi_int _ _ g] /\
-        [disjoint outp l & phi_int _ _ f :|: phi_int _ _ g].
-
 Lemma Wiring_compose_Valid_Wiring {j k l}
         (f : Wiring k l) (g : Wiring j k) :
             Valid_Wiring j k g ->
@@ -424,7 +435,7 @@ Lemma Wiring_compose_Valid_Wiring {j k l}
             Valid_Wiring j l (Wiring_compose f g).
 Proof.
     intros Hg Hf.
-    
+
     assert ([disjoint inp j & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint outp j & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint inp l & phi_int _ _ f :|: phi_int _ _ g] /\
@@ -436,16 +447,10 @@ Proof.
     apply Wiring_compose_Valid_Wiring_Mapping ; intuition.
 Defined.
 
-Axiom prout2: ∀ {i j k l}
-    (f : Wiring k l) (g : Wiring j k)  (h : Wiring i j),
-    Valid_Wiring i j h -> Valid_Wiring j k g -> Valid_Wiring k l f ->
-    [disjoint inp k &  phi_int _ _ h ] /\
-    [disjoint outp k & phi_int _ _ h ].
-
 (*| The composition of wirings is associative. |*)
 
 Lemma Wiring_compose_assoc {i j k l}
-    (f : Wiring k l) (g : Wiring j k) 
+    (f : Wiring k l) (g : Wiring j k)
     (h : Wiring i j):
     Valid_Wiring i j h ->
     Valid_Wiring j k g ->
@@ -453,7 +458,7 @@ Lemma Wiring_compose_assoc {i j k l}
         Wiring_compose f (Wiring_compose g h) ≈
         Wiring_compose (Wiring_compose f g) h.
 Proof.
-    intros Hh Hg Hf. 
+    intros Hh Hg Hf.
     unfold Valid_Wiring in *.
 
     assert (Hd: [disjoint inp k &  phi_int _ _ h ] /\
@@ -464,18 +469,18 @@ Proof.
     unfold Wiring_compose. simpl. my_tauto.
 
     - rewrite setUA. reflexivity.
-    - split_goals. 
+    - split_goals.
       + destruct_if.
       * smart_destruct H16. destruct H17.
         -- left. exists x0.
         ++ trivial.
-        ++ destruct_if. 
+        ++ destruct_if.
         ** left. exists L ; trivial.
-        ** specialize (H10 x0 L). intuition. 
+        ** specialize (H10 x0 L). intuition.
            contradiction_in_H H19 if1.
         -- left. exists L.
         ++ trivial.
-        ++ assert (HL: L \in inp j = false). 
+        ++ assert (HL: L \in inp j = false).
            eapply disjointFl. apply H13. intuition.
            rewrite HL.
 
@@ -485,19 +490,19 @@ Proof.
            assert (L \in inp k = false).
            eapply disjointFl. apply H. trivial.
            contradiction_in_H H23 H5.
-            
+
         -- smart_destruct H16.
            left. exists L.
         ++ trivial.
         ++ specialize (H15 x L). specialize (H10 L y). my_tauto.
-       
+
            rewrite in_setU in H19.
            rewrite in_setU in R.
            rewrite orb_True2 in H19.
            rewrite orb_True2 in R.
            right. my_tauto.
 
-           assert (y \in inp k = false). 
+           assert (y \in inp k = false).
            eapply disjointFl. apply H. intuition.
            contradiction_in_H H22 H19.
 
@@ -512,11 +517,9 @@ Proof.
         ++ left. exists L0.
         ** left. exists L; trivial.
         ** trivial.
-    
-        ++
-        right. my_tauto. left. exists L; trivial.
-        rewrite in_setU. auto with *.
 
+        ++ right. my_tauto. left. exists L; trivial.
+        rewrite in_setU. auto with *.
 
         -- specialize (H15 x L). my_tauto.
 
@@ -524,7 +527,7 @@ Proof.
 
         * intuition.
 
-    - unfold compose_connection_map. repeat rewrite in_setU. 
+    - unfold compose_connection_map. repeat rewrite in_setU.
     split_goals.
     + destruct ((y \in outp l) || (y \in phi_int _ _ f)) eqn:H_y_outp_l_phi_int_f.
 
@@ -532,7 +535,7 @@ Proof.
     rewrite orb_true_iff in H_y_outp_l_phi_int_f.
     destruct H_y_outp_l_phi_int_f ; rewrite H17 ; auto with *.
     rewrite H17.
-    
+
     smart_destruct H16.
     -- exists L0 ; my_tauto.
        exists L ; my_tauto.
@@ -552,7 +555,7 @@ Proof.
 
     ** assert (y \in outp k = false).
     eapply disjointFl. apply H0. trivial.
-    rewrite H19 in H16 ; trivial. 
+    rewrite H19 in H16 ; trivial.
     ** intuition.
 
     + destruct ((y \in outp l) || (y \in phi_int _ _ f)) eqn:H_y_outp_l_phi_int_f.
@@ -570,7 +573,7 @@ Proof.
     exists L0. rewrite H21. rewrite orb_true_l. exists L ; trivial. trivial.
 
     * rewrite orb_false_iff in H_y_outp_l_phi_int_f.
-    my_tauto. rewrite H17 in H16. rewrite H18 in H16. 
+    my_tauto. rewrite H17 in H16. rewrite H18 in H16.
     repeat rewrite orb_false_l in H16.
 
     destruct (y  \in phi_int _ _ g) eqn:y_phi_int_g.
@@ -582,7 +585,7 @@ Proof.
 
     ** assert (y \in outp k = false).
     eapply disjointFl. apply H0. trivial.
-    rewrite H19 ; trivial. 
+    rewrite H19 ; trivial.
     ** intuition.
 Qed.
 
@@ -598,7 +601,7 @@ Ww combine the previous results to build the category of valid wirings, :coq:`Wi
 Definition WiringD (X Y : Box) : Type :=
     { W : Wiring X Y & Valid_Wiring  X Y W }.
 
-Program Definition WiringD_id {i} : WiringD i i:= (Wiring_id; _).
+Program Definition WiringD_id {i} : WiringD i i := (Wiring_id; _).
 Next Obligation.
     apply Valid_Wiring_Wiring_id.
 Defined.
@@ -625,7 +628,7 @@ Defined.
 
 Program Definition WiringD_compose {X Y Z} :
     WiringD Y Z → WiringD X Y → WiringD X Z
-:= 
+:=
 λ '(g; Hg) '(f; Hf),
     (Wiring_compose g f; _).
 Next Obligation.
@@ -644,46 +647,46 @@ Proof.
         destruct x. destruct x0.
         simpl in *.
 
-        split. 
+        split.
         2: split.
 
         - subst ; intuition.
 
         - intros. destruct (x \in inp X) eqn:x_inp_X.
         + split.
-            * intros Hphi1. destruct Hphi1. destruct H3. 
+            * intros Hphi1. destruct Hphi1. destruct H3.
                 -- left. exists x0.
-                    destruct H2 as [H2a H2b]. specialize (H2a x x0). 
+                    destruct H2 as [H2a H2b]. specialize (H2a x x0).
                     apply H2a ; intuition.
-                    destruct H0 as [H0a H0b]. specialize (H0a x0 y). 
+                    destruct H0 as [H0a H0b]. specialize (H0a x0 y).
                     apply H0a ; intuition.
                 -- right. split.
-                    ++ destruct H2 as [H2a H2b]. 
+                    ++ destruct H2 as [H2a H2b].
                         specialize (H2a x y). apply H2a ; intuition.
                     ++ subst. intuition.
             * intros.
                 -- destruct H3.
                     left. destruct H3. exists x0.
-                    destruct H2 as [H2a H2b]. specialize (H2a x x0). 
+                    destruct H2 as [H2a H2b]. specialize (H2a x x0).
                     apply H2a ; intuition.
-                    destruct H0 as [H0a H0b]. specialize (H0a x0 y). 
+                    destruct H0 as [H0a H0b]. specialize (H0a x0 y).
                     apply H0a ; intuition.
                     right. split.
-                    destruct H2 as [H2a H2b]. specialize (H2a x y). 
+                    destruct H2 as [H2a H2b]. specialize (H2a x y).
                     apply H2a ; intuition.
                     subst ; intuition.
             + intuition.
 
-        - unfold compose_connection_map. intros. 
+        - unfold compose_connection_map. intros.
         destruct ((y \in outp Z) || (y \in phi_int0)) eqn:y_outp_z_phi_int0.
         split.
-        + intros. subst. rewrite y_outp_z_phi_int0. destruct H3. 
+        + intros. subst. rewrite y_outp_z_phi_int0. destruct H3.
             exists x0.
 
-            * destruct H2 as [H2a H2b]. specialize (H2b x x0). 
+            * destruct H2 as [H2a H2b]. specialize (H2b x x0).
                 apply H2b ; intuition.
 
-            * destruct H0 as [H0a H0b]. specialize (H0b x0 y). 
+            * destruct H0 as [H0a H0b]. specialize (H0b x0 y).
                 apply H0b ; intuition.
 
         + intros. subst. rewrite y_outp_z_phi_int0 in H3. destruct H3. exists x0.
@@ -720,7 +723,7 @@ Proof.
 Defined.
 
 Lemma WiringD_compose_assoc {i j k l}
-    (f : WiringD k l) (g : WiringD j k) 
+    (f : WiringD k l) (g : WiringD j k)
     (h : WiringD i j):
 
         WiringD_compose f (WiringD_compose g h) ≈
@@ -753,12 +756,12 @@ Program Instance WiringDCat : Category := {|
         symmetry (@WiringD_compose_assoc _ _ _ _ _ _ _);
 |}.
 
-(*| 
+(*|
 
 Wiring diagram as a monoidal category
 =====================================
 
-In this section, we extend :coq:`WiringD` to form a monoidal category. We define a :math:`+` operator to combine two boxes, and then show relevant lemmas to conclude. 
+In this section, we extend :coq:`WiringD` to form a monoidal category. We define a :math:`+` operator to combine two boxes, and then show relevant lemmas to conclude.
 
 We start by defining a plus operator on :coq:`Box`, and then extend it to :coq:`Wiring`. We then prove all lemmas for :coq:`WiringD` and conclude.
 |*)
@@ -790,7 +793,7 @@ Defined.
 Lemma box_plus_commutative: forall (b1 b2: Box),
     box_plus b1 b2 = box_plus b2 b1.
 Proof.
-    intros. unfold box_plus. 
+    intros. unfold box_plus.
     f_equal ;
       rewrite setUC; reflexivity.
 Qed.
@@ -800,7 +803,7 @@ Definition connection_map0 : connection_map := (fun a b => False).
 Definition connection_map_plus (x y: connection_map) : connection_map :=
     (fun a b => x a b \/ y a b).
 
-Definition Wiring_plus {i j k l} (w1 : Wiring i k) (w2: Wiring j l) 
+Definition Wiring_plus {i j k l} (w1 : Wiring i k) (w2: Wiring j l)
     : Wiring (box_plus i j) (box_plus k l)
 := {|
     phi_int := (phi_int _ _ w1) :|: (phi_int _ _ w2);
@@ -808,35 +811,27 @@ Definition Wiring_plus {i j k l} (w1 : Wiring i k) (w2: Wiring j l)
     phi_out := connection_map_plus (phi_out _ _ w1) (phi_out _ _ w2);
 |}.
 
-Axiom prout5: ∀ {i j k l} (f : Wiring i k) (g: Wiring j l) ,
-Valid_Wiring i k f -> Valid_Wiring j l g -> 
-[disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
-[disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
-[disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
-[disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k]
-.
-
 Lemma Valid_Wiring_plus {i j k l}: forall (f : Wiring i k) (g: Wiring j l),
     Valid_Wiring i k f -> Valid_Wiring j l g ->
         Valid_Wiring _ _ (Wiring_plus f g).
 Proof.
     intros f g Hf Hg.
-    assert ([disjoint phi_int _ _ f & inp j] 
-            /\ [disjoint phi_int _ _ g & inp i] 
-            /\ [disjoint phi_int _ _ f & outp j] 
-            /\ [disjoint phi_int _ _ g & outp i] 
-            /\ [disjoint phi_int _ _ f & inp l] 
-            /\ [disjoint phi_int _ _ g & inp k] 
-            /\ [disjoint phi_int _ _ f & outp l] 
+    assert ([disjoint phi_int _ _ f & inp j]
+            /\ [disjoint phi_int _ _ g & inp i]
+            /\ [disjoint phi_int _ _ f & outp j]
+            /\ [disjoint phi_int _ _ g & outp i]
+            /\ [disjoint phi_int _ _ f & inp l]
+            /\ [disjoint phi_int _ _ g & inp k]
+            /\ [disjoint phi_int _ _ f & outp l]
             /\ [disjoint phi_int _ _ g & outp k]).
     apply prout5 ; trivial.
-    unfold Valid_Wiring, Wiring_plus, Valid_Wiring_Mapping, connection_map_plus. 
+    unfold Valid_Wiring, Wiring_plus, Valid_Wiring_Mapping, connection_map_plus.
     destruct Hf, Hg.
     intuition ;
     simpl.
 
     1-4: apply disjointU2 ; trivial.
-    
+
     - simpl in H16. destruct H16.
         + specialize (H11 x y). assert (x \in inp i). now apply H11.
             rewrite in_setU. auto with *.
@@ -844,21 +839,21 @@ Proof.
             rewrite in_setU. auto with *.
 
     - simpl in H16. destruct H16.
-        + specialize (H11 x y). 
+        + specialize (H11 x y).
             assert (y \in inp k :|: phi_int _ _ f = true). now apply H11.
             rewrite in_setU in H18. repeat rewrite in_setU.
-        
-            rewrite orb_true_iff in H18. 
+
+            rewrite orb_true_iff in H18.
             destruct H18.
             * rewrite H18; intuition.
             * rewrite H18; auto with *.
 
-        + specialize (H12 x y). 
+        + specialize (H12 x y).
             assert (y \in inp l :|: phi_int _ _ g = true). intuition.
 
             rewrite in_setU in H18. repeat rewrite in_setU.
-            
-            rewrite orb_true_iff in H18. 
+
+            rewrite orb_true_iff in H18.
             destruct H18.
             * rewrite H18; auto with *.
             * rewrite H18; auto with *.
@@ -867,28 +862,28 @@ Proof.
         + specialize (H11 x y).
             assert (y \in outp k :|: phi_int _ _ f  = true). now apply H11.
             rewrite in_setU in H18. repeat rewrite in_setU.
-            rewrite orb_true_iff in H18. 
+            rewrite orb_true_iff in H18.
             destruct H18.
             * rewrite H18; intuition.
             * rewrite H18; auto with *.
 
-        + specialize (H12 x y). 
+        + specialize (H12 x y).
             assert (y \in outp l :|: phi_int _ _ g = true). intuition.
 
             rewrite in_setU in H18. repeat rewrite in_setU.
-            
-            rewrite orb_true_iff in H18. 
+
+            rewrite orb_true_iff in H18.
             destruct H18.
             * rewrite H18; auto with *.
             * rewrite H18; auto with *.
 
     - simpl in H16. destruct H16.
         + specialize (H11 x y).
-            assert (x \in outp i = true). now apply H11. 
+            assert (x \in outp i = true). now apply H11.
             repeat rewrite in_setU.
             rewrite H18; intuition.
 
-        + specialize (H12 x y). 
+        + specialize (H12 x y).
             assert (x \in outp j = true). intuition.
 
             rewrite in_setU.
@@ -906,16 +901,16 @@ Proof.
     unfold Valid_Wiring, Wiring_0, Valid_Wiring_Mapping,
         connection_map0.
     simpl.
-    split_goals ; 
+    split_goals ;
         apply disjoint_set0.
 Qed.
 
-Definition WiringD_0: WiringD Box0 Box0 := 
+Definition WiringD_0: WiringD Box0 Box0 :=
     (Wiring_0; Valid_Wiring_Mapping_Wiring_0).
 
-Program Definition WiringD_plus {i j k l} 
-    : WiringD i k -> WiringD j l -> WiringD (box_plus i j) (box_plus k l) 
-:= 
+Program Definition WiringD_plus {i j k l}
+    : WiringD i k -> WiringD j l -> WiringD (box_plus i j) (box_plus k l)
+:=
     λ '(w1; Hw1) '(w2; Hw2), (Wiring_plus w1 w2; _).
  Next Obligation.
     apply Valid_Wiring_plus ; intuition.
@@ -924,17 +919,14 @@ Defined.
 Program Definition WiringD_Tensor: WiringDCat ∏ WiringDCat ⟶ WiringDCat :=
 {|
     fobj := λ '(x, y), box_plus x y;
-    fmap := λ (x y : Box ∧ Box) 
-              (f : WiringD (fst x) (fst y) ∧ WiringD (snd x) (snd y)), 
-          (*  let '(w1; Hw1) := (fst f) in 
-            let '(w2; Hw2) := (snd f) in 
-              (Wiring_plus w1 w2; _)*) _;
+    fmap := λ (x y : Box ∧ Box)
+              (f : WiringD (fst x) (fst y) ∧ WiringD (snd x) (snd y)), _;
 |}.
 
 Next Obligation.
     unfold WiringD in *.
     destruct w. destruct w0.
-    
+
     exists (Wiring_plus x x0).
     apply (Valid_Wiring_plus x x0 v v0).
 Defined.
@@ -963,84 +955,276 @@ Next Obligation.
 Defined.
 
 Next Obligation. (* 3 *)
-    rewrite setU0.
     unfold connection_map_plus.
+    simplify_finset.
 
-    split.
-    - trivial.
-    - split.
     + split.
     * intros. rewrite in_setU. intuition.
     * rewrite in_setU. intros. destruct H.
-        assert ((x \in inp b) || (x \in inp b0)= true).
-        trivial. 
-        rewrite orb_true_iff in H1.
-        destruct H1.
-        
+        rewrite orb_True2 in H. destruct H.
         left.  intuition.
         right. intuition.
 
-    + intros. split.
-        * intros. rewrite in_setU. intuition.
-        * rewrite in_setU. intros. destruct H.
-            assert ((x \in outp b) || (x \in outp b0)= true).
-            trivial. 
-            rewrite orb_true_iff in H1.
-            destruct H1.
-            
-            left.  intuition.
-            right. intuition.
+    + split.
+    * intros. rewrite in_setU. intuition.
+    * rewrite in_setU. intros. destruct H.
+        rewrite orb_True2 in H. destruct H.
+        left.  intuition.
+        right. intuition.
 Defined.
 
 Next Obligation. (* 4 *)
     destruct w1, w2, w, w0.
     unfold WiringD_compose.
+
+
+assert (
+
+Wiring_plus (Wiring_compose x x1) (Wiring_compose x0 x2) ≈
+Wiring_compose (Wiring_plus x x0) (Wiring_plus x1 x2)
+
+).
+- unfold Wiring_plus, Wiring_compose, connection_map_plus, compose_connection_map.
+    simpl.
+
     split.
-    - unfold Wiring_plus. unfold Wiring_compose. simpl.
-        rewrite setUACA. reflexivity.
-    - unfold Wiring_plus, Wiring_compose, connection_map_plus.
-      simpl. split.
-      + intros. 
-        rewrite in_setU.
-        destruct (x3 \in inp b3) eqn:x3_inp_b3. 
-        * rewrite orb_true_l. split.
-            -- intros. intuition.
-                destruct H. 
-                left. exists x4. left. intuition. left. intuition.
-                right. rewrite in_setU. auto with *.
-                destruct (x3 \in inp b4). destruct H0.
-                destruct H. left. exists x4. right. intuition. right. intuition.
-                right. rewrite in_setU. intuition.
-                inversion H0.
-            -- rewrite in_setU. intros.
-               destruct H.
-               destruct H.  
-               destruct H, H0. 
-               ++ left. left. exists x4; intuition.
 
-               ++ 
-                
-               
-               left. left. exists x4. intuition. 
+    + rewrite setUACA; reflexivity.
+    + repeat rewrite in_setU. split.
+    * intros.
+    repeat rewrite in_setU.
 
-                   unfold Valid_Wiring in *.
-               unfold Valid_Wiring_Mapping in *.
-               intuition.        
-               specialize (H20 x3 x4).
-               specialize (H19 x4 y). 
-               assert (x4 \in inp b2 /\ y \in inp b0 :|: phi_int _ _ x0).
-               intuition.
-               assert ( x3 \in inp b3 /\ x4 \in inp b1 :|: phi_int _ _ x1).
-               intuition. intuition. 
+    destruct ((x3  \in inp b3) || (x3  \in inp b4)) eqn:Hx3.
+    -- rewrite orb_true_iff in Hx3.
+
+    destruct Hx3.
+    assert (x3  \in inp b4 = false). admit.
+    rewrite H. rewrite H0.
+    split.
+    ++ intros. destruct H1 ; intuition.
+    destruct H2.
+    left. exists x4. left. trivial. left. trivial.
+
+    ++ intros. destruct H1.
+    ** destruct H1.
+    unfold Valid_Wiring in *.
+    unfold Valid_Wiring_Mapping in *.
+
+    repeat_destruct v.
+    repeat_destruct v0.
+    repeat_destruct v1.
+    repeat_destruct v2.
+
+    specialize (v x4 y).
+    specialize (v0 x4 y).
+    specialize (v1 x3 x4).
+    specialize (v2 x3 x4).
+
+    destruct H1; destruct H2.
+
+    --- left. left. exists x4; trivial.
+    --- left. left. exists x4; trivial.
+
+    assert (x4 \in inp b1 :|: phi_int _ _ x1). apply v1 ; trivial.
+    assert (x4 \in inp b2). apply v0 ; trivial.
+    admit.
+
+    --- assert (x3 \in inp b4). apply v2 ; trivial.
+        contradiction_in_H H3 H0.
+
+    --- assert (x3 \in inp b4). apply v2 ; trivial.
+        contradiction_in_H H3 H0.
+
+    ** destruct H1.
+       destruct H1. rewrite orb_True2 in H2. destruct H2.
+
+    --- left. right. intuition.
+
+    --- repeat_destruct v1.
+        specialize (v1 x3 y).
+        assert (y \in inp b1 :|: phi_int _ _ x1). apply v1 ; trivial.
+        admit.
+
+    --- repeat_destruct v2.
+        specialize (v2 x3 y).
+        assert (x3 \in inp b4). apply v2 ; trivial.
+        contradiction_in_H H3 H0.
+
+    ++ assert (x3  \in inp b3 = false). admit.
+       rewrite H. rewrite H0.
+
+      split.
+      ** intros. destruct H1 ; intuition.
+      destruct H2.
+      left. exists x4 ; intuition.
+
+      ** intros. destruct H1. destruct H1.
+      --- right. left.
+          destruct H1.
+
+      +++ repeat_destruct v1.
+      specialize (v1 x3 x4).
+      assert (x3 \in inp b3). apply v1 ; trivial.
+      contradiction_in_H H3 H0.
+
+      +++ destruct H2.
+      *** repeat_destruct v2. specialize (v2 x3 x4).
+          repeat_destruct v. specialize (v x4 y).
+
+          assert (x4  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
+          assert (x4 \in inp b1). apply v ; trivial.
+          admit.
+
+      *** exists x4 ; trivial.
+
+      --- destruct H1. rewrite orb_True2 in H2.
+      destruct H1.
+      +++ repeat_destruct v1.
+      specialize (v1 x3 y).
+      assert (x3 \in inp b3). apply v1 ; trivial.
+      contradiction_in_H H3 H0.
+
+      +++ destruct H2.
+      *** repeat_destruct v2.
+      specialize (v2 x3 y).
+      assert (y  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
+      admit.
+
+      *** right. right ; intuition.
+
+      -- rewrite orb_false_iff in Hx3.
+      destruct Hx3. rewrite H. rewrite H0. intuition.
+
+      * intros. split.
+      -- intros.
+        destruct ((y  \in outp b) || (y  \in phi_int _ _ x)) eqn:Hy1.
+        ++ assert ((y  \in outp b :|: outp b0) || (y  \in phi_int _ _ x :|: phi_int _ _ x0) = true).
+        repeat rewrite in_setU. rewrite orb_true_iff in Hy1.
+        destruct Hy1 ; intuition.
+
+        rewrite H0.
+        destruct H.
+        ** destruct H. exists x4 ; left ; intuition.
+        ** assert ((y  \in outp b0) || (y  \in phi_int _ _ x0) = false).
+        admit.
+        assert (y  \in phi_int _ _ x2 = false). admit.
+        rewrite H1 in H. rewrite H2 in H. intuition.
+
+        ++ rewrite orb_false_iff in Hy1. destruct Hy1.
+        repeat rewrite in_setU.
+        rewrite H0. rewrite H1.
+        simpl.
+        destruct H.
+
+        ** destruct (y \in phi_int _ _ x1) eqn:Hy.
+        assert (y \in outp b0 = false). admit.
+        assert (y  \in phi_int _ _ x0 = false). admit.
+        rewrite H2. rewrite H3. simpl. left; trivial.
+        intuition.
+
+        ** destruct ((y  \in outp b0) || (y  \in phi_int _ _ x0)) eqn:Hy.
+        destruct H. exists x4; right ; trivial.
+
+        destruct (y  \in phi_int _ _ x2) eqn:Hy2.
+        rewrite orb_true_r. right ; trivial.
+        intuition.
+
+      -- intros.
+
+        destruct ((y  \in outp b) || (y  \in phi_int _ _ x)) eqn:Hy1.
+
+        ++ assert ((y  \in outp b :|: outp b0) || (y  \in phi_int _ _ x :|: phi_int _ _ x0)).
+           repeat rewrite in_setU. rewrite orb_true_iff in Hy1. destruct Hy1 ; rewrite H0 ; intuition.
+           rewrite H0 in H.
+           destruct H.
+
+           destruct H.
+            ** destruct H1.
+            --- left. exists x4 ; intuition.
+            --- right.
+                repeat_destruct v1. specialize (v1 x3 x4).
+                repeat_destruct v0. specialize (v0 x4 y).
+
+                assert (Hx41: x4  \in outp b2). apply v0. trivial.
+                assert (Hx42: x4  \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
+                admit.
+
+            ** destruct H1.
+            --- repeat_destruct v. specialize (v x4 y).
+                repeat_destruct v2. specialize (v2 x3 x4).
+
+                assert (Hx41: x4  \in outp b1). apply v. trivial.
+                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
+                admit.
+
+            --- repeat_destruct v0. specialize (v0 x4 y).
+                repeat_destruct v2. specialize (v2 x3 x4).
+
+                assert (Hx41: x4  \in outp b2). apply v0. trivial.
+                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
+                admit.
+
+        ++ repeat rewrite in_setU in H.
+           rewrite orb_false_iff in Hy1. destruct Hy1. rewrite H0 in H. rewrite H1 in H.
+           simpl in H.
+
+           destruct ((y  \in outp b0) || (y  \in phi_int _ _ x0)).
+           ** destruct H.
+           destruct H.
+
+           --- destruct H2.
+           +++ repeat_destruct v. specialize (v x4 y).
+                assert (y  \in outp b :|: phi_int _ _ x ). apply v. trivial.
+                rewrite in_setU in H3.
+                rewrite orb_True2 in H3.
+                rewrite H0 in H3. rewrite H1 in H3.
+                intuition.
+
+            +++ repeat_destruct v0. specialize (v0 x4 y).
+                repeat_destruct v1. specialize (v1 x3 x4).
+
+                assert (Hx41: x4 \in outp b2). apply v0. trivial.
+                assert (Hx42: x4  \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
+                admit.
+
+            --- destruct H2.
+            +++ repeat_destruct v. specialize (v x4 y).
+                repeat_destruct v2. specialize (v2 x3 x4).
+
+                assert (Hx41: x4  \in outp b1). apply v. trivial.
+                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
+                admit.
+
+            +++ right. exists x4 ; intuition.
+
+            ** destruct ((y  \in phi_int _ _ x1) || (y  \in phi_int _ _ x2)) eqn:Hy1.
+            --- rewrite orb_true_iff in Hy1.
+            destruct Hy1, H.
+            +++ rewrite H2. left. trivial.
+            +++ repeat_destruct v2. specialize (v2 x3 y).
+                assert (Hy1: y  \in outp b2 :|: phi_int _ _ x2 ). apply v2. trivial.
+                admit.
+
+            +++ repeat_destruct v1. specialize (v1 x3 y).
+                assert (Hy1: y \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
+                admit.
+
+            +++ repeat_destruct v2. specialize (v2 x3 y).
+                assert (Hy1: y  \in outp b2 :|: phi_int _ _ x2 ). apply v2. trivial.
+                admit.
+
+            --- intuition.
+
+- simpl in * ; intuition.
 
 Admitted.
 
-Program Definition to_unit_left_box_plus {x} 
-    : (box_plus Box0 x) ~> x 
+Program Definition to_unit_left_box_plus {x}
+    : (box_plus Box0 x) ~> x
 :=
     (Wiring_id ; _).
-Next Obligation. 
-    now rewrite box_plus_zerol. 
+Next Obligation.
+    now rewrite box_plus_zerol.
 Defined.
 Next Obligation.
     simpl_eqs.
@@ -1048,7 +1232,7 @@ Next Obligation.
     apply Valid_Wiring_Wiring_id.
 Defined.
 
-Program Definition from_unit_left_box_plus {x} 
+Program Definition from_unit_left_box_plus {x}
     : x ~> (box_plus Box0 x)
 :=
     (Wiring_id ; _).
@@ -1082,7 +1266,7 @@ Next Obligation.
 
     * intuition.
 
-    + rewrite H. 
+    + rewrite H.
     left. exists y; my_tauto.
 
     - simplify_finset. rewrite orb_false_r.
@@ -1095,13 +1279,13 @@ Next Obligation.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-    destruct H. my_tauto. 
+    destruct H. my_tauto.
 
     * intuition.
 
     + rewrite H. unfold compose_connection_map.
     exists y ; my_tauto.
-Defined. 
+Defined.
 
 Next Obligation.
     simpl_eqs.
@@ -1109,9 +1293,9 @@ Next Obligation.
 
     - split_goals.
     + destruct (x0  \in inp x) ; intuition.
-    + destruct (x0  \in inp x). 
+    + destruct (x0  \in inp x).
     * intuition.
-    destruct H0. my_tauto.
+      destruct H0. my_tauto.
 
     * intuition.
 
@@ -1121,20 +1305,20 @@ Next Obligation.
     split_goals.
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + rewrite H. unfold compose_connection_map.
     exists y ; my_tauto.
 Defined.
 
-Program Definition to_unit_right_box_plus {x} 
-    : (box_plus x Box0) ~> x 
+Program Definition to_unit_right_box_plus {x}
+    : (box_plus x Box0) ~> x
 :=
     (Wiring_id ; _).
 Next Obligation.
@@ -1146,7 +1330,7 @@ Next Obligation.
     apply Valid_Wiring_Wiring_id.
 Defined.
 
-Program Definition from_unit_right_box_plus {x} 
+Program Definition from_unit_right_box_plus {x}
     : x ~> (box_plus x Box0)
 :=
     (Wiring_id ; _).
@@ -1181,17 +1365,17 @@ Next Obligation.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + rewrite H. unfold compose_connection_map.
     exists y ; my_tauto.
-Defined. 
+Defined.
 
 Next Obligation.
     simpl_eqs.
@@ -1210,12 +1394,12 @@ Next Obligation.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + destruct (y  \in outp x).
     * unfold_destruct compose_connection_map H.
-        destruct H. my_tauto. 
+        destruct H. my_tauto.
     * intuition.
 
     + rewrite H. unfold compose_connection_map.
@@ -1289,7 +1473,7 @@ Next Obligation.
     + intuition.
 
     - simplify_finset. rewrite orb_false_r.
-    destruct ( y0 \in outp x :|: outp y :|: outp z) eqn:Hy0.
+    destruct (y0 \in outp x :|: outp y :|: outp z) eqn:Hy0.
     + unfold compose_connection_map. split_goals.
     * inversion H ; intuition.
     * inversion H ; my_tauto.
@@ -1299,14 +1483,13 @@ Next Obligation.
     + intuition. subst. contradiction_in_H Hy0 H0.
 Defined.
 
-Program Instance Wiring_is_Monoidal : @Monoidal WiringDCat := 
+Program Instance Wiring_is_Monoidal : @Monoidal WiringDCat :=
 {|
     I := Box0;
     tensor := WiringD_Tensor;
 |}.
 
 Next Obligation. (* to_unit_left_natural {x y} (g : x ~> y) *)
-    
     (* Clean-up definitions from Program etc *)
     unfold to_unit_left_box_plus.
     unfold to_unit_left_box_plus_obligation_1 ;
@@ -1316,21 +1499,15 @@ Next Obligation. (* to_unit_left_natural {x y} (g : x ~> y) *)
     simpl.
 
     (* Clean up definition from Wiring etc *)
-    repeat rewrite set0U. 
+    repeat rewrite set0U.
     unfold connection_map_plus.
     unfold compose_connection_map.
 
-Ltac simplify_finset_2 :=
-    try rewrite in_set0 in * ;
-    try rewrite setUA in * ;
-    try repeat rewrite setU0 ;
-    try repeat rewrite set0U ;
-    try repeat rewrite in_set0 ;
-    try apply disjoint_set0.
-
     simpl_eqs.
+    repeat rewrite setU0 ;
+    repeat rewrite set0U ;
+    repeat rewrite in_set0.
 
-    simplify_finset_2.
     split.
     - reflexivity.
     - split.
@@ -1341,8 +1518,8 @@ Ltac simplify_finset_2 :=
     split.
 
     * intros.
-        destruct H. 
-        destruct H. 
+        destruct H.
+        destruct H.
         unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
         specialize (v' x2 y0).
@@ -1355,15 +1532,12 @@ Ltac simplify_finset_2 :=
 
         left. exists y0. right. my_tauto.
         my_tauto.
-
-
         right. split. right. my_tauto. intuition.
-
         intuition.
 
     * intros.
     destruct H.
-    -- destruct H. destruct H. 
+    -- destruct H. destruct H.
     ++ intuition.
     ++ left. exists x1 ; my_tauto.
     -- destruct H. destruct H.
@@ -1373,31 +1547,31 @@ Ltac simplify_finset_2 :=
     * intuition.
 
     + intros. repeat rewrite in_set0. rewrite orb_false_r.
-    split. 
+    split.
 
-    * intros. 
-    destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.    
+    * intros.
+    destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.
     rewrite orb_true_iff in y0_outp_y_phi_int_x0.
 
     destruct y0_outp_y_phi_int_x0.
-        rewrite H0. destruct H. destruct H. subst.
-        exists y0. right. intuition. intuition.
+    rewrite H0. destruct H. destruct H. subst.
+    exists y0. right. intuition. intuition.
 
-        destruct H.
+    destruct H.
 
-        unfold Valid_Wiring in v.
-        destruct v as [h1 [h2[ h3[ h4 v']]]].
+    unfold Valid_Wiring in v.
+    destruct v as [h1 [h2[ h3[ h4 v']]]].
 
-        assert (y0 \in outp y = false).
-        eapply disjointFl. apply h4. intuition.
-        rewrite H2. rewrite H0. right. destruct H. subst. intuition.
+    assert (y0 \in outp y = false).
+    eapply disjointFl. apply h4. intuition.
+    rewrite H2. rewrite H0. right. destruct H. subst. intuition.
 
-        inversion H.
+    inversion H.
 
-*        intros.
+    * intros.
         destruct (y0 \in outp y) eqn:y0_outp_y.
         rewrite orb_true_l.
-        destruct H. 
+        destruct H.
         destruct H. destruct H. inversion H.
 
         unfold Valid_Wiring in v.
@@ -1409,7 +1583,7 @@ Ltac simplify_finset_2 :=
 
         rewrite orb_false_l.
 
-        destruct (y0 \in phi_int _ _ x0). 
+        destruct (y0 \in phi_int _ _ x0).
         destruct H. destruct H. inversion H.
         exists x1.
         unfold Valid_Wiring in v.
@@ -1437,25 +1611,25 @@ Next Obligation. (* from_unit_left_natural {x y} (g : x ~> y) *)
     repeat rewrite set0U. repeat rewrite setU0.
     unfold connection_map_plus.
     unfold compose_connection_map.
-    
+
     simpl_eqs.
 
     split.
     - simplify_finset.
-    
+
     - split.
-    
+
     * intros. split.
 
     -- intros. destruct_if.
-    ++ destruct H. destruct H. 
-       rewrite in_set0 in H0.    
+    ++ destruct H. destruct H.
+       rewrite in_set0 in H0.
         destruct H0.
-    
+
     ** destruct H0. intuition.
 
     ** my_tauto.
-    
+
     unfold Valid_Wiring in v.
     destruct v as [h1 [h2[ h3[ h4 v']]]].
     unfold Valid_Wiring_Mapping in v'.
@@ -1465,55 +1639,55 @@ Next Obligation. (* from_unit_left_natural {x y} (g : x ~> y) *)
     rewrite in_setU in H1.
     assert ((y0 \in inp y) || (y0 \in phi_int _ _ x0) = true). trivial.
     rewrite orb_true_iff in H2.
-    destruct H2 ; trivial. 
+    destruct H2 ; trivial.
 
     --- left.  exists y0; my_tauto.
     --- right ; my_tauto.
-    
+
     ** destruct H. rewrite in_set0 in H0. intuition.
 
     ++ intuition.
 
     -- intros. destruct_if.
     ++ destruct H. destruct H. my_tauto.
-    
+
     ** left. exists x1. my_tauto. right. trivial.
 
     ** left. exists x1; my_tauto. right. trivial.
 
     ++ intuition.
-    
+
     * intros. repeat rewrite in_set0. rewrite orb_false_r. split.
 
-    -- intros. 
-        destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.    
+    -- intros.
+        destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.
         rewrite orb_true_iff in y0_outp_y_phi_int_x0.
 
         destruct y0_outp_y_phi_int_x0.
-        rewrite H0. smart_destruct H. 
-        
+        rewrite H0. smart_destruct H.
+
     ++ rewrite in_set0 in H. inversion H.
-    ++ exists y0; intuition. 
+    ++ exists y0; intuition.
     ++ unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
 
         assert (y0 \in outp y = false).
         eapply disjointFl. apply h4. intuition.
-        
-        rewrite H1. rewrite H0. 
-        
+
+        rewrite H1. rewrite H0.
+
         destruct H. destruct H2.
     ** destruct H2. rewrite in_set0 in H2. inversion H2.
-    ** my_tauto. 
+    ** my_tauto.
 
     ++ intuition.
-    
+
     -- intros.
     destruct (y0 \in outp y) eqn:y0_outp_y.
     rewrite orb_true_l.
-    
+
     destruct H.
-    my_tauto.  
+    my_tauto.
     exists x1.
 
     unfold Valid_Wiring in v.
@@ -1521,13 +1695,13 @@ Next Obligation. (* from_unit_left_natural {x y} (g : x ~> y) *)
     unfold Valid_Wiring_Mapping in v'.
     specialize (v' x1 y0).
     assert (x1 \in outp x). intuition.
-    
-    
-    ++ my_tauto. 
+
+
+    ++ my_tauto.
     ++ right. intuition.
     ++ rewrite orb_false_l.
     destruct (y0 \in phi_int _ _ x0).
-    exists x1. 
+    exists x1.
 
     unfold Valid_Wiring in v.
     destruct v as [h1 [h2[ h3[ h4 v']]]].
@@ -1557,14 +1731,14 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
     repeat rewrite set0U. repeat rewrite setU0.
     unfold connection_map_plus.
     unfold compose_connection_map.
-  
+
     split.
     reflexivity.
-    
-    split. 
+
+    split.
     - intros. repeat rewrite in_set0.
 
-        split. intros.  
+        split. intros.
         destruct (x1 \in inp x) eqn:x1_inp_x.
         destruct H. destruct H.
         + destruct H. subst.
@@ -1577,7 +1751,7 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
             rewrite in_setU in H1.
             assert ((y0 \in inp y) || (y0 \in phi_int _ _ x0) = true). trivial.
             rewrite orb_true_iff in H2.
-            destruct H2.  
+            destruct H2.
 
             left. exists y0. left. trivial. intuition.
 
@@ -1589,13 +1763,13 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
 
         + destruct (x1 \in inp x) eqn:x1_inp_x.
             intros. destruct H. destruct H.
-       
+
             destruct H0. subst. left. exists x1. intuition. intuition.
 
             left. exists x1. intuition. intuition.
-            
+
             intuition.
-            
+
     - intros. repeat rewrite in_set0. rewrite orb_false_r.
         split. intros.
 
@@ -1608,15 +1782,15 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
 
             -- assert (y0 \in outp y = false).
                 eapply disjointFl. unfold Valid_Wiring in v. apply v. intuition.
-                rewrite H1. rewrite H0. 
+                rewrite H1. rewrite H0.
                 destruct H. destruct H. subst. left. intuition.
         * inversion H.
-        
+
         + intros.
             destruct (y0 \in outp y) eqn:y0_outp_y.
         rewrite orb_true_l.
-        destruct H. 
-        destruct H0. 
+        destruct H.
+        destruct H0.
         subst. exists x1.
         unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
@@ -1624,7 +1798,7 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
         specialize (v' x1 y0).
         assert (x1 \in outp x). intuition. intuition.
         intuition.
-        
+
         rewrite orb_false_l.
         destruct (y0 \in phi_int _ _ x0).
         exists x1. intuition.
@@ -1634,9 +1808,9 @@ Next Obligation. (* to_unit_right_natural {x y} (g : x ~> y) *)
         unfold Valid_Wiring_Mapping in v'.
         specialize (v' x1 y0).
         assert (x1 \in outp x). intuition.
-        intuition. 
-        destruct H. intuition. 
-        destruct H. inversion H. 
+        intuition.
+        destruct H. intuition.
+        destruct H. inversion H.
 
         inversion H.
 Defined.
@@ -1660,11 +1834,11 @@ Next Obligation. (* from_unit_right_natural {x y} (g : x ~> y) *)
 
     split.
     reflexivity.
-    
-    split. 
+
+    split.
     - intros. repeat rewrite in_set0.
 
-        split. intros.  
+        split. intros.
         destruct (x1 \in inp x) eqn:x1_inp_x.
         destruct H. destruct H.
         + destruct H0.
@@ -1681,42 +1855,42 @@ Next Obligation. (* from_unit_right_natural {x y} (g : x ~> y) *)
 
                 left. exists y0. destruct H. subst. intuition. intuition.
                 destruct H. subst. right. intuition.
-        
+
             * destruct H0. rewrite in_set0 in H0. inversion H0.
 
         + destruct H. inversion H0.
-            
+
         + inversion H.
-        
+
         + destruct (x1 \in inp x) eqn:x1_inp_x.
             intros. destruct H. destruct H.
-       
+
             destruct H0. subst. left. exists x1. intuition. left. intuition.
 
             left.
             exists x1. intuition. left. intuition.
-            
+
             intuition.
-            
+
     - intros. repeat rewrite in_set0. rewrite orb_false_r.
         split. intros.
 
-        destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.    
+        destruct ((y0 \in outp y) || (y0 \in phi_int _ _ x0)) eqn:y0_outp_y_phi_int_x0.
         rewrite orb_true_iff in y0_outp_y_phi_int_x0.
 
         destruct y0_outp_y_phi_int_x0.
         rewrite H0. destruct H. destruct H. subst.
         destruct H1.
-        exists y0. intuition. intuition.  
+        exists y0. intuition. intuition.
         destruct H1. rewrite in_set0 in H1. inversion H1.
-      
+
         unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
 
         assert (y0 \in outp y = false).
         eapply disjointFl. apply h4. intuition.
-        rewrite H1. rewrite H0. 
-        
+        rewrite H1. rewrite H0.
+
         destruct H. destruct H2.
         intuition. subst. intuition.
         destruct H2. rewrite in_set0 in H2. inversion H2.
@@ -1726,8 +1900,8 @@ Next Obligation. (* from_unit_right_natural {x y} (g : x ~> y) *)
         intros.
         destruct (y0 \in outp y) eqn:y0_outp_y.
         rewrite orb_true_l.
-        destruct H. 
-        destruct H0. 
+        destruct H.
+        destruct H0.
         subst. exists x1.
         unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
@@ -1735,24 +1909,24 @@ Next Obligation. (* from_unit_right_natural {x y} (g : x ~> y) *)
         specialize (v' x1 y0).
         assert (x1 \in outp x). intuition. intuition.
         left. intuition.
-        
+
         rewrite orb_false_l.
         destruct (y0 \in phi_int _ _ x0).
-        exists x1. 
+        exists x1.
 
         unfold Valid_Wiring in v.
         destruct v as [h1 [h2[ h3[ h4 v']]]].
         unfold Valid_Wiring_Mapping in v'.
         specialize (v' x1 y0).
         assert (x1 \in outp x). intuition.
-        intuition. 
+        intuition.
 
         left. intuition.
 
         inversion H.
 Defined.
 
-Next Obligation. (* to_tensor_assoc_natural {x y z w v u} 
+Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
                     (g : x ~> y) (h : z ~> w) (i : v ~> u) *)
     (* Clean-up definitions from Program etc *)
     unfold to_box_plus_assoc_natural.
@@ -1765,12 +1939,12 @@ Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
     simpl.
     simpl_eqs.
     repeat rewrite box_plus_associative.
-    
+
     simpl.
 
     (* Clean up definition from Wiring etc *)
     repeat rewrite set0U. repeat rewrite setU0.
-    repeat rewrite setUA. 
+    repeat rewrite setUA.
     unfold connection_map_plus.
     unfold compose_connection_map.
 
@@ -1798,7 +1972,7 @@ Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
         left. exists y0. intuition. repeat rewrite in_setU. rewrite H4. intuition.
         right. repeat rewrite in_setU. rewrite H4. intuition.
 
-     + destruct H0.  
+     + destruct H0.
         unfold Valid_Wiring in v1.
         unfold Valid_Wiring_Mapping in v1.
 
@@ -1824,25 +1998,25 @@ Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
         destruct H4.
         left. exists y0. intuition. repeat rewrite in_setU. rewrite H4. intuition.
         right. repeat rewrite in_setU. rewrite H4. intuition.
-        
+
     + destruct H. inversion H0.
-    
+
     + intros.
         destruct H. destruct H.
         repeat rewrite setUA in H.
         repeat rewrite in_setU in H0.
         destruct H0. subst.
-        
+
         left. exists x3 ; intuition.
         left. exists x3 ; intuition.
     + intuition.
 
-    - intros. 
+    - intros.
         rewrite in_set0. rewrite orb_false_r.
         split.
 
         destruct ( y0 \in outp y :|: outp w :|: outp u) eqn:y0'.
-        rewrite orb_true_l. 
+        rewrite orb_true_l.
         intros. destruct H.
         exists y0. destruct H. subst. intuition.
 
@@ -1856,9 +2030,9 @@ Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
         destruct ( y0 \in outp y :|: outp w :|: outp u) eqn:y0'.
         intros.
         rewrite orb_true_l.
-        
+
         destruct H. destruct H0. subst.
-        
+
         destruct H. destruct H.
 
         unfold Valid_Wiring in v0.
@@ -1917,28 +2091,28 @@ Next Obligation. (* to_tensor_assoc_natural {x y z w v u}
         intuition.
 Defined.
 
-Next Obligation. (* from_tensor_assoc_natural {x y z w v u} 
+Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         (g : x ~> y) (h : z ~> w) (i : v ~> u) *)
 
     (* Clean-up definitions from Program etc *)
         unfold from_box_plus_assoc_natural.
         unfold from_box_plus_assoc_natural_obligation_1, from_box_plus_assoc_natural_obligation_2 .
-    
+
         unfold WiringD_compose.
         unfold WiringD_compose_obligation_1.
         unfold Wiring_compose.
         destruct g, h, i.
         simpl.
         simpl_eqs.
-        
+
         (* Clean up definition from Wiring etc *)
         repeat rewrite box_plus_associative.
         repeat rewrite set0U. repeat rewrite setU0.
-        repeat rewrite setUA. 
+        repeat rewrite setUA.
         unfold connection_map_plus.
         unfold compose_connection_map.
         simpl.
-    
+
         split_goals.
         - intro_proof.
             simplify_finset.
@@ -1961,15 +2135,15 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
             + smart_unfold v1.
                 repeat_destruct v1.
                 smart_unfold v1.
-    
+
                 specialize (v1 L y0).
                 smart_destruct v1.
                 rewrite_in_setU.
                 apply orb_true_iff in H1 ; destruct H1.
-    
+
                 left. exists y0. intuition. rewrite_in_setU. rewrite H1. intuition.
                 right. intuition. rewrite H1. intuition.
-        
+
          + smart_unfold v2.
             repeat_destruct v2.
             smart_unfold v2.
@@ -1984,7 +2158,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
             right. intuition.
 
         + inversion R.
-        + my_tauto. 
+        + my_tauto.
 
     - destruct_if.
         simplify_finset.
@@ -1998,7 +2172,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         * left. exists x3 ; intuition.
         * left. exists x3 ; intuition.
         * inversion H.
-      
+
     - rewrite_in_setU.
         simplify_finset.
         rewrite orb_false_r.
@@ -2010,8 +2184,8 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         exists y0. intuition. rewrite_in_setU. my_tauto.
         exists y0. intuition. rewrite_in_setU. my_tauto.
         exists y0. intuition. rewrite_in_setU. my_tauto.
-        
-        + simpl in *. 
+
+        + simpl in *.
             destruct_if.
             smart_destruct H; intuition.
             intuition.
@@ -2033,7 +2207,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
 
         rewrite_in_setU.
         apply orb_true_iff in H ; destruct H.
-        
+
         exists x3. rewrite H3. intuition. intuition.
         exists x3. rewrite H3. intuition. intuition.
 
@@ -2048,7 +2222,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
 
         rewrite_in_setU.
         apply orb_true_iff in H ; destruct H.
-        
+
         exists x3. rewrite H2. intuition. intuition.
         exists x3. rewrite H2. intuition. intuition.
 
@@ -2063,7 +2237,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
 
         rewrite_in_setU.
         apply orb_true_iff in H ; destruct H.
-        
+
         exists x3. rewrite H2. intuition. intuition.
         exists x3. rewrite H2. intuition. intuition.
 
@@ -2081,7 +2255,7 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         my_tauto.
         rewrite_in_setU.
         apply orb_true_iff in H0 ; destruct H0.
-        
+
         exists x3. rewrite H1. intuition. intuition.
         exists x3. rewrite H1. intuition. intuition.
 
@@ -2096,9 +2270,9 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         my_tauto.
         rewrite_in_setU.
         apply orb_true_iff in H0 ; destruct H0.
-        
+
         exists x3. rewrite H1. intuition. intuition.
-        exists x3. rewrite H1. intuition. intuition.    
+        exists x3. rewrite H1. intuition. intuition.
 
         smart_unfold v2.
         repeat_destruct v2.
@@ -2109,10 +2283,10 @@ Next Obligation. (* from_tensor_assoc_natural {x y z w v u}
         my_tauto.
         rewrite_in_setU.
         apply orb_true_iff in H0 ; destruct H0.
-        
+
         exists x3. rewrite H1. intuition. intuition.
         exists x3. rewrite H1. intuition. intuition.
-        
+
         inversion H.
 Defined.
 
@@ -2122,7 +2296,7 @@ Next Obligation. (* triangle_identity {x y} *)
 
         (* Clean up definition from Wiring etc *)
         repeat rewrite set0U. repeat rewrite setU0.
-        repeat rewrite setUA. 
+        repeat rewrite setUA.
         unfold connection_map_plus.
         unfold compose_connection_map.
 
@@ -2166,7 +2340,7 @@ Next Obligation. (* triangle_identity {x y} *)
         exists y0 ; my_tauto.
         right. my_tauto.
 
-        +  rewrite_in_setU. rewrite in_set0 in H. 
+        +  rewrite_in_setU. rewrite in_set0 in H.
         rewrite orb_false_r in H.
         destruct ((y0 \in outp x) || (y0 \in outp y)) eqn:y0'.
         apply orb_true_iff in y0'.  destruct y0'.
@@ -2195,7 +2369,7 @@ Next Obligation (* pentagon_identity {x y z w} *).
                 destruct H. left. exists L0 ; intuition.
                 left. exists L0. intuition.  intuition.
                 inversion R.
-                
+
             * destruct H0. try_subst. rewrite if0 in H.
                 smart_destruct H.
                 destruct H. left. exists L0 ; intuition.
@@ -2214,11 +2388,11 @@ Next Obligation (* pentagon_identity {x y z w} *).
         simplify_finset.
 
         destruct_if.
-        
+
         + destruct H.
 
-        * destruct H. 
-        left. exists x1. 
+        * destruct H.
+        left. exists x1.
         apply orb_true_iff in if0. destruct if0.
         apply orb_true_iff in H1. destruct H1.
         apply orb_true_iff in H1. destruct H1.
@@ -2238,18 +2412,18 @@ Next Obligation (* pentagon_identity {x y z w} *).
         apply orb_true_iff in H1. destruct H1.
 
         left. my_tauto.
-        right. rewrite in_setU. rewrite H1. my_tauto. 
+        right. rewrite in_setU. rewrite H1. my_tauto.
         right. rewrite in_setU. rewrite H1. my_tauto. intuition.
         right. rewrite H1. my_tauto. intuition.
-         
+
         * intuition.
-        
+
         + intuition.
 
     -
     unfold compose_connection_map in *.
     unfold connection_map_plus in *.
-    simplify_finset.  
+    simplify_finset.
     repeat rewrite orb_false_r in H.
     repeat rewrite orb_false_r.
 
@@ -2259,14 +2433,14 @@ Next Obligation (* pentagon_identity {x y z w} *).
 
     exists y0.
     * destruct H, H3; rewrite setUA in H4; my_tauto.
-    
-    * rewrite setUA in if0. rewrite setUA. my_tauto. 
+
+    * rewrite setUA in if0. rewrite setUA. my_tauto.
 
     + intuition.
-    
+
     - unfold compose_connection_map in *.
     unfold connection_map_plus in *.
-    simplify_finset.  
+    simplify_finset.
     repeat rewrite orb_false_r in H.
     repeat rewrite orb_false_r.
 
@@ -2279,8 +2453,8 @@ Next Obligation (* pentagon_identity {x y z w} *).
         destruct if0.
 
     -- left. my_tauto.
-    -- right. my_tauto. 
-    
+    -- right. my_tauto.
+
     * exists x1.
     -- rewrite setUA. my_tauto.
     --
@@ -2290,7 +2464,6 @@ Next Obligation (* pentagon_identity {x y z w} *).
 
     + intuition.
 Defined.
-
 
 (*
 Program Instance Wiring_is_Braided : @BraidedMonoidal WiringDCat :=
