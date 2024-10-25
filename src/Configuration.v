@@ -48,7 +48,7 @@ Generalizable All Variables.
 #[export] Unset Universe Minimization ToSet.
 
 (*| In the following, we control how goals in proof scripts are handled. We opted for a strict mode to ease proof readabiltiy. |*)
-#[global] Set Default Goal Selector "1". 
+#[global] Set Default Goal Selector "1".
 #[global] Set Bullet Behavior "Strict Subproofs". (* This is disabled by ssreflect *)
 
 Definition fun_compose {A B C} (g : B -> C) (f : A -> B) :=
@@ -58,3 +58,6 @@ Notation " g ∘ f " := (fun_compose g f)
   (at level 40, left associativity).
 
 Notation idmap := (λ x, x).
+
+(*| Configure the solver for the :coq:`intuition` tactic. |*)
+Ltac intuition_solver ::= auto with *.
