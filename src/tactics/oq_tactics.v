@@ -148,4 +148,4 @@ Ltac rewrite_in_setU :=
     end.
 
 Ltac contradiction_in_H H1 H2 :=
-    rewrite H1 in H2 ; intuition.
+    rewrite H1 in H2 ; inversion H2.
