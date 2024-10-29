@@ -103,7 +103,7 @@ Definition connection_map := relation Wire_Type.
 
 and :coq:`Valid_Wiring` ensures those constraints are respected. We also expect the sets of input and output ports and internal connections to be all disjoint. |*)
 
-Record Wiring (X Y : Box) : Type := {
+Record Wiring ( X Y : Box ) : Type := {
     phi_int : Interface;
     phi_in : connection_map;
     phi_out : connection_map;
@@ -120,6 +120,8 @@ Definition Valid_Wiring (X Y : Box) (W : Wiring X Y) :=
     [disjoint inp  Y & phi_int _ _ W] /\
     [disjoint outp Y & phi_int _ _ W] /\
     Valid_Wiring_Mapping X Y W.
+
+(**************************************)
 
 Axiom prout2: ∀ {i j k l} (f : Wiring k l) (g : Wiring j k)  (h : Wiring i j),
     Valid_Wiring i j h -> Valid_Wiring j k g -> Valid_Wiring k l f ->
@@ -231,7 +233,7 @@ Proof.
 
     unfold Valid_Wiring_Mapping. simpl.
     simplify_finset.
-Qed.
+Defined.
 
 Lemma Wiring_id_right {i j} (f : Wiring i j) :
     Valid_Wiring _ _ f -> (Wiring_compose f (Wiring_id)) ≈ f.
@@ -725,7 +727,6 @@ Defined.
 Lemma WiringD_compose_assoc {i j k l}
     (f : WiringD k l) (g : WiringD j k)
     (h : WiringD i j):
-
         WiringD_compose f (WiringD_compose g h) ≈
         WiringD_compose (WiringD_compose f g) h.
 Proof.
@@ -888,7 +889,7 @@ Proof.
 
             rewrite in_setU.
             rewrite H18; auto with *.
-Qed.
+Defined.
 
 Definition Wiring_0 : Wiring Box0 Box0  := {|
     phi_int := set0;
@@ -1159,6 +1160,8 @@ Program Definition WiringD_plus {i j k l}
  Next Obligation.
     apply Valid_Wiring_plus ; intuition.
 Defined.
+
+Search "∧".
 
 Program Definition WiringD_Tensor: WiringDCat ∏ WiringDCat ⟶ WiringDCat :=
 {|
@@ -1494,7 +1497,7 @@ Next Obligation.
     + intuition. subst. contradiction_in_H Hy0 H0.
 Defined.
 
-Program Instance Wiring_is_Monoidal : @Monoidal WiringDCat :=
+Program Instance WiringD_is_Monoidal : @Monoidal WiringDCat :=
 {|
     I := Box0;
     tensor := WiringD_Tensor;
@@ -1508,13 +1511,12 @@ Next Obligation. (* to_unit_left_natural {x y} (g : x ~> y) *)
     unfold WiringD_compose.
     destruct g.
     simpl.
+    simpl_eqs.
 
     (* Clean up definition from Wiring etc *)
-    repeat rewrite set0U.
     unfold connection_map_plus.
     unfold compose_connection_map.
 
-    simpl_eqs.
     repeat rewrite setU0 ;
     repeat rewrite set0U ;
     repeat rewrite in_set0.
@@ -2476,13 +2478,230 @@ Next Obligation (* pentagon_identity {x y z w} *).
     + intuition.
 Defined.
 
-(*
-Program Instance Wiring_is_Braided : @BraidedMonoidal WiringDCat :=
-{
-braided_is_monoidal := Wiring_is_Monoidal ;
+(*| We define a braiding for WiringD and show it is an isomorphism. |*)
+
+Program Definition to_WiringD_braid {x y:Box}
+    : x ⨂ y ~> y ⨂ x := (Wiring_id; _).
+Next Obligation.
+    now rewrite box_plus_commutative.
+Defined.
+
+Next Obligation.
+    simpl_eqs.
+    apply Valid_Wiring_Wiring_id.
+Defined.
+
+Program Definition from_WiringD_braid {x y:Box}
+    : y ⨂ x ~> x ⨂ y := (Wiring_id; _).
+Next Obligation.
+    now rewrite box_plus_commutative.
+Defined.
+
+Next Obligation.
+    simpl_eqs.
+    apply Valid_Wiring_Wiring_id.
+Defined.
+
+Program Instance WiringD_braid { x y : Box }
+    : @Isomorphism WiringDCat (x ⨂ y) (y ⨂ x)
+:= {|
+    to := to_WiringD_braid ;
+    from := from_WiringD_braid ;
+|}.
+Next Obligation.
+    simpl_eqs.
+    simplify_finset.
+    - split.
+    + intros.
+    destruct (x0  \in inp y :|: inp x).
+    * destruct H.
+    -- smart_destruct H.
+    -- intuition.
+    * inversion H.
+    + intros. my_tauto. rewrite H.
+    left. exists y0 ; my_tauto. rewrite setUC. trivial.
+
+    - simplify_finset. rewrite orb_false_r. unfold compose_connection_map.
+    split.
+    +
+    intros.
+    destruct (y0  \in outp y :|: outp x) eqn:Hy0.
+    * destruct H. my_tauto.
+    * inversion H.
+    + my_tauto. rewrite H. exists y0 ; my_tauto.
+    rewrite setUC. trivial.
+Defined.
+
+Next Obligation.
+    simpl_eqs.
+    simplify_finset.
+    - split.
+    + intros.
+    destruct (x0  \in inp x :|: inp y).
+    * destruct H.
+    -- smart_destruct H.
+    -- intuition.
+    * inversion H.
+    + intros. my_tauto. rewrite H.
+    left. exists y0 ; my_tauto. rewrite setUC. trivial.
+
+    - simplify_finset. rewrite orb_false_r. unfold compose_connection_map.
+    split.
+    + intros.
+    destruct (y0  \in outp x :|: outp y) eqn:Hy0.
+    * destruct H. my_tauto.
+    * inversion H.
+    + my_tauto. rewrite H. exists y0 ; my_tauto.
+    rewrite setUC. trivial.
+Defined.
+
+Generalizable All Variables.
+
+Section SymmetricMonoidal.
+
+Context {C : Category}.
+
+Class SymmetricMonoidal := {
+  symmetric_is_monoidal : @Monoidal C;
+
+  braid {x y} : x ⨂ y ~> y ⨂ x;
+  braid_isomorphism {x y} : @Isomorphism C (x ⨂ y) (y ⨂ x);
+
+  hexagon_identity {x y z} :
+    tensor_assoc ∘ braid ∘ tensor_assoc
+      << (x ⨂ y) ⨂ z ~~> y ⨂ (z ⨂ x) >>
+    id ⨂ braid ∘ tensor_assoc ∘ braid ⨂ id;
+
+}.
+
+End SymmetricMonoidal.
+
+Program Instance Wiring_is_Symmetric : @SymmetricMonoidal WiringDCat := {
+    symmetric_is_monoidal := WiringD_is_Monoidal ;
+    braid {x y} := WiringD_braid ;
 
 }.
 Next Obligation.
-*)
+    simpl_eqs.
+    simplify_finset.
+
+    - destruct (x0  \in inp x :|: inp y :|: inp z) eqn:Hx0.
+    unfold connection_map_plus.
+    simplify_finset.
+    + split ; intuition.
+    * destruct H0. my_tauto.
+        rewrite Hx0 in H0.
+    destruct H0.
+    -- destruct H0. my_tauto.
+    left. exists y0.
+    ++ rewrite setUC in Hx0. rewrite in_setU in Hx0. rewrite orb_true_iff in Hx0.
+    destruct Hx0.
+    ** right ; my_tauto.
+    ** left ; my_tauto.
+    ++ rewrite <- setUAC. rewrite H1. left. exists y0 ; my_tauto.
+    rewrite <- setUA in H1.
+
+    rewrite in_setU in H1.
+    rewrite orb_True2 in H1.
+    destruct H1.
+    left ; my_tauto. right ; rewrite setUC ; my_tauto.
+
+    -- intuition.
+
+    * destruct H0.
+    destruct H ; my_tauto.
+
+    -- rewrite <- setUAC in Hx0. rewrite setUC in Hx0. rewrite setUA in Hx0.
+    rewrite Hx0 in H0.
+    destruct H0.
+    ++ destruct H0; my_tauto.
+    ** left. exists y0 ; my_tauto.
+    rewrite <- setUAC in Hx0. rewrite setUC in Hx0. rewrite setUA in Hx0.
+    rewrite Hx0.
+    left.
+    exists y0 ; my_tauto.
+    rewrite setUC. rewrite setUA. intuition.
+
+    ** left. exists y0 ; my_tauto.
+    rewrite <- setUAC in Hx0. rewrite setUC in Hx0. rewrite setUA in Hx0.
+    rewrite Hx0.
+    left. exists y0 ; my_tauto.
+    rewrite setUC. rewrite setUA. intuition.
+
+    ++ intuition.
+
+    --  rewrite <- setUAC in Hx0. rewrite setUC in Hx0. rewrite setUA in Hx0.
+    rewrite Hx0 in H0.
+    destruct H0.
+    ++ destruct H0. destruct H0. subst. destruct H1.
+    ** left. exists x0 ; my_tauto.
+    repeat rewrite in_setU. rewrite H1. rewrite orb_true_r. rewrite orb_true_l.
+    left. exists y0 ; my_tauto.
+    rewrite <- setUAC in Hx0. intuition.
+
+    ** my_tauto. left.
+    exists y0 ; my_tauto.
+    repeat rewrite in_setU. rewrite H. repeat rewrite orb_true_r.
+
+    left. exists y0 ; my_tauto.
+    rewrite <- setUAC. intuition.
+
+    ++ intuition.
+
+    + intuition.
+
+    - simplify_finset. rewrite orb_false_r.
+    destruct (y0  \in outp y :|: outp z :|: outp x) eqn: Hy0 ; intuition.
+
+    + simplify_finset.
+    unfold compose_connection_map in *. unfold connection_map_plus.
+    destruct H. simplify_finset. rewrite orb_false_r in H0.
+    rewrite Hy0 in H0. destruct H0; my_tauto.
+    exists y0.
+    -- rewrite in_setU in H0. rewrite orb_True2 in H0.
+    destruct H0. left; my_tauto. right; my_tauto.
+    -- rewrite orb_false_r. rewrite Hy0.
+    exists y0 ; my_tauto.
+    ** rewrite setUAC. trivial.
+    ** repeat rewrite in_setU in H1. repeat rewrite orb_True2 in H1.
+    destruct H1. destruct H1.
+    left ; my_tauto.
+    right ; my_tauto. rewrite in_setU. rewrite H1. rewrite orb_true_r. intuition.
+    right ; my_tauto. rewrite in_setU. rewrite H1. rewrite orb_true_l. intuition.
+
+    + unfold compose_connection_map in *.
+    destruct H. unfold connection_map_plus in *.
+    simplify_finset.
+
+    * rewrite orb_false_r in H0.
+    rewrite Hy0 in H0. destruct H0; my_tauto.
+    -- exists y0 ; my_tauto.
+    ++ rewrite setUC1; trivial.
+    ++ rewrite orb_false_r. rewrite setUAC in H0.
+    rewrite H0. exists y0.
+    ** rewrite setUC1. rewrite setUAC. my_tauto.
+    ** my_tauto.
+
+    -- exists y0 ; my_tauto.
+    ++ rewrite setUC1. trivial.
+    ++ rewrite setUAC in H0.
+    rewrite H0. simpl. exists y0 ; my_tauto.
+    rewrite setUC2. trivial.
+
+    * rewrite orb_false_r in H0.
+    rewrite Hy0 in H0. destruct H0; my_tauto.
+    -- exists y0 ; my_tauto.
+    ++ rewrite setUC1; trivial.
+    ++ rewrite orb_false_r. rewrite setUAC in H0.
+    rewrite H0. exists y0.
+    ** rewrite setUC1. rewrite setUAC. my_tauto.
+    ** my_tauto.
+
+    -- exists y0 ; my_tauto.
+    ++ rewrite setUC1. trivial.
+    ++ rewrite setUAC in H0.
+    rewrite H0. simpl. exists y0 ; my_tauto.
+    rewrite setUC2. trivial.
+Defined.
 
 End Wiring_Rel.
