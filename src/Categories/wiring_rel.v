@@ -58,6 +58,7 @@ Set Default Goal Selector "1".
 Set Bullet Behavior "Strict Subproofs". (* This is disabled by ssreflect *)
 
 Require Import Oqarina.CoqExt.finset_Ext.
+Require Import Oqarina.CoqExt.Category_ext.
 Require Import Oqarina.Categories.interface.
 Require Import Oqarina.Tactics.oq_tactics.
 (*| .. coq:: |*)
@@ -2554,27 +2555,6 @@ Next Obligation.
     + my_tauto. rewrite H. exists y0 ; my_tauto.
     rewrite setUC. trivial.
 Defined.
-
-Generalizable All Variables.
-
-Section SymmetricMonoidal.
-
-Context {C : Category}.
-
-Class SymmetricMonoidal := {
-  symmetric_is_monoidal : @Monoidal C;
-
-  braid {x y} : x ⨂ y ~> y ⨂ x;
-  braid_isomorphism {x y} : @Isomorphism C (x ⨂ y) (y ⨂ x);
-
-  hexagon_identity {x y z} :
-    tensor_assoc ∘ braid ∘ tensor_assoc
-      << (x ⨂ y) ⨂ z ~~> y ⨂ (z ⨂ x) >>
-    id ⨂ braid ∘ tensor_assoc ∘ braid ⨂ id;
-
-}.
-
-End SymmetricMonoidal.
 
 Program Instance Wiring_is_Symmetric : @SymmetricMonoidal WiringDCat := {
     symmetric_is_monoidal := WiringD_is_Monoidal ;
