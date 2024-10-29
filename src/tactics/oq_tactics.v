@@ -44,7 +44,7 @@ Ltac trivialize :=
 Ltac my_tauto :=
     repeat match goal with
         | [ |- True ] => constructor
-        | [ |- is_true true ] => constructor (* true is a coercion ..n*)
+        | [ |- is_true true ] => constructor (* true is a coercion .. *)
 
         | [ H : ?P |- ?P ] => exact H
         | [ H: _ |- ?x = ?x ] => reflexivity
