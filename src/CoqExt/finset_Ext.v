@@ -115,4 +115,23 @@ Proof.
     intuition.
 Qed.
 
+Lemma setUC1: forall A B C : set_t,
+    A :|: B :|: C = B :|: A :|: C.
+Proof.
+    intros.
+    rewrite <- setUA.
+    rewrite setUCA.
+    rewrite setUA.
+    reflexivity.
+Qed.
+
+Lemma setUC2: forall A B C : set_t,
+    A :|: B :|: C = B :|: C :|: A.
+Proof.
+    intros.
+    rewrite <- setUA.
+    rewrite setUC.
+    reflexivity.
+Qed.
+
 End finset_Ext.
