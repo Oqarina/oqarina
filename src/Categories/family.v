@@ -56,7 +56,7 @@ Typicall examples are set of objects indexed by either integers or strings. This
 
 |*)
 
-Record family@{t} (T : Type@{t}) : Type@{t+1} := { 
+Record family@{t} (T : Type@{t}) : Type@{t+1} := {
   family_index :> Type@{t} ;
   family_element :> family_index -> T ;
   (* Note: we use coercion (":>") to ease manipulation *)
@@ -77,7 +77,7 @@ Proof.
 Defined.
 
 Definition family_mkeq {T} (X Y : family T) :=
-  { p : family_index X = family_index Y | 
+  { p : family_index X = family_index Y |
     ∀ i : X, family_element i = family_element (rew [idmap] p in i) }.
 
 Lemma family_eq_iff {T} (X Y : family T) :
@@ -93,20 +93,20 @@ Qed.
 The category of families
 ------------------------
 
-One can consider maps between families over (or modulo) maps between the types they’re from. 
+One can consider maps between families over (or modulo) maps between the types they’re from.
 
-Given :math:`f : A -> B` and families :math:`K` from :math:`A` and :math:`L` from :math:`B]`, a map over :math:`f` from :math:`K` to :math:`L` is a function :math:`ff` from elements of :math:`K` to elements of :math:`L`, such that for any element :math:`i \in K`, its realisation :math:`K i` as an element of :math:`A` is mapped under :math:`f` to the realisation :math:`L (ff\:  i)` in :math:`B`.  
- 
+Given :math:`f : A -> B` and families :math:`K` from :math:`A` and :math:`L` from :math:`B]`, a map over :math:`f` from :math:`K` to :math:`L` is a function :math:`ff` from elements of :math:`K` to elements of :math:`L`, such that for any element :math:`i \in K`, its realisation :math:`K i` as an element of :math:`A` is mapped under :math:`f` to the realisation :math:`L (ff\:  i)` in :math:`B`.
+
  |*)
 
-Definition family_morphism [A B: Type] 
-  (f : A -> B) (K : family A) (L : family B) 
+Definition family_morphism [A B: Type]
+  (f : A -> B) (K : family A) (L : family B)
 := { ff : K -> L
      & ∀ i : K, L (ff i) = f (K i) }.
 
 Program Definition family_morphism_map
     [A B : Type] (f : A -> B) (X : family A) (Y : family B)
-    : family_morphism f X Y -> (X -> Y) 
+    : family_morphism f X Y -> (X -> Y)
 := @projT1 _ _.
 
 Coercion family_morphism_map : family_morphism >-> Funclass.
@@ -125,10 +125,10 @@ Definition family_map {A} (K L : family A)
   equiv := fun f1 f2 => (f1) = (f2)
 |}.
 
-Program Definition family_map_id {A} (K : family A) 
+Program Definition family_map_id {A} (K : family A)
   : family_map K K := _.
 Next Obligation.
-    unfold family_map, family_morphism. 
+    unfold family_map, family_morphism.
     exists idmap. trivial.
 Defined.
 
@@ -147,12 +147,12 @@ Proof.
     intuition.
 Defined.
 
-Definition family_compose {X} {K L M : family X} 
+Definition family_compose {X} {K L M : family X}
   (g : family_map L M) (f : family_map K L)
   : family_map K M
 := family_compose_general g f.
 
-Lemma family_id_left {X: Type}: 
+Lemma family_id_left {X: Type}:
   ∀ (x y : family X) (f : family_map x y),
     family_compose (family_map_id y) f = f.
 Proof.
@@ -167,7 +167,7 @@ Proof.
   intuition.
 Qed.
 
-Lemma family_id_right {X: Type}: 
+Lemma family_id_right {X: Type}:
   ∀ (x y : family X) (f : family_map x y),
     family_compose f (family_map_id x) = f.
 Proof.
@@ -184,20 +184,20 @@ Proof.
   intuition.
 Qed.
 
-Lemma family_compose_assoc {X: Type} : 
-  ∀ (x y z w: family X) 
+Lemma family_compose_assoc {X: Type} :
+  ∀ (x y z w: family X)
     (f : family_map z w) (g : family_map y z) (h : family_map x y),
-    family_compose f (family_compose g h) 
+    family_compose f (family_compose g h)
       = family_compose (family_compose f g) h.
 Proof.
   intros.
   destruct f, g, h.
   unfold family_compose.
   unfold family_compose_general.
-  
+
   f_equal.
   apply functional_extensionality_dep.
-  
+
   intros.
 
   (* This proof is slightly upsetting, so let's use crush *)
@@ -225,12 +225,12 @@ Definition FamilyCat@{t+} (T : Type@{t}) : Category := {|
 
 (*|
 
-Specific instances 
+Specific instances
 ------------------
 
 * Empty family
 
-An empty family is a family indexed by the empty set. 
+An empty family is a family indexed by the empty set.
 |*)
 
 Definition void {A : Type} : Empty_set -> A :=
@@ -241,8 +241,8 @@ Definition family_empty A : family A :=
 
 (*| * Singleton family
 
-A singleton family is indexed by a single element, :coq:`unit`, 
-and contains only :coq:`x`. 
+A singleton family is indexed by a single element, :coq:`unit`,
+and contains only :coq:`x`.
 
 |*)
 
