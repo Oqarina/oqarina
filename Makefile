@@ -96,6 +96,7 @@ ALECTRYON_FILES= \
 	src/AADL/resolute/all.v \
 	src/AADL/resolute/resolute.v \
 	src/CoqExt/Classes.v  \
+	src/CoqExt/Category_Ext.v  \
 	src/CoqExt/PeanoNat_Ext.v  \
 	src/CoqExt/Reflexive_Transitive_Closure_Ext.v \
 	src/CoqExt/finset_Ext.v \
