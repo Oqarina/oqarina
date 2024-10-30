@@ -43,7 +43,7 @@ Require Export Oqarina.CoqExt.strong_ind.
 Extensions to the Coq standard library
 **************************************
 
-In the following, we list a set of additional lemma and definitions that extends the Coq standard library.
+In the following, we list additional lemmas and definitions that extend the Coq standard library.
 
 Here is the detailed list of contents:
 
@@ -63,5 +63,15 @@ Extensions to MathComp
    :maxdepth: 2
 
    CoqExt__finset_Ext.v.rst
+
+*****************************
+Extensions to Category-Theory
+*****************************
+
+.. toctree::
+   :maxdepth: 2
+
+   CoqExt__Category_Ext.v.rst
+
 
 |*)

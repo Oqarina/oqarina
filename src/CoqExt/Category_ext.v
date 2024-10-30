@@ -55,7 +55,7 @@ We introduce a variant of the Symmetric Monoidal Category to use an Isomorphism 
 Context {C : Category}.
 
 Class SymmetricMonoidal := {
-    
+
   symmetric_is_monoidal : @Monoidal C;
 
   braid {x y} : x ⨂ y ~> y ⨂ x;
@@ -67,5 +67,21 @@ Class SymmetricMonoidal := {
     id ⨂ braid ∘ tensor_assoc ∘ braid ⨂ id;
 
 }.
+
+(*
+
+(* Proving that the other hexagon identify derives from the definition
+of SymmetricMoinoidal is left as an exercise for now. *)
+
+Context `{SymmetricMonoidal}.
+
+Lemma hexagon_identity_sym { x y z } :
+    tensor_assoc⁻¹ ∘ braid ∘ tensor_assoc⁻¹
+      << x ⨂ (y ⨂ z) ~~> (z ⨂ x) ⨂ y >>
+    braid ⨂ id ∘ tensor_assoc⁻¹ ∘ id ⨂ braid.
+Proof.
+Admitted.
+
+*)
 
 End SymmetricMonoidal.
