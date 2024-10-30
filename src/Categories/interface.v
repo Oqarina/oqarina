@@ -35,6 +35,7 @@ From mathcomp Require Import finset fintype ssrbool ssreflect eqtype.
 
 Require Import Category.Lib.
 Require Import Category.Theory.Category.
+Require Import Category.Theory.Functor.
 
 Require Import Oqarina.Configuration.
 (*| .. coq:: |*)
@@ -52,7 +53,7 @@ Section InterfaceCategory.
 
 (*|
 
-In this section, we define the category of interfaces.
+In this section, we define two variants for the category of interfaces.
 
 An interface is a finite set of some type. |*)
 
@@ -163,6 +164,84 @@ Definition InterfaceCat : Category := {|
   comp_assoc_sym := λ i j k l f g h,
     symmetry (@box_compose_assoc _ _ _ _ _ _ _);
 |}.
+
+(*| Alternatively, one can define the concept of :coq:`EmptyBox`, i.e. a box without
+any implementation. This allows to build the category of "empty boxes" or :coq:`EmptyInterfaceCat`.
+We build a forgetfult functor from :coq:`InterfaceCat` to :coq:`EmptyInterfaceCat`.|*)
+
+Definition Empty_Box (required provided : Interface) : Type := unit.
+
+(*| We show that :coq:`Empty_Box` forms a category whose objects
+are :coq:`Interface`.
+
+Note: Proofs are really trivial as we let Coq dependent types
+mechanism do all the work.|*)
+
+Program Definition Empty_Box_id {i} : Empty_Box i i := _.
+
+Program Definition empty_box_compose {i j k} :
+  Empty_Box j k → Empty_Box i j → Empty_Box i k := _.
+
+#[export] Program Instance Empty_Box_Setoid {X Y : Interface} :
+  Setoid (Empty_Box X Y) := {|
+  equiv := fun f1 f2 => True;
+|}.
+
+Program Definition EmptyInterfaceCat : Category := {|
+  obj     := Interface;
+  hom     := Empty_Box;
+  homset  := @Empty_Box_Setoid;
+  id      := @Empty_Box_id;
+
+  compose := @empty_box_compose;
+  (* Note: we let Coq's solver infer the other elements
+    of EmptyInterfaceCat. *)
+|}.
+
+Program Instance Box_to_EmptyBox_Functor: InterfaceCat ⟶ EmptyInterfaceCat :=  {
+  fobj := Id;
+}.
+
+(* Alternate definition, using a record *)
+
+Record Empty_Box': Type := mkEmpty_Box' {
+    inp' : Interface ;
+    outp' : Interface ;
+}.
+
+Program Definition Empty_Box'_id (i : Interface): Empty_Box' := mkEmpty_Box' i i.
+
+Program Definition empty_box'_compose (x y : Empty_Box'):
+  Empty_Box' := {|
+    inp' := (inp' x);
+    outp' := (outp' y);
+  |}.
+
+#[export] Program Instance Empty_Box'_Setoid {X Y : Interface} :
+  Setoid (Empty_Box') := {|
+  equiv := fun f1 f2 => True;
+|}.
+
+Program Definition EmptyInterfaceCat' : Category := {|
+  obj     := Interface;
+  homset  := @Empty_Box'_Setoid;
+  id      := @Empty_Box'_id;
+  (* Note: we let Coq's solver infer the other elements *)
+|}.
+
+Definition Empty_Box_to_Empty_Box' {i j} (b: Empty_Box i j): Empty_Box' := mkEmpty_Box' i j.
+
+Program Instance Empty_Box_to_EmptyBox'_Functor: EmptyInterfaceCat ⟶ EmptyInterfaceCat' :=  {
+  fobj := Id;
+  fmap := λ (x y : Interface) (f : Empty_Box x y), Empty_Box_to_Empty_Box' f;
+}.
+
+Definition Box_to_Empty_Box' {i j} (b: Box i j): Empty_Box' := mkEmpty_Box' i j.
+
+Program Instance Box_to_EmptyBox'_Functor: InterfaceCat ⟶ EmptyInterfaceCat' :=  {
+  fobj := Id;
+  fmap := λ (x y : Interface) (f : Box x y), Box_to_Empty_Box' f;
+}.
 
 (*| .. coq:: none |*)
 End InterfaceCategory.
