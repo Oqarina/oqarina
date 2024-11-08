@@ -122,26 +122,69 @@ Definition Valid_Wiring (X Y : Box) (W : Wiring X Y) :=
     [disjoint outp Y & phi_int _ _ W] /\
     Valid_Wiring_Mapping X Y W.
 
-(**************************************)
+(*| We need an additional axiom whenever we compose two wirings: the internal connections of a component shall be disjoint from the input and output ports of the enclosing components. |*)
 
-Axiom prout2: ∀ {i j k l} (f : Wiring k l) (g : Wiring j k)  (h : Wiring i j),
-    Valid_Wiring i j h -> Valid_Wiring j k g -> Valid_Wiring k l f ->
-        [disjoint inp k &  phi_int _ _ h ] /\
-        [disjoint outp k & phi_int _ _ h ].
+Axiom Wiring_Compose_disjointness: ∀ {i j k l} (f : Wiring k l) (g : Wiring i j),
+    Valid_Wiring i j g -> Valid_Wiring k l f ->
+        [disjoint inp k &  phi_int _ _ g ] /\
+        [disjoint outp k & phi_int _ _ g ] /\
+        [disjoint inp j &  phi_int _ _ f ] /\
+        [disjoint outp j & phi_int _ _ f ].
 
-Axiom prout4: ∀ {j k l} (f : Wiring k l) (g : Wiring j k),
+(*| From this axiom, we can derive other results useful for the following proofs. |*)
+
+Corollary Wiring_Compse_disjointness_corollary_1:
+    ∀ {j k l} (f : Wiring k l) (g : Wiring j k),
     Valid_Wiring j k g -> Valid_Wiring k l f ->
-    [disjoint inp j & phi_int _ _ f :|: phi_int _ _ g] /\
+        [disjoint inp j & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint outp j & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint inp l & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint outp l & phi_int _ _ f :|: phi_int _ _ g].
+Proof.
+    intros j k l f g Hg Hf.
+    unfold Valid_Wiring in *.
+    assert (Hj_phi_int_f: [disjoint inp j &  phi_int _ _ f ] /\
+                          [disjoint outp j & phi_int _ _ f ] /\
+                          [disjoint inp l &  phi_int _ _ g ] /\
+                          [disjoint outp l & phi_int _ _ g ]).
+    apply (Wiring_Compose_disjointness g f Hf Hg).
+
+    split_goals ; apply disjointU; intuition.
+Qed.
+
+Corollary Wiring_Compse_disjointness_corollary_2:
+    ∀ {i j k l} (f : Wiring i k) (g: Wiring j l),
+    Valid_Wiring i k f -> Valid_Wiring j l g ->
+        [disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
+        [disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
+        [disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
+        [disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k].
+Proof.
+    intros i j k l f g Hf Hg.
+    unfold Valid_Wiring in *.
+
+    assert ([disjoint inp j &  phi_int _ _ f ] /\
+             [disjoint outp j & phi_int _ _ f ] /\
+             [disjoint inp k &  phi_int _ _ g ] /\
+             [disjoint outp k & phi_int _ _ g ] ).
+    apply (Wiring_Compose_disjointness g f Hf Hg).
+
+    assert ([disjoint inp i &  phi_int _ _ g ] /\
+             [disjoint outp i & phi_int _ _ g ] /\
+             [disjoint inp l &  phi_int _ _ f ] /\
+             [disjoint outp l & phi_int _ _ f ] ).
+    apply (Wiring_Compose_disjointness f g Hg Hf).
+
+    split_goals ; rewrite disjoint_sym ; intuition.
+Qed.
+
 
 Axiom prout5: ∀ {i j k l} (f : Wiring i k) (g: Wiring j l) ,
     Valid_Wiring i k f -> Valid_Wiring j l g ->
-    [disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
-    [disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
-    [disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
-    [disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k].
+        [disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
+        [disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
+        [disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
+        [disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k].
 
 (*| We define a setoid relation for wirings, |*)
 
@@ -185,8 +228,7 @@ Definition compose_connection_map (c1 c2: connection_map) :=
 Definition Wiring_compose {X Y Z}
     (WYZ : Wiring Y Z ) (WXY : Wiring X Y)
     : Wiring X Z
-:=
-{|
+:= {|
     phi_int := (phi_int _ _ WYZ) :|: (phi_int _ _ WXY);
     phi_in :=
         (fun x z =>
@@ -389,11 +431,11 @@ We show that the composition of two valid wirings is also valid.
 
 |*)
 Lemma Wiring_compose_Valid_Wiring_Mapping {j k l}
-        (f : Wiring k l) (g : Wiring j k) :
-            Valid_Wiring_Mapping j k g ->
-            Valid_Wiring_Mapping k l f ->
+    (f : Wiring k l) (g : Wiring j k) :
+        Valid_Wiring_Mapping j k g ->
+        Valid_Wiring_Mapping k l f ->
 
-            Valid_Wiring_Mapping j l (Wiring_compose f g).
+        Valid_Wiring_Mapping j l (Wiring_compose f g).
 Proof.
     unfold Wiring_compose.
     unfold Valid_Wiring_Mapping in *.
@@ -443,7 +485,7 @@ Proof.
         [disjoint outp j & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint inp l & phi_int _ _ f :|: phi_int _ _ g] /\
         [disjoint outp l & phi_int _ _ f :|: phi_int _ _ g]).
-    eapply prout4 ; trivial.
+    eapply Wiring_Compse_disjointness_corollary_1 ; trivial.
 
     unfold Valid_Wiring in *.
     my_tauto.
@@ -465,58 +507,59 @@ Proof.
     unfold Valid_Wiring in *.
 
     assert (Hd: [disjoint inp k &  phi_int _ _ h ] /\
-        [disjoint outp k & phi_int _ _ h ]).
-    eapply prout2.
-    apply Hh. apply Hg. apply Hf.
+                [disjoint outp k & phi_int _ _ h ] /\
+                [disjoint inp j &  phi_int _ _ f ] /\
+                [disjoint outp j & phi_int _ _ f ]).
+    apply (Wiring_Compose_disjointness f h Hh Hf).
 
     unfold Wiring_compose. simpl. my_tauto.
 
     - rewrite setUA. reflexivity.
     - split_goals.
       + destruct_if.
-      * smart_destruct H16. destruct H17.
+      * smart_destruct H18. destruct H19.
         -- left. exists x0.
         ++ trivial.
         ++ destruct_if.
         ** left. exists L ; trivial.
-        ** specialize (H10 x0 L). intuition.
-           contradiction_in_H H19 if1.
+        ** specialize (H12 x0 L). intuition.
+           contradiction_in_H H21 if1.
         -- left. exists L.
         ++ trivial.
         ++ assert (HL: L \in inp j = false).
-           eapply disjointFl. apply H13. intuition.
+           eapply disjointFl. apply H15. intuition.
            rewrite HL.
 
            unfold Valid_Wiring_Mapping in *.
-           specialize (H15 x L). specialize (H5 L y). my_tauto.
+           specialize (H17 x L). specialize (H7 L y). my_tauto.
 
            assert (L \in inp k = false).
            eapply disjointFl. apply H. trivial.
-           contradiction_in_H H23 H5.
+           contradiction_in_H H25 H7.
 
-        -- smart_destruct H16.
+        -- smart_destruct H18.
            left. exists L.
         ++ trivial.
-        ++ specialize (H15 x L). specialize (H10 L y). my_tauto.
+        ++ specialize (H17 x L). specialize (H12 L y). my_tauto.
 
-           rewrite in_setU in H19.
+           rewrite in_setU in H21.
            rewrite in_setU in R.
-           rewrite orb_True2 in H19.
+           rewrite orb_True2 in H21.
            rewrite orb_True2 in R.
            right. my_tauto.
 
            assert (y \in inp k = false).
            eapply disjointFl. apply H. intuition.
-           contradiction_in_H H22 H19.
+           contradiction_in_H H24 H21.
 
         -- right. my_tauto.
 
       * intuition.
 
       + destruct_if.
-      * smart_destruct H16.
+      * smart_destruct H18.
         destruct (L \in inp j) eqn:L_in_inpj.
-        -- smart_destruct H16.
+        -- smart_destruct H18.
         ++ left. exists L0.
         ** left. exists L; trivial.
         ** trivial.
@@ -524,7 +567,7 @@ Proof.
         ++ right. my_tauto. left. exists L; trivial.
         rewrite in_setU. auto with *.
 
-        -- specialize (H15 x L). my_tauto.
+        -- specialize (H17 x L). my_tauto.
 
         -- right. my_tauto. right. my_tauto. rewrite in_setU. auto with *.
 
@@ -536,48 +579,48 @@ Proof.
 
     * assert ([|| y  \in outp l,  y  \in phi_int _ _ f  | y  \in phi_int _ _ g]).
     rewrite orb_true_iff in H_y_outp_l_phi_int_f.
-    destruct H_y_outp_l_phi_int_f ; rewrite H17 ; auto with *.
-    rewrite H17.
+    destruct H_y_outp_l_phi_int_f ; rewrite H19 ; auto with *.
+    rewrite H19.
 
-    smart_destruct H16.
+    smart_destruct H18.
     -- exists L0 ; my_tauto.
        exists L ; my_tauto.
     -- rewrite orb_false_iff in if0.
-    specialize (H15 x L). specialize (H5 L y). my_tauto.
-    contradiction_in_H H22 H18.
+    specialize (H17 x L). specialize (H7 L y). my_tauto.
+    contradiction_in_H H24 H20.
 
     * rewrite orb_false_iff in H_y_outp_l_phi_int_f.
-    my_tauto. rewrite H17. rewrite H18. repeat rewrite orb_false_l.
+    my_tauto. rewrite H19. rewrite H20. repeat rewrite orb_false_l.
 
     -- destruct (y \in phi_int _ _ g) eqn:y_phi_int_g.
-    ++ rewrite orb_true_l in H16. rewrite orb_true_r in H16.
-    smart_destruct H16. exists L ; trivial.
-    ++ rewrite orb_false_l in H16. rewrite orb_false_r in H16.
+    ++ rewrite orb_true_l in H18. rewrite orb_true_r in H18.
+    smart_destruct H18. exists L ; trivial.
+    ++ rewrite orb_false_l in H18. rewrite orb_false_r in H18.
 
     destruct (y \in phi_int _ _ h) eqn:y_phi_int_h.
 
     ** assert (y \in outp k = false).
     eapply disjointFl. apply H0. trivial.
-    rewrite H19 in H16 ; trivial.
+    rewrite H21 in H18 ; trivial.
     ** intuition.
 
     + destruct ((y \in outp l) || (y \in phi_int _ _ f)) eqn:H_y_outp_l_phi_int_f.
 
     * assert ([|| y  \in outp l,  y  \in phi_int _ _ f  | y  \in phi_int _ _ g]).
     rewrite orb_true_iff in H_y_outp_l_phi_int_f.
-    destruct H_y_outp_l_phi_int_f ; rewrite H17 ; auto with *.
-    rewrite H17 in H16.
+    destruct H_y_outp_l_phi_int_f ; rewrite H19 ; auto with *.
+    rewrite H19 in H18.
 
-    smart_destruct H16.
-    smart_destruct H16.
+    smart_destruct H18.
+    smart_destruct H18.
 
-    specialize (H15 x L). specialize (H10 L L0). specialize (H5 L0 y).
+    specialize (H17 x L). specialize (H12 L L0). specialize (H7 L0 y).
     my_tauto.
-    exists L0. rewrite H21. rewrite orb_true_l. exists L ; trivial. trivial.
+    exists L0. rewrite H23. rewrite orb_true_l. exists L ; trivial. trivial.
 
     * rewrite orb_false_iff in H_y_outp_l_phi_int_f.
-    my_tauto. rewrite H17 in H16. rewrite H18 in H16.
-    repeat rewrite orb_false_l in H16.
+    my_tauto. rewrite H19 in H18. rewrite H20 in H18.
+    repeat rewrite orb_false_l in H18.
 
     destruct (y  \in phi_int _ _ g) eqn:y_phi_int_g.
     -- rewrite orb_true_l. rewrite orb_true_r.
@@ -588,7 +631,7 @@ Proof.
 
     ** assert (y \in outp k = false).
     eapply disjointFl. apply H0. trivial.
-    rewrite H19 ; trivial.
+    rewrite H21 ; trivial.
     ** intuition.
 Qed.
 
@@ -826,7 +869,8 @@ Proof.
             /\ [disjoint phi_int _ _ g & inp k]
             /\ [disjoint phi_int _ _ f & outp l]
             /\ [disjoint phi_int _ _ g & outp k]).
-    apply prout5 ; trivial.
+    apply Wiring_Compse_disjointness_corollary_2 ; trivial.
+
     unfold Valid_Wiring, Wiring_plus, Valid_Wiring_Mapping, connection_map_plus.
     destruct Hf, Hg.
     intuition ;
