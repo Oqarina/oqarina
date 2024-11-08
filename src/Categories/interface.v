@@ -209,6 +209,8 @@ Record Empty_Box': Type := mkEmpty_Box' {
     outp' : Interface ;
 }.
 
+Definition Empty_Box_to_Empty_Box' {i j} (b: Empty_Box i j): Empty_Box' := mkEmpty_Box' i j.
+
 Program Definition Empty_Box'_id (i : Interface): Empty_Box' := mkEmpty_Box' i i.
 
 Program Definition empty_box'_compose (x y : Empty_Box'):
@@ -229,9 +231,10 @@ Program Definition EmptyInterfaceCat' : Category := {|
   (* Note: we let Coq's solver infer the other elements *)
 |}.
 
-Definition Empty_Box_to_Empty_Box' {i j} (b: Empty_Box i j): Empty_Box' := mkEmpty_Box' i j.
 
-Program Instance Empty_Box_to_EmptyBox'_Functor: EmptyInterfaceCat ⟶ EmptyInterfaceCat' :=  {
+
+Program Instance Empty_Box_to_EmptyBox'_Functor:
+  EmptyInterfaceCat ⟶ EmptyInterfaceCat' :=  {
   fobj := Id;
   fmap := λ (x y : Interface) (f : Empty_Box x y), Empty_Box_to_Empty_Box' f;
 }.
