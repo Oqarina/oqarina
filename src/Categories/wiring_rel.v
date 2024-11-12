@@ -131,6 +131,17 @@ Axiom Wiring_Compose_disjointness: ∀ {i j k l} (f : Wiring k l) (g : Wiring i 
         [disjoint inp j &  phi_int _ _ f ] /\
         [disjoint outp j & phi_int _ _ f ].
 
+Axiom Wiring_Compose_disjointness_2: ∀ {i j k l} (f : Wiring k l) (g : Wiring i j),
+    Valid_Wiring i j g -> Valid_Wiring k l f ->
+        [disjoint inp k & inp i ] /\
+        [disjoint outp k & outp i ] /\
+        [disjoint inp j & inp l ] /\
+        [disjoint outp j & outp l ].
+
+Axiom Wiring_Compose_disjointness_3: ∀ {i j k l} (f : Wiring k l) (g : Wiring i j),
+    Valid_Wiring i j g -> Valid_Wiring k l f ->
+        [disjoint phi_int _ _ f & phi_int _ _ g].
+
 (*| From this axiom, we can derive other results useful for the following proofs. |*)
 
 Corollary Wiring_Compse_disjointness_corollary_1:
@@ -177,14 +188,6 @@ Proof.
 
     split_goals ; rewrite disjoint_sym ; intuition.
 Qed.
-
-
-Axiom prout5: ∀ {i j k l} (f : Wiring i k) (g: Wiring j l) ,
-    Valid_Wiring i k f -> Valid_Wiring j l g ->
-        [disjoint phi_int _ _ f & inp j] /\ [disjoint phi_int _ _ g & inp i] /\
-        [disjoint phi_int _ _ f & outp j] /\ [disjoint phi_int _ _ g & outp i] /\
-        [disjoint phi_int _ _ f & inp l] /\ [disjoint phi_int _ _ g & inp k] /\
-        [disjoint phi_int _ _ f & outp l] /\ [disjoint phi_int _ _ g & outp k].
 
 (*| We define a setoid relation for wirings, |*)
 
@@ -975,144 +978,311 @@ Proof.
     destruct ((x3  \in inp b3) || (x3  \in inp b4)) eqn:Hx3.
     -- rewrite orb_true_iff in Hx3.
 
-    destruct Hx3.
-    assert (x3  \in inp b4 = false). admit.
-    rewrite H. rewrite H0.
-    split.
-    ++ intros. destruct H1 ; intuition.
-    destruct H2.
-    left. exists x4. left. trivial. left. trivial.
+       assert (Hdisjoint: [disjoint inp b3 & inp b4] /\
+            [disjoint outp b3 & outp b4] /\
+            [disjoint inp b2 & inp b1] /\
+            [disjoint outp b2 & outp b1]).
+       apply (Wiring_Compose_disjointness_2 _ _ v2 v1).
 
-    ++ intros. destruct H1.
-    ** destruct H1.
-    unfold Valid_Wiring in *.
-    unfold Valid_Wiring_Mapping in *.
+       assert(Hdisjoint2:[disjoint inp b2 & phi_int _ _ x1] /\
+                        [disjoint outp b2 & phi_int _ _ x1] /\
+                        [disjoint inp b1 &  phi_int _ _ x0 ] /\
+                        [disjoint outp b1 & phi_int _ _ x0 ]).
+       apply (Wiring_Compose_disjointness _ _ v1 v0).
 
-    repeat_destruct v.
-    repeat_destruct v0.
-    repeat_destruct v1.
-    repeat_destruct v2.
+       assert(Hdisjoint3:[disjoint inp b4 & phi_int _ _ x1] /\
+                        [disjoint outp b4 & phi_int _ _ x1] /\
+                        [disjoint inp b1 &  phi_int _ _ x2 ] /\
+                        [disjoint outp b1 & phi_int _ _ x2 ]).
+       apply (Wiring_Compose_disjointness _ _ v1 v2).
 
-    specialize (v x4 y).
-    specialize (v0 x4 y).
-    specialize (v1 x3 x4).
-    specialize (v2 x3 x4).
+       destruct Hx3.
 
-    destruct H1; destruct H2.
+       assert (Hb4: x3 \in inp b4 = false).
+       smart_destruct Hdisjoint. apply (disjointFr L H).
 
-    --- left. left. exists x4; trivial.
-    --- left. left. exists x4; trivial.
+       rewrite H. rewrite Hb4.
 
-    assert (x4 \in inp b1 :|: phi_int _ _ x1). apply v1 ; trivial.
-    assert (x4 \in inp b2). apply v0 ; trivial.
-    admit.
+       split.
+       ++ intros. destruct H0.
+        ** destruct H0.
+        --- destruct H0. left. exists x4. left. trivial. left. trivial.
+        --- intuition.
 
-    --- assert (x3 \in inp b4). apply v2 ; trivial.
-        contradiction_in_H H3 H0.
+        ** intuition.
 
-    --- assert (x3 \in inp b4). apply v2 ; trivial.
-        contradiction_in_H H3 H0.
+       ++ intros. destruct H0.
+        ** destruct H0.
+           unfold Valid_Wiring in *.
+           unfold Valid_Wiring_Mapping in *.
 
-    ** destruct H1.
-       destruct H1. rewrite orb_True2 in H2. destruct H2.
+           repeat_destruct v. repeat_destruct v0.
+           repeat_destruct v1. repeat_destruct v2.
 
-    --- left. right. intuition.
+           specialize (v x4 y). specialize (v0 x4 y).
+           specialize (v1 x3 x4). specialize (v2 x3 x4).
 
-    --- repeat_destruct v1.
-        specialize (v1 x3 y).
-        assert (y \in inp b1 :|: phi_int _ _ x1). apply v1 ; trivial.
-        admit.
+           destruct H0; destruct H1.
 
-    --- repeat_destruct v2.
-        specialize (v2 x3 y).
-        assert (x3 \in inp b4). apply v2 ; trivial.
-        contradiction_in_H H3 H0.
+           --- left. left. exists x4; trivial.
+           --- my_tauto.
 
-    ++ assert (x3  \in inp b3 = false). admit.
-       rewrite H. rewrite H0.
+            (* We show there is a contradiction, x4 cannot be in disjoint sets*)
+            rewrite in_setU in H23. rewrite orb_True2 in H23.
+            assert (x4 \in inp b1 = false).
+            apply (disjointFr H12 H18).
 
-      split.
-      ** intros. destruct H1 ; intuition.
-      destruct H2.
-      left. exists x4 ; intuition.
+            assert (x4 \in phi_int _ _ x1 = false).
+            apply (disjointFr H6 H18).
 
-      ** intros. destruct H1. destruct H1.
-      --- right. left.
-          destruct H1.
+            rewrite H24 in H23. rewrite H25 in H23.
+
+            intuition.
+
+           --- assert (HC: x3 \in inp b4). apply v2 ; trivial.
+                contradiction_in_H Hb4 HC.
+
+           --- assert (HC: x3 \in inp b4). apply v2 ; trivial.
+                contradiction_in_H Hb4 HC.
+
+         ** destruct H0. destruct H0.
+
+          --- rewrite orb_True2 in H1. destruct H1.
+
+            +++ left. right. intuition.
+
+            +++ assert (Hdisjoint4: [disjoint phi_int _ _ x1 & phi_int _ _ x2]).
+                apply (Wiring_Compose_disjointness_3 _ _  v2 v1).
+                repeat_destruct v1.
+                specialize (v1 x3 y).
+                my_tauto.
+
+                assert ([disjoint inp b1 & phi_int _ _ x2]) ; intuition.
+                rewrite disjoint_sym in H17.
+
+                rewrite in_setU in H16. rewrite orb_True2 in H16.
+
+                assert (HC1: y \in inp b1 = false).
+                apply (disjointFr H17 H1).
+
+                assert (HC2: y  \in phi_int _ _ x1 = false).
+                apply (disjointFl Hdisjoint4 H1).
+
+                rewrite HC1 in H16. rewrite HC2 in H16.
+                intuition.
+
+          --- repeat_destruct v2.
+                specialize (v2 x3 y).
+                assert (x3 \in inp b4). apply v2 ; trivial.
+                contradiction_in_H Hb4 H2.
+
+       ++ assert (Hb4: x3 \in inp b3 = false).
+          smart_destruct Hdisjoint; apply (disjointFl L H).
+
+         rewrite Hb4. rewrite H.
+
+         split.
+
+         ** intros. destruct H0.
+            --- intuition.
+            --- destruct H0.
+            +++ destruct H0. left. exists x4 ; intuition.
+            +++ repeat_destruct v2.
+                specialize (v2 x3 y). my_tauto.
+
+                right. intuition.
+
+         ** intros. destruct H0. destruct H0.
+
+         --- right. left.
+          destruct H0.
 
       +++ repeat_destruct v1.
-      specialize (v1 x3 x4).
-      assert (x3 \in inp b3). apply v1 ; trivial.
-      contradiction_in_H H3 H0.
+          specialize (v1 x3 x4).
+          assert (x3 \in inp b3). apply v1 ; trivial.
+          contradiction_in_H Hb4 H2.
 
-      +++ destruct H2.
-      *** repeat_destruct v2. specialize (v2 x3 x4).
-          repeat_destruct v. specialize (v x4 y).
+      +++ destruct H1.
+        *** assert (Hdisjoint4: [disjoint phi_int _ _ x2 & phi_int _ _ x1]).
+            apply (Wiring_Compose_disjointness_3 _ _  v1 v2).
 
-          assert (x4  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
-          assert (x4 \in inp b1). apply v ; trivial.
-          admit.
+            repeat_destruct v2. specialize (v2 x3 x4).
+            repeat_destruct v. specialize (v x4 y).
 
-      *** exists x4 ; trivial.
+            assert (x4  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
+            assert (x4 \in inp b1). apply v ; trivial.
 
-      --- destruct H1. rewrite orb_True2 in H2.
-      destruct H1.
-      +++ repeat_destruct v1.
-      specialize (v1 x3 y).
-      assert (x3 \in inp b3). apply v1 ; trivial.
-      contradiction_in_H H3 H0.
+            my_tauto.
+            rewrite in_setU in H2. rewrite orb_True2 in H2.
+            assert (HC1: x4 \in inp b2 = false).
+            rewrite disjoint_sym in H14.
+            apply (disjointFr H14 H3).
+            rewrite HC1 in H2. intuition.
 
-      +++ destruct H2.
-      *** repeat_destruct v2.
-      specialize (v2 x3 y).
-      assert (y  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
-      admit.
+            assert (HC2: x4  \in phi_int _ _ x2 = false).
+            apply (disjointFr H6 H3).
+            contradiction_in_H H22 HC2.
 
-      *** right. right ; intuition.
+        *** exists x4 ; trivial.
 
-      -- rewrite orb_false_iff in Hx3.
+      --- destruct H0. rewrite orb_True2 in H1.
+          destruct H0.
+
+          +++ repeat_destruct v1.
+              specialize (v1 x3 y).
+              assert (HC: x3 \in inp b3). apply v1 ; trivial.
+              contradiction_in_H HC Hb4.
+
+          +++ destruct H1.
+            *** assert (Hdisjoint4: [disjoint phi_int _ _ x2 & phi_int _ _ x1]).
+                apply (Wiring_Compose_disjointness_3 _ _  v1 v2).
+
+                repeat_destruct v2.
+                specialize (v2 x3 y).
+                assert (y  \in inp b2 :|: phi_int _ _ x2). apply v2 ; trivial.
+
+                my_tauto.
+                rewrite in_setU in H2. rewrite orb_True2 in H2.
+                assert (HC1: y \in inp b2 = false).
+                rewrite disjoint_sym in H7.
+                apply (disjointFr H7 H1).
+                rewrite HC1 in H2.
+
+                assert (HC2: y \in phi_int _ _ x2 = false).
+                rewrite disjoint_sym in Hdisjoint4.
+                apply (disjointFr Hdisjoint4 H1).
+                rewrite HC2 in H2.
+                intuition.
+
+            *** right. right ; intuition.
+
+    -- rewrite orb_false_iff in Hx3.
       destruct Hx3. rewrite H. rewrite H0. intuition.
 
-      * intros. split.
-      -- intros.
+    * intros. split.
+
+    -- intros.
+
+       assert (Hdisjoint: [disjoint inp b1 & inp b2] /\
+            [disjoint outp b1 & outp b2] /\
+            [disjoint inp b0 & inp b] /\
+            [disjoint outp b0 & outp b]).
+       apply (Wiring_Compose_disjointness_2 _ _ v0 v).
+
+      assert(Hdisjoint2:[disjoint inp b2 & phi_int _ _ x] /\
+                        [disjoint outp b2 & phi_int _ _ x] /\
+                        [disjoint inp b &  phi_int _ _ x0 ] /\
+                        [disjoint outp b & phi_int _ _ x0 ]).
+       apply (Wiring_Compose_disjointness _ _ v v0).
+
+      assert(Hdisjoint2':[disjoint inp b1 & phi_int _ _ x0] /\
+                        [disjoint outp b1 & phi_int _ _ x0] /\
+                        [disjoint inp b0 &  phi_int _ _ x ] /\
+                        [disjoint outp b0 & phi_int _ _ x ]).
+       apply (Wiring_Compose_disjointness _ _ v0 v).
+
         destruct ((y  \in outp b) || (y  \in phi_int _ _ x)) eqn:Hy1.
-        ++ assert ((y  \in outp b :|: outp b0) || (y  \in phi_int _ _ x :|: phi_int _ _ x0) = true).
+
+        ++ assert ((y  \in outp b :|: outp b0) ||
+            (y  \in phi_int _ _ x :|: phi_int _ _ x0) = true).
         repeat rewrite in_setU. rewrite orb_true_iff in Hy1.
         destruct Hy1 ; intuition.
 
         rewrite H0.
         destruct H.
         ** destruct H. exists x4 ; left ; intuition.
-        ** assert ((y  \in outp b0) || (y  \in phi_int _ _ x0) = false).
-        admit.
-        assert (y  \in phi_int _ _ x2 = false). admit.
-        rewrite H1 in H. rewrite H2 in H. intuition.
+        ** assert (Hy0: (y  \in outp b0) || (y  \in phi_int _ _ x0) = false).
+
+           rewrite orb_true_iff in Hy1.
+           destruct Hy1.
+
+           --- my_tauto.
+               assert (y  \in outp b0 = false). apply (disjointFl H13 H1).
+               assert (y  \in phi_int _ _ x0 = false). apply (disjointFr H9 H1).
+               intuition.
+
+            --- my_tauto.
+                assert (y  \in outp b0 = false). apply (disjointFl H5 H1).
+                assert (y  \in phi_int _ _ x0 = false).
+
+                generalize (Wiring_Compose_disjointness_3 _ _ v0 v).
+                intros.
+
+                apply (disjointFr H15 H1).
+                intuition.
+
+            --- rewrite Hy0 in H.
+
+                assert (Hy2: y \in phi_int _ _ x2 = false).
+                rewrite orb_true_iff in Hy1.
+
+                assert(Hdisjoint2'':[disjoint inp b4  & phi_int _ _ x] /\
+                                    [disjoint outp b4 & phi_int _ _ x] /\
+                                    [disjoint inp b &  phi_int _ _ x2 ] /\
+                                    [disjoint outp b & phi_int _ _ x2 ]).
+                apply (Wiring_Compose_disjointness _ _ v v2).
+
+                assert (Hdisjoint3': [disjoint phi_int _ _ x & phi_int _ _ x2 ]).
+                apply (Wiring_Compose_disjointness_3 _ _ v2 v).
+                destruct Hy1.
+                my_tauto. apply (disjointFr H5 H1).
+                my_tauto. apply (disjointFr Hdisjoint3' H1).
+
+                rewrite Hy2 in H. intuition.
 
         ++ rewrite orb_false_iff in Hy1. destruct Hy1.
-        repeat rewrite in_setU.
-        rewrite H0. rewrite H1.
-        simpl.
-        destruct H.
+           repeat rewrite in_setU.
+           rewrite H0. rewrite H1. simpl.
+           destruct H.
 
-        ** destruct (y \in phi_int _ _ x1) eqn:Hy.
-        assert (y \in outp b0 = false). admit.
-        assert (y  \in phi_int _ _ x0 = false). admit.
-        rewrite H2. rewrite H3. simpl. left; trivial.
-        intuition.
+           ** destruct (y \in phi_int _ _ x1) eqn:Hy.
 
-        ** destruct ((y  \in outp b0) || (y  \in phi_int _ _ x0)) eqn:Hy.
-        destruct H. exists x4; right ; trivial.
+            --- generalize (Wiring_Compose_disjointness_3 _ _ v0 v1). intros Hd1.
+                generalize (Wiring_Compose_disjointness  _ _ v0 v1). intros Hd2.
 
-        destruct (y  \in phi_int _ _ x2) eqn:Hy2.
-        rewrite orb_true_r. right ; trivial.
-        intuition.
+                repeat_destruct v1.
+                specialize (v1 x3 y). my_tauto.
+                assert (Hyp0: y  \in phi_int _ _ x0 = false). apply (disjointFr Hd1 Hy).
+                assert (Hyb0: y  \in outp b0 = false). apply (disjointFl H5 Hy).
+
+                rewrite Hyp0. rewrite Hyb0. simpl.
+                intuition.
+
+            --- intuition.
+
+            ** destruct ((y  \in outp b0) || (y  \in phi_int _ _ x0)) eqn:Hy.
+               destruct H. exists x4; right ; trivial.
+
+               destruct (y  \in phi_int _ _ x2) eqn:Hy2.
+               --- rewrite orb_true_r. right ; trivial.
+               --- intuition.
 
       -- intros.
 
+        assert (Hdisjoint: [disjoint inp b1 & inp b2] /\
+            [disjoint outp b1 & outp b2] /\
+            [disjoint inp b0 & inp b] /\
+            [disjoint outp b0 & outp b]).
+        apply (Wiring_Compose_disjointness_2 _ _ v0 v).
+
+        assert (Hdisjoint2: [disjoint inp b1 &  phi_int _ _ x0 ] /\
+        [disjoint outp b1 & phi_int _ _ x0 ] /\
+        [disjoint inp b0 &  phi_int _ _ x ] /\
+        [disjoint outp b0 & phi_int _ _ x ]).
+         apply (Wiring_Compose_disjointness  _ _ v0 v).
+
+        assert (Hdisjoint3: [disjoint inp b3 &  phi_int _ _ x2 ] /\
+        [disjoint outp b3 & phi_int _ _ x2 ] /\
+        [disjoint inp b2 &  phi_int _ _ x1 ] /\
+        [disjoint outp b2 & phi_int _ _ x1 ]).
+         apply (Wiring_Compose_disjointness  _ _ v2 v1).
+
         destruct ((y  \in outp b) || (y  \in phi_int _ _ x)) eqn:Hy1.
 
-        ++ assert ((y  \in outp b :|: outp b0) || (y  \in phi_int _ _ x :|: phi_int _ _ x0)).
-           repeat rewrite in_setU. rewrite orb_true_iff in Hy1. destruct Hy1 ; rewrite H0 ; intuition.
+        ++ assert ((y  \in outp b :|: outp b0)
+            || (y  \in phi_int _ _ x :|: phi_int _ _ x0)).
+           repeat rewrite in_setU. rewrite orb_true_iff in Hy1.
+           destruct Hy1 ; rewrite H0 ; intuition.
            rewrite H0 in H.
            destruct H.
 
@@ -1120,27 +1290,76 @@ Proof.
             ** destruct H1.
             --- left. exists x4 ; intuition.
             --- right.
+                generalize (Wiring_Compose_disjointness  _ _ v v0).
+                generalize (Wiring_Compose_disjointness_3 _ _ v0 v).
+                intros Hd1 Hd2.
                 repeat_destruct v1. specialize (v1 x3 x4).
                 repeat_destruct v0. specialize (v0 x4 y).
 
-                assert (Hx41: x4  \in outp b2). apply v0. trivial.
-                assert (Hx42: x4  \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
-                admit.
+                my_tauto.
+
+                rewrite in_setU in H21. rewrite orb_True2 in H21.
+                destruct H21.
+
+                +++ assert (HC1: y \in outp b = false).
+                    apply (disjointFr H17 H21).
+
+                    assert (HC2: y  \in phi_int _ _ x = false).
+                    apply (disjointFr H13 H21).
+                    rewrite HC1 in Hy1. rewrite HC2 in Hy1.
+                    intuition.
+
+                +++ assert (HC1: y \in outp b = false).
+                    apply (disjointFl H5 H21).
+
+                    assert (HC2: y  \in phi_int _ _ x = false).
+                    apply (disjointFl Hd1 H21).
+                    rewrite HC1 in Hy1. rewrite HC2 in Hy1.
+                    intuition.
 
             ** destruct H1.
-            --- repeat_destruct v. specialize (v x4 y).
+            --- generalize (Wiring_Compose_disjointness  _ _ v1 v2).
+                intros Hd1.
+                repeat_destruct v. specialize (v x4 y).
                 repeat_destruct v2. specialize (v2 x3 x4).
+                my_tauto.
 
-                assert (Hx41: x4  \in outp b1). apply v. trivial.
-                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
-                admit.
+                assert (Hx4a: x4  \in outp b2 = false).
+                apply (disjointFr H15 H22).
 
-            --- repeat_destruct v0. specialize (v0 x4 y).
+                assert (Hx4b: x4 \in phi_int _ _ x2 = false).
+                apply (disjointFr H5 H22).
+
+                rewrite in_setU in H19.
+                rewrite orb_True2 in H19.
+                rewrite Hx4a in H19. rewrite Hx4b in H19.
+                intuition.
+
+            --- generalize (Wiring_Compose_disjointness  _ _ v v0).
+                generalize (Wiring_Compose_disjointness_3 _ _ v0 v).
+                intros Hd1 Hd2.
+                repeat_destruct v0. specialize (v0 x4 y).
                 repeat_destruct v2. specialize (v2 x3 x4).
+                my_tauto.
 
-                assert (Hx41: x4  \in outp b2). apply v0. trivial.
-                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
-                admit.
+                rewrite in_setU in H21. rewrite orb_True2 in H21.
+                destruct H21.
+
+                +++ assert (HC1: y \in outp b = false).
+                    apply (disjointFr H17 H21).
+
+                    assert (HC2: y  \in phi_int _ _ x = false).
+                    apply (disjointFr H13 H21).
+                    rewrite HC1 in Hy1. rewrite HC2 in Hy1.
+                    intuition.
+
+                +++ assert (HC1: y \in outp b = false).
+                    apply (disjointFl H5 H21).
+
+                    assert (HC2: y  \in phi_int _ _ x = false).
+                    apply (disjointFl Hd1 H21).
+                    rewrite HC1 in Hy1. rewrite HC2 in Hy1.
+                    intuition.
 
         ++ repeat rewrite in_setU in H.
            rewrite orb_false_iff in Hy1. destruct Hy1. rewrite H0 in H. rewrite H1 in H.
@@ -1151,7 +1370,7 @@ Proof.
            destruct H.
 
            --- destruct H2.
-           +++ repeat_destruct v. specialize (v x4 y).
+            +++ repeat_destruct v. specialize (v x4 y).
                 assert (y  \in outp b :|: phi_int _ _ x ). apply v. trivial.
                 rewrite in_setU in H3.
                 rewrite orb_True2 in H3.
@@ -1160,18 +1379,35 @@ Proof.
 
             +++ repeat_destruct v0. specialize (v0 x4 y).
                 repeat_destruct v1. specialize (v1 x3 x4).
+                my_tauto.
 
-                assert (Hx41: x4 \in outp b2). apply v0. trivial.
-                assert (Hx42: x4  \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
-                admit.
+                assert (Hx4a: x4  \in outp b1 = false).
+                apply (disjointFl H12 H19).
+
+                assert (Hx4b: x4 \in phi_int _ _ x1 = false).
+                apply (disjointFr H6 H19).
+
+                rewrite in_setU in H16. rewrite orb_True2 in H16.
+                rewrite Hx4a in H16. rewrite Hx4b in H16.
+                intuition.
 
             --- destruct H2.
-            +++ repeat_destruct v. specialize (v x4 y).
+            +++ generalize (Wiring_Compose_disjointness  _ _ v1 v2).
+                generalize (Wiring_Compose_disjointness_3 _ _ v1 v2).
+                intros Hd1 Hd2.
+                repeat_destruct v. specialize (v x4 y).
                 repeat_destruct v2. specialize (v2 x3 x4).
+                my_tauto.
 
-                assert (Hx41: x4  \in outp b1). apply v. trivial.
-                assert (Hx42: x4  \in outp b2 :|: phi_int _ _ x2). apply v2. trivial.
-                admit.
+                assert (Hx4a: x4  \in outp b2 = false).
+                apply (disjointFr H16 H23).
+
+                assert (Hx4b: x4 \in phi_int _ _ x2 = false).
+                apply (disjointFr H6 H23).
+
+                rewrite in_setU in H20. rewrite orb_True2 in H20.
+                rewrite Hx4a in H20. rewrite Hx4b in H20.
+                intuition.
 
             +++ right. exists x4 ; intuition.
 
@@ -1179,21 +1415,43 @@ Proof.
             --- rewrite orb_true_iff in Hy1.
             destruct Hy1, H.
             +++ rewrite H2. left. trivial.
-            +++ repeat_destruct v2. specialize (v2 x3 y).
-                assert (Hy1: y  \in outp b2 :|: phi_int _ _ x2 ). apply v2. trivial.
-                admit.
+            +++ generalize (Wiring_Compose_disjointness_3 _ _ v1 v2).
+                intros Hd1.
+                repeat_destruct v2. specialize (v2 x3 y).
+                my_tauto.
 
-            +++ repeat_destruct v1. specialize (v1 x3 y).
-                assert (Hy1: y \in outp b1 :|: phi_int _ _ x1). apply v1. trivial.
-                admit.
+                assert (HC1: y \in outp b2  = false).
+                apply (disjointFl H6 H2).
+
+                assert (HC2: y \in phi_int _ _ x2  = false).
+                apply (disjointFl Hd1 H2).
+
+                rewrite in_setU in H16. rewrite orb_True2 in H16.
+                rewrite HC1 in H16. rewrite HC2 in H16.
+                intuition.
+
+            +++ generalize (Wiring_Compose_disjointness  _ _ v1 v2).
+                generalize (Wiring_Compose_disjointness_3 _ _ v1 v2).
+                intros Hd1 Hd2.
+                repeat_destruct v1. specialize (v1 x3 y).
+                my_tauto.
+
+                assert (HC1: y \in outp b1  = false).
+                apply (disjointFl H6 H2).
+
+                assert (HC2: y \in phi_int _ _ x1  = false).
+                apply (disjointFr Hd1 H2).
+
+                rewrite in_setU in H20. rewrite orb_True2 in H20.
+                rewrite HC1 in H20. rewrite HC2 in H20.
+                intuition.
 
             +++ repeat_destruct v2. specialize (v2 x3 y).
-                assert (Hy1: y  \in outp b2 :|: phi_int _ _ x2 ). apply v2. trivial.
-                admit.
+                my_tauto.
+                rewrite H2. right. trivial.
 
             --- intuition.
-
-Admitted.
+Qed.
 
 Definition WiringD_0: WiringD Box0 Box0 :=
     (Wiring_0; Valid_Wiring_Mapping_Wiring_0).
@@ -1205,8 +1463,6 @@ Program Definition WiringD_plus {i j k l}
  Next Obligation.
     apply Valid_Wiring_plus ; intuition.
 Defined.
-
-Search "∧".
 
 Program Definition WiringD_Tensor: WiringDCat ∏ WiringDCat ⟶ WiringDCat :=
 {|
