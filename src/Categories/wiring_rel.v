@@ -2859,7 +2859,6 @@ Defined.
 Program Instance Wiring_is_Symmetric : @SymmetricMonoidal WiringDCat := {
     symmetric_is_monoidal := WiringD_is_Monoidal ;
     braid {x y} := WiringD_braid ;
-
 }.
 Next Obligation.
     simpl_eqs.
