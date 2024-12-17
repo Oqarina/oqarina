@@ -106,6 +106,7 @@ ALECTRYON_FILES= \
 	examples/3rd-party/aadl2prosa.v \
 	examples/FaultTrees/FaultTrees_Examples.v \
 	src/Categories/wiring_rel.v \
+	src/Categories/aut.v \
 	src/Categories/family.v \
 	src/Categories/interface.v \
 	src/Categories/wiring_rel.v \
