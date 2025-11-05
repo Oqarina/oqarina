@@ -35,6 +35,7 @@
 From mathcomp Require Import finset fintype ssrbool eqtype.
 Require Import Coq.Bool.Bool.
 Require Import Oqarina.CoqExt.finset_Ext.
+Require Import Utf8.
 
 Ltac trivialize :=
     repeat match goal with
@@ -149,3 +150,27 @@ Ltac rewrite_in_setU :=
 
 Ltac contradiction_in_H H1 H2 :=
     rewrite H1 in H2 ; inversion H2.
+
+Ltac rewrite_most :=
+  repeat match goal with
+  | [ H : ?X = ?Y                      |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _, ?X = ?Y                 |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _, ?X _ = ?Y _             |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _, ?X = ?Y               |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _, ?X _ = ?Y _           |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _, ?X _ _ = ?Y _ _       |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _ _, ?X = ?Y             |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _ _, ?X _ = ?Y _         |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _ _, ?X _ _ = ?Y _ _     |- context[?X] ] => rewrite !H; clear H
+  | [ H : ∀ _ _ _, ?X _ _ _ = ?Y _ _ _ |- context[?X] ] => rewrite !H; clear H
+  | [ H : ?X = ?Y                      |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _, ?X = ?Y                 |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _, ?X _ = ?Y _             |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _, ?X = ?Y               |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _, ?X _ = ?Y _           |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _, ?X _ _ = ?Y _ _       |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _ _, ?X = ?Y             |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _ _, ?X _ = ?Y _         |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _ _, ?X _ _ = ?Y _ _     |- context[?Y] ] => rewrite <- !H; clear H
+  | [ H : ∀ _ _ _, ?X _ _ _ = ?Y _ _ _ |- context[?Y] ] => rewrite <- !H; clear H
+  end.

@@ -51,6 +51,7 @@ In this chapter, we introduce some constructions based on category theory to rep
    Categories__family.v.rst
    Categories__interface.v.rst
    Categories__aut.v.rst
+   Categories__beh.v.rst
    Categories__wiring_rel.v.rst
 
 |*)

@@ -44,7 +44,6 @@ Require Import Coq.Logic.PropExtensionality.
 From mathcomp Require Import finset fintype ssrbool eqtype ssreflect.
 
 (* Definition from the coq-category package *)
-
 Require Import Category.Lib.
 Require Import Category.Construction.Product.
 Require Import Category.Theory.Category.

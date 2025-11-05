@@ -71,7 +71,7 @@ In this section, we define two variants for the category of interfaces.
 An interface is a finite set of some type. |*)
 
 (* Let's InterfactType be a type. *)
-Context {InterfaceType : Type}.
+Variable InterfaceType : Type.
 Definition Interface : Type := listset InterfaceType.
 
 (*|
@@ -230,8 +230,20 @@ Definition Empty_Box_to_Empty_Box' {i j} (b: Empty_Box i j)
 End InterfaceCategory.
 (*| .. coq:: |*)
 
-(*| .. coq:: none |*)
-Section Test_Interface.
+(*|
+
+Examples
+========
+
+Example #1: basic interface
+---------------------------
+
+A first naive example considers interfaces as intergers, and a basic
+mapping from inputs to outputs.
+
+|*)
+
+Module Test_Interface.
 
 Definition interface_nat := @Interface nat.
 
@@ -240,10 +252,10 @@ Open Scope nat_scope.
 Definition i1 : interface_nat := {[ 1 ; 2]}.
 Definition i2 : interface_nat := {[ 3 ; 4]}.
 
-Definition b1 : Empty_Box i1 i2 := tt.
-Definition b2 : Empty_Box i2 i2 := tt.
+Definition b1 : Empty_Box _ i1 i2 := tt.
+Definition b2 : Empty_Box _ i2 i2 := tt.
 
-Definition b3 : Empty_Box i1 i2 := empty_box_compose b1 b2.
+Definition b3 : Empty_Box _ i1 i2 := empty_box_compose _ b1 b2.
 
 Definition basic_f1 (x : nat) : nat :=
     match x with
@@ -256,14 +268,60 @@ Definition f1 (x : interface_nat) : interface_nat :=
 Lemma test_f1: f1 i1 = i2.
 Proof. set_solver. Qed.
 
-Lemma v_i1_i2_f1: Valid_Interface_Mapping i1 i2 f1.
+Lemma v_i1_i2_f1: Valid_Interface_Mapping _ i1 i2 f1.
 Proof.
     unfold Valid_Interface_Mapping.
     set_solver.
 Qed.
 
-Program Definition Box1 : Box i1 i2 :=
+Program Definition Box1 : Box _ i1 i2 :=
   {| f := f1; V := v_i1_i2_f1 |}.
 
 End Test_Interface.
 (*| .. coq:: |*)
+
+Require Import Oqarina.Categories.family_listset.
+Require Import Oqarina.Categories.family.
+Require Import stdpp.listset.
+
+Module Test_Interface_2.
+
+Definition Interface_Type := nat.
+Definition Port_Type := unit.
+
+Definition Ports : listset Interface_Type -> Port_Type :=
+  (λ x,  tt).
+
+Definition PortFamily := finiteFamily Interface_Type Port_Type Ports.
+
+Definition Port_Interface : Type := family_index PortFamily.
+
+Definition i1 : Port_Interface := {[ 1 ; 2 ]}.
+Definition i2 : Port_Interface := {[ 3 ; 4 ]}.
+
+Definition b1 : Empty_Box _ i1 i2 := tt.
+Definition b2 : Empty_Box _ i2 i2 := tt.
+
+Definition b3 : Empty_Box _ i1 i2 := empty_box_compose _ b1 b2.
+
+Definition basic_f1 (x : nat) : nat :=
+    match x with
+        | 1 => 3 | 2 => 4 | _ => 0
+    end.
+
+Definition f1 (x : Port_Interface) : Port_Interface :=
+    set_map basic_f1 x.
+
+Lemma test_f1: f1 i1 = i2.
+Proof. set_solver. Qed.
+
+Lemma v_i1_i2_f1: Valid_Interface_Mapping _ i1 i2 f1.
+Proof.
+    unfold Valid_Interface_Mapping.
+    set_solver.
+Qed.
+
+Program Definition Box1 : Box _ i1 i2 :=
+  {| f := f1; V := v_i1_i2_f1 |}.
+
+End Test_Interface_2.

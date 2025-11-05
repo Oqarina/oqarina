@@ -248,23 +248,3 @@ and contains only :coq:`x`.
 
 Definition singleton {X} (x:X) : family X :=
   Build_family X unit (λ t : unit, x).
-
-(*|
-
-* Finite familty
-
-A finite family is indexed by a finite type (defined in :coq:`mathcomp`).
-
-|*)
-
-From mathcomp Require Import finset fintype ssrbool ssreflect eqtype.
-
-Section finsetCat.
-
-Variable Index_Type : finType.
-Variable Family_member : Type.
-Variable f : Index_Type -> Family_member.
-
-Definition finiteFamily := Build_family Family_member Index_Type f.
-
-End finsetCat.

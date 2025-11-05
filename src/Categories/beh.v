@@ -80,8 +80,7 @@ Record beh_morphism_r (tX tY tX' tY': Type)
 }.
 
 (*
- This means that for the category Beh of behav-
-iors (i.e., triples (Σ, Y, b), where Σ∗ b
+ This means that for the category Beh of behaviors (i.e., triples (Σ, Y, b), where Σ∗ b
 −→Y is a function) and behavior morphisms
 [i.e., (f, g) : (Σ, Y, b)→(Σ′, Y ′, b′), where Σ f
 −→Σ′ and Y g
@@ -185,8 +184,7 @@ Definition aut_beh (a : aut): beh :=
     b := aut_beh_ a (q0 a)
 |}.
 
-Definition
-  fmap_aut_beh_r (x y : aut) (f : aut_morphism x y)
+Definition fmap_aut_beh_r (x y : aut) (f : aut_morphism x y)
   : beh_morphism_r (Σ x) (Y x) (Σ y) (Y y)
     := {|
         fbeh := ((fΣ (aut_morphism_map f)) ) ;
@@ -198,7 +196,7 @@ Program Instance aut_to_beh_Functor: Aut ⟶ Beh :=  {
 }.
 Next Obligation.
     unfold beh_morphism.
-    exists ( fmap_aut_beh_r f).
+    exists (fmap_aut_beh_r f).
 
     destruct f.
     intros.
@@ -220,8 +218,61 @@ Defined.
 
 Next Obligation.
     proper.
-    unfold fmap_aut_beh_r .
-    rewrite H. trivial.
+    unfold fmap_aut_beh_r.
+    now rewrite H.
 Defined.
 
 End Behavior.
+
+(* check Ed. Lee papers on director compatibility
+
+tag signal semantics kind of box category, enough to combine all model of computation.
+
+https://www2.eecs.berkeley.edu/Pubs/TechRpts/2005/EECS-2005-31.pdf
+
+and 10.1109/43.736561 (in Zotero A Framework for Comparing Models of Computation)
+
+
+https://thesai.org/Downloads/Volume13No9/Paper_64-A_Monadic_Co_simulation_Model_for_Cyber_physical_Production_Systems.pdf
+
+https://link.springer.com/chapter/10.1007/978-3-030-93547-4_24
+
+https://benjaminlion.fr/publications/formats.pdf <=== +++
+
+work from Tarmo Uustalu is very important
+monad + comand for composing computations
+
+from Sweedler theory of monads
+Monad-comonad interaction laws are a mathematical concept for describing communication protocols between effectful computations and coeffectful environments in the paradigm where notions of effectful computation are modelled by monads and notions of coeffectful environment by comonads.
+
+
+Comonadic Notions of Computation
+and
+Concurrent monads for shared state ( https://dl.acm.org/doi/10.1145/3678232.3678249# )
+
+
+and of course BAKIRTZIS
+
+
+Conclusions:
+having multiple paradigms for the _specification_ is fine,
+as long as there is a common functor to express the behavior,
+e.g. aut -> beh, Moore -> beh, Petri -> beh, etc.
+
+otherwise, pain in the neck ..
+
+For a Wiring diagram, define syntax to compile ...
+
+
+actually, we need two monads (like DEVS / Ptolemy)
+one "local" monad per component then one global synchronizing
+
+m aut1 x m aut2 -> m -> m' -> m' (m aut1 aut2)
+
+
+Galois transformers? https://arxiv.org/abs/1411.3962
+
+
+use concurrency monad to express interruptible behavior (internal block)
+define synchronization monad from coq-breakable-execution
+*)

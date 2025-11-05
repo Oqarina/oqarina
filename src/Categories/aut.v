@@ -49,6 +49,17 @@ Require Import Oqarina.coq_utils.list_utils.
 
 Set Implicit Arguments.
 
+(* refactor code
+
+make family a category indexed by finset from stdpp, use in interface_stdpp
+make Aut an explicit box from interface_stdpp
+refactor interface_stdpp to have box as a SMC
+
+As a conclusion, Aut will inherit all the features from Box automatically
+do the same for DEVS btw
+
+*)
+
 Section aut.
 
 (*|
@@ -117,14 +128,14 @@ Record aut_morphism_r (Q Σ Y Q' Σ' Y': Type) := {
 preserves states. This technical lemma is defined in this expanded form to ease further proofs. |*)
 
 Lemma aut_morphism_next_steps:
-∀  (x y0 : aut)
-(x0 : aut_morphism_r (Q x) (Σ x) (Y x) (Q y0) (Σ y0) (Y y0))
-(a : ∀ (σ : Σ x) (q : Q x), δ y0 (fΣ x0 σ) (fQ x0 q) = fQ x0 (δ x σ q))
-(a1: q0 y0 = fQ x0 (q0 x))
-( σ : list (Σ x)),
+    ∀  (x y0 : aut)
+    (x0 : aut_morphism_r (Q x) (Σ x) (Y x) (Q y0) (Σ y0) (Y y0))
+    (a : ∀ (σ : Σ x) (q : Q x), δ y0 (fΣ x0 σ) (fQ x0 q) = fQ x0 (δ x σ q))
+    (a1: q0 y0 = fQ x0 (q0 x))
+    ( σ : list (Σ x)),
 
-(fQ x0 (next_steps x (q0 x) σ) =
-(next_steps y0 (q0 y0) (map (fΣ x0) σ))).
+    (fQ x0 (next_steps x (q0 x) σ) =
+    (next_steps y0 (q0 y0) (map (fΣ x0) σ))).
 
 Proof.
     intros.
@@ -144,7 +155,6 @@ Proof.
 
     intuition.
 Qed.
-
 
 Definition aut_morphism
     (A : aut) (B: aut) : Type
@@ -166,16 +176,6 @@ Definition aut_morphism_map
     (M : aut_morphism A B)
     : aut_morphism_r (Q A) (Σ A) (Y A) (Q B) (Σ B) (Y B)
     := @projT1 _ _ M.
-
-(*
- ∀ (σ : Σ x) (q : Q x), δ y0 (fΣ x0 σ) (fQ x0 q) = fQ x0 (δ x σ q)
-
-
-Lemma aut_morphism_seq {A B : aut},
-forall f : aut_morphism A B,
- ∀ (σ : list Σ x) (q : Q x), δ y0 (fΣ x0 σ) (fQ x0 q) = fQ x0 (δ x σ q)
-
-*)
 
 (*| From these considerations, it is quite trivial to derive that automata form a Category, :coq:`aut`. |*)
 
@@ -263,3 +263,10 @@ Program Instance Aut : Category := {|
 |}.
 
 End aut.
+
+
+(*
+
+https://golem.ph.utexas.edu/category/2022/07/compositional_constructions_of.html
+
+*)

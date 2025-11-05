@@ -30,42 +30,24 @@
  * DM21-0762
 ***)
 
-(*| .. coq:: none |*)
-(** Coq Library *)
-Require Import Coq.Strings.String.
-Require Import List.
-Import ListNotations. (* from List *)
+From Oqarina Require Import Categories.family.
+From mathcomp Require Import finset fintype ssrbool ssreflect eqtype.
 
-(* Coq Ext-lib *)
-Require Import ExtLib.Structures.Monads.
-(*
-Require Import ExtLib.Data.Monads.OptionMonad.
-*)
-(*| .. coq:: |*)
+(*|
 
-(*| This module adds a monad-compatible map function to the monad library from Coq.ExtLib.  |*)
+* Finite family
 
-Section monadic_map.
+A finite family is indexed by a finite type (defined in :coq:`mathcomp`).
 
-    Variable m : Type -> Type.
-    Context {Monad_m : Monad m}.
+|*)
 
-    Import MonadNotation.
-    Local Open Scope monad_scope.
+Section finsetCat.
 
-    Section mmap.
+Variable Index_Type : finType.
+Variable Family_member : Type.
+Variable f : Index_Type -> Family_member.
 
-        Variables (A : Type) (B: Type).
-        Variable f: A -> m B.
+Definition finiteFamily := Build_family Family_member Index_Type f.
 
-        Fixpoint mmap (l: list A) {struct l}
-            : m (list B)
-        :=
-            match l with
-                | nil => ret nil
-                | hd :: tl =>  hd' <- f hd ;; tl' <- (mmap tl) ;; ret (hd' :: tl')
-            end.
+End finsetCat.
 
-    End mmap.
-
-End monadic_map.

@@ -68,12 +68,10 @@ Class SymmetricMonoidal := {
 
 }.
 
-(*
-
 (* Proving that the other hexagon identify derives from the definition
 of SymmetricMoinoidal is left as an exercise for now. *)
 
-Context `{SymmetricMonoidal}.
+Context `{SMC: SymmetricMonoidal}.
 
 Lemma hexagon_identity_sym { x y z } :
     tensor_assoc⁻¹ ∘ braid ∘ tensor_assoc⁻¹
@@ -81,7 +79,5 @@ Lemma hexagon_identity_sym { x y z } :
     braid ⨂ id ∘ tensor_assoc⁻¹ ∘ id ⨂ braid.
 Proof.
 Admitted.
-
-*)
 
 End SymmetricMonoidal.
